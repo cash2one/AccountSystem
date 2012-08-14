@@ -21,4 +21,10 @@ public class LoginController {
 		return mv;
 	}
 	
+	@RequestMapping(value="redirect", method=RequestMethod.GET)
+	public ModelAndView redirect(HttpServletRequest request,HttpServletResponse response) {
+		ModelAndView mv = new ModelAndView("/index/redirect");
+		return mv;
+	}
+	
 }
