@@ -1,18 +1,17 @@
 package com.snda.gcloud.as.rest;
 
+import java.net.URISyntaxException;
+
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
+
+import org.apache.amber.oauth2.common.exception.OAuthSystemException;
 
 public interface OAuth2Resource {
 	
-	Response authorize(String clientId,
-			String responseType,
-			String redirectUri,
-			String scope);
+	Response exchangeAccessToken(HttpServletRequest request) 
+			throws OAuthSystemException;
 	
-	Response exchangeAccessToken(String clientId,
-			String clientSecret,
-			String grantType,
-			String redirectUri,
-			String code);
-	
+	Response authorize(HttpServletRequest request)
+	        throws URISyntaxException, OAuthSystemException;
 }

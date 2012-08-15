@@ -36,5 +36,18 @@
 		<servlet-name>gcloud</servlet-name>
 		<url-pattern>/gcloud/*</url-pattern>
 	</servlet-mapping>
+
+	<!-- 
+	<servlet>
+		<servlet-name>oauth2</servlet-name>
+		<servlet-class>com.snda.gcloud.as.rest.servlet.oauth2.AuthzServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	
+	<servlet-mapping>
+		<servlet-name>oauth2</servlet-name>
+		<url-pattern>/oauth2/authorize</url-pattern>
+	</servlet-mapping>
+	 -->
 	
 </web-app>

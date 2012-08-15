@@ -1,10 +1,13 @@
-<!DOCTYPE html>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
 <html xml:lang="en"
 	class=" js no-flexbox canvas canvastext no-touch postmessage no-websqldatabase indexeddb hashchange history draganddrop websockets rgba hsla multiplebgs backgroundsize borderimage borderradius boxshadow textshadow opacity cssanimations csscolumns cssgradients no-cssreflections csstransforms csstransforms3d csstransitions fontface generatedcontent video audio localstorage sessionstorage webworkers applicationcache"
 	xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
-<script async="" type="text/javascript" src="login_files/zxcvbn.js"></script>
-<script src="login_files/ga.js" async="" type="text/javascript"></script>
+<script async="" type="text/javascript" src="/WEB-INF/html/login_files/zxcvbn.js"></script>
+<script src="/WEB-INF/html/login_files/ga.js" async="" type="text/javascript"></script>
 <script type="text/javascript">
 	window.ST = +new Date();
 </script>
@@ -52,7 +55,7 @@
 <title>Dropbox - Sign in - Simplify your life</title>
 <link href="https://www.dropbox.com/static/31443/images/favicon.ico"
 	rel="shortcut icon">
-<link href="login_files/main.css" type="text/css" rel="stylesheet">
+<link href="/WEB-INF/html/login_files/main.css" type="text/css" rel="stylesheet">
 <link
 	href="https://www.dropbox.com/static/31443/images/dropbox_webclip.png"
 	rel="apple-touch-icon">
@@ -136,7 +139,7 @@
 		old_onload && old_onload();
 	}
 </script>
-<script src="login_files/dropbox-coffee-mini.js" type="text/javascript"></script>
+<script src="/WEB-INF/html/login_files/dropbox-coffee-mini.js" type="text/javascript"></script>
 <style type="text/css">
 .hny-netph {
 	display: none;
@@ -274,17 +277,17 @@ padding-bottom: 0px !important;
 		<div id="page-logo-header" class="">
 			<a href="https://www.dropbox.com/"><img
 				data-hi-res="/static/images/new_logo_2x.png"
-				src="login_files/new_logo.png" alt="Dropbox home" id="db-logo"></a>
+				src="/WEB-INF/html/login_files/new_logo.png" alt="Dropbox home" id="db-logo"></a>
 			<div id="header-border-div"></div>
 		</div>
 		<div style="display: none;" id="modal-locale-selector">
 			<ul>
 				<li><a data-locale="en" class="locale-option">English</a></li>
-				<li><a data-locale="es" class="locale-option">Español</a></li>
-				<li><a data-locale="fr" class="locale-option">Français</a></li>
+				<li><a data-locale="es" class="locale-option">EspaÃ±ol</a></li>
+				<li><a data-locale="fr" class="locale-option">FranÃ§ais</a></li>
 				<li><a data-locale="de" class="locale-option">Deutsch</a></li>
-				<li><a data-locale="ja" class="locale-option">日本語</a></li>
-				<li><a data-locale="ko" class="locale-option">한국어</a></li>
+				<li><a data-locale="ja" class="locale-option">æ¥æ¬èª</a></li>
+				<li><a data-locale="ko" class="locale-option">íêµ­ì´</a></li>
 			</ul>
 		</div>
 		<div id="page-content">
@@ -293,7 +296,7 @@ padding-bottom: 0px !important;
 				<div id="login-container">
 
 					<div class="splash">
-						<img src="login_files/login.jpg" id="login_kite"
+						<img src="/WEB-INF/html/login_files/login.jpg" id="login_kite"
 							alt="A graphic depicting a stick figure flying a kite in a park">
 
 					</div>
@@ -362,7 +365,7 @@ padding-bottom: 0px !important;
 
 				<div id="register-container">
 					<div class="splash">
-						<img src="login_files/create.jpg"
+						<img src="/WEB-INF/html/login_files/create.jpg"
 							alt="A graphic depicting a Dropbox box arriving home">
 					</div>
 
@@ -427,7 +430,7 @@ padding-bottom: 0px !important;
 								</span> <input id="email" name="email" tabindex="7" type="text">
 								<label id="new-email-label" for="email">Email</label>
 								<script type="text/javascript" charset="utf-8"
-									src="login_files/mailcheck.js">
+									src="/WEB-INF/html/login_files/mailcheck.js">
 									
 								</script>
 								<script type="text/javascript">
@@ -449,7 +452,7 @@ padding-bottom: 0px !important;
 									type="password"> <label id="new-password-label"
 									for="password">Password</label>
 								<script type="text/javascript" charset="utf-8"
-									src="login_files/password_strength.js">
+									src="/WEB-INF/html/login_files/password_strength.js">
 									
 								</script>
 								<script type="text/javascript">
@@ -465,7 +468,7 @@ padding-bottom: 0px !important;
 									<div style="left: 75%;" class="password_strength_separator"></div>
 									<a style="display: none;" class="password_strength_icon"
 										href="#"><img class="sprite sprite_web s_web_information "
-										src="login_files/icon_spacer.gif"></a>
+										src="/WEB-INF/html/login_files/icon_spacer.gif"></a>
 									<div class="password_strength_desc">&nbsp;</div>
 									<div class="clearfix"></div>
 								</div>
@@ -540,18 +543,18 @@ padding-bottom: 0px !important;
 			</div>
 			<div id="locale-container" class="ui-button">
 				<span id="locale-link" class="link-span"><img
-					src="login_files/icon_spacer.gif" style=""
+					src="/WEB-INF/html/login_files/icon_spacer.gif" style=""
 					class="sprite sprite_web s_web_world_grey">&nbsp;<a>English</a>&nbsp;<img
-					src="login_files/icon_spacer.gif" style=""
+					src="/WEB-INF/html/login_files/icon_spacer.gif" style=""
 					class="sprite sprite_web s_web_sort-uptick-off"></span>
 				<div id="locale-menu" class="sub-nav chat-bubble-bottom">
 					<ul>
 						<li><a data-locale="en" class="locale-option">English</a></li>
-						<li><a data-locale="es" class="locale-option">Español</a></li>
-						<li><a data-locale="fr" class="locale-option">Français</a></li>
+						<li><a data-locale="es" class="locale-option">EspaÃ±ol</a></li>
+						<li><a data-locale="fr" class="locale-option">FranÃ§ais</a></li>
 						<li><a data-locale="de" class="locale-option">Deutsch</a></li>
-						<li><a data-locale="ja" class="locale-option">日本語</a></li>
-						<li><a data-locale="ko" class="locale-option">한국어</a></li>
+						<li><a data-locale="ja" class="locale-option">æ¥æ¬èª</a></li>
+						<li><a data-locale="ko" class="locale-option">íêµ­ì´</a></li>
 					</ul>
 					<div class="chat-bubble-arrow-border"></div>
 					<div class="chat-bubble-arrow"></div>
