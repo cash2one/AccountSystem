@@ -1,3 +1,3 @@
 <%
-request.getRequestDispatcher("/WEB-INF/html/login.jsp").forward(request,response);
+request.getRequestDispatcher("/WEB-INF/html/login.html").forward(request,response);
 %>
