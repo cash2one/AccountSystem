@@ -45,7 +45,7 @@ import com.snda.gcloud.as.rest.util.Constants;
 
 
 @Service
-@Path("/")
+@Path("oauth2")
 public class OAuth2ResourceImpl implements AuthorizationResource, TokenResource {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2ResourceImpl.class);

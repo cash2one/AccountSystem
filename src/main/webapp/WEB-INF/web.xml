@@ -10,7 +10,6 @@
 		<param-value>
 			classpath:account.system.mongo.xml,
 			classpath:account.system.account.rest.xml,
-			<!-- classpath:account.system.oauth2.security.xml -->
 		</param-value>
 	</context-param>
 	
@@ -35,7 +34,6 @@
      -->
 
 
-	<!-- 
     <servlet>
 		<servlet-name>SpringServlet</servlet-name>
 		<servlet-class>com.sun.jersey.spi.spring.container.servlet.SpringServlet</servlet-class>
@@ -43,29 +41,7 @@
 
 	<servlet-mapping>
 		<servlet-name>SpringServlet</servlet-name>
-		<url-pattern>/oauth2/*</url-pattern>
-	</servlet-mapping>
-	 -->
-	
-	<servlet>
-		<servlet-name>AccountServlet</servlet-name>
-		<servlet-class>com.sun.jersey.spi.spring.container.servlet.SpringServlet</servlet-class>
-	</servlet>
-	
-	<servlet-mapping>
-		<servlet-name>AccountServlet</servlet-name>
-		<url-pattern>/account/*</url-pattern>
-	</servlet-mapping>
-	
-	<servlet>
-		<servlet-name>gcloud</servlet-name>
-		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
-	
-	<servlet-mapping>
-		<servlet-name>gcloud</servlet-name>
-		<url-pattern>/gcloud/*</url-pattern>
+		<url-pattern>/*</url-pattern>
 	</servlet-mapping>
 	
 </web-app>

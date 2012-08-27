@@ -35,6 +35,7 @@ import com.snda.gcloud.as.rest.util.ObjectMappers;
 
 
 @Service
+@Path("application")
 public class ApplicationResourceImpl implements ApplicationResource {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationResourceImpl.class);

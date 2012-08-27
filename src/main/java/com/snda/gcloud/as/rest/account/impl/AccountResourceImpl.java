@@ -33,6 +33,7 @@ import com.snda.gcloud.as.rest.util.Constants;
 import com.snda.gcloud.as.rest.util.ObjectMappers;
 
 @Service
+@Path("account")
 public class AccountResourceImpl implements AccountResource {
 
 	private static final Logger LOGGER = LoggerFactory
