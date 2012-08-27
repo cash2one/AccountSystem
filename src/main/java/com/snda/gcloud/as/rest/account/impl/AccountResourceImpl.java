@@ -94,7 +94,7 @@ public class AccountResourceImpl implements AccountResource {
 		update.set("display_name", displayName).set("email", email)
 				.set("locale", locale);
 		account.setDisplayName(displayName).setEmail(email).setLocale(locale);
-		mongoOps.upsert(query(where("snda_id").is(sndaId)), update,
+		mongoOps.updateFirst(query(where("snda_id").is(sndaId)), update,
 				Constants.ACCOUNT_COLLECTION_NAME);
 		return Response
 				.ok()

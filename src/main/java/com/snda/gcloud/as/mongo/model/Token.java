@@ -37,32 +37,36 @@ public class Token {
 		return uid;
 	}
 
-	public void setUid(String uid) {
+	public Token setUid(String uid) {
 		this.uid = uid;
+		return this;
 	}
 
 	public String getAppId() {
 		return appId;
 	}
 
-	public void setAppId(String appId) {
+	public Token setAppId(String appId) {
 		this.appId = appId;
+		return this;
 	}
 
 	public String getToken() {
 		return token;
 	}
 
-	public void setToken(String token) {
+	public Token setToken(String token) {
 		this.token = token;
+		return this;
 	}
 
 	public long getExpire() {
 		return expire;
 	}
 
-	public void setExpire(long expire) {
+	public Token setExpire(long expire) {
 		this.expire = expire;
+		return this;
 	}
 	
 	@Override

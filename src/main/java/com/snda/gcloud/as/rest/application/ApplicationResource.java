@@ -11,12 +11,12 @@ public interface ApplicationResource {
 	
 	Response status(String appId, String owner);
 	
-	Response modify(String appId, String uid, String appDescription, String website);
+	Response modify(String appId, String owner, String appDescription, String website);
 	
-	Response changeStatus(String appId, String uid, String appStatus);
+	Response changeStatus(String appId, String owner, String appStatus);
 	
 	Response cancelAuthorization(String uid, String appId);
 	
-	Response delete(String appId, String uid);
+	Response delete(String appId, String owner);
 
 }

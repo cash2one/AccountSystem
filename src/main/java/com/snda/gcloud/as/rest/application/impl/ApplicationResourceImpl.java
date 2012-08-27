@@ -2,6 +2,7 @@ package com.snda.gcloud.as.rest.application.impl;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
+import static org.springframework.data.mongodb.core.query.Update.update;
 
 import java.util.List;
 
@@ -21,6 +22,7 @@ import org.springframework.data.mongodb.MongoDbFactory;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import com.snda.gcloud.as.mongo.model.Account;
@@ -53,13 +55,13 @@ public class ApplicationResourceImpl implements ApplicationResource {
 			@QueryParam("app_status") String appStatus, 
 			@QueryParam("scope") String scope, 
 			@QueryParam("website") String website) {
-		if (checkApplicationExist(appId)) {
-			Response.status(Status.CONFLICT).entity("Application already exists.").build();
-		}
 		if (uid == null || appDescription == null || appStatus == null) {
 			Response.status(Status.BAD_REQUEST)
 					.entity("Request must contains uid, app_description and app_status params")
 					.build();
+		}
+		if (checkApplicationExist(appId)) {
+			Response.status(Status.CONFLICT).entity("Application already exists.").build();
 		}
 		long creationTime = System.currentTimeMillis();
 		Application app = new Application(appId, appDescription, appStatus,
@@ -78,6 +80,11 @@ public class ApplicationResourceImpl implements ApplicationResource {
 	@Path("authorized/{appid}")
 	public Response listAuthorized(@PathParam("appid") String appId, 
 			@QueryParam("owner") String owner) {
+		if (owner == null) {
+			Response.status(Status.BAD_REQUEST)
+			.entity("Request must contains owner param")
+			.build();
+		}
 		if (!checkUserExist(owner)) {
 			Response.status(Status.NOT_FOUND).entity("No such user.").build();
 		}
@@ -100,10 +107,17 @@ public class ApplicationResourceImpl implements ApplicationResource {
 	@Path("status/{appid}")
 	public Response status(@PathParam("appid") String appId, 
 			@QueryParam("owner") String owner) {
+		if (owner == null) {
+			Response.status(Status.BAD_REQUEST)
+			.entity("Request must contains owner param")
+			.build();
+		}
 		if (!checkUserExist(owner)) {
 			Response.status(Status.NOT_FOUND).entity("No such user.").build();
 		}
-		Application application = mongoOps.findOne(query(where("appid").is(appId)), Application.class, Collections.APPLICATION_COLLECTION_NAME);
+		Application application = mongoOps.findOne(
+				query(where("appid").is(appId)), Application.class,
+				Collections.APPLICATION_COLLECTION_NAME);
 		if (application == null) {
 			Response.status(Status.NOT_FOUND).entity("No such application.").build();
 		}
@@ -120,20 +134,85 @@ public class ApplicationResourceImpl implements ApplicationResource {
 	@POST
 	@Path("modify/{appid}")
 	public Response modify(@PathParam("appid") String appId, 
-			@QueryParam("uid") String uid, 
+			@QueryParam("owner") String owner, 
 			@QueryParam("app_description") String appDescription,
 			@QueryParam("website") String website) {
-		return null;
+		if (owner == null) {
+			Response.status(Status.BAD_REQUEST)
+			.entity("Request must contains owner param")
+			.build();
+		}
+		if (!checkUserExist(owner)) {
+			Response.status(Status.NOT_FOUND).entity("No such user.").build();
+		}
+		Application application = mongoOps.findOne(
+				query(where("appid").is(appId)), Application.class,
+				Collections.APPLICATION_COLLECTION_NAME);
+		if (application == null) {
+			Response.status(Status.NOT_FOUND).entity("No such application.").build();
+		}
+		if (!application.getOwner().equals(owner)) {
+			Response.status(Status.FORBIDDEN).entity("Access denied.").build();
+		}
+		if ( (appDescription == null && website == null)
+				|| (application.getAppDescription().equals(appDescription)
+						&& application.getWebsite().equals(website)) ) {
+			Response.status(Status.NOT_MODIFIED)
+					.entity("Application has not been modified.").build();
+		}
+		Query query = new Query();
+		query.addCriteria(where("appid").is(appId))
+			 .addCriteria(where("owner").is(owner));
+		Update update = new Update();
+		update.set("app_description", appDescription)
+			  .set("website", website);
+		mongoOps.updateFirst(query, update, Collections.APPLICATION_COLLECTION_NAME);
+		application.setAppDescription(appDescription)
+				   .setWebsite(website);
+		return Response
+				.ok()
+				.entity(ObjectMappers.toJSON(MAPPER,
+						application.getModelApplication())).build();
 	}
 
 	@Override
 	@POST
 	@Path("status/{appid}")
 	public Response changeStatus(@PathParam("appid") String appId, 
-			@QueryParam("uid") String uid, 
+			@QueryParam("owner") String owner, 
 			@QueryParam("app_status") String appStatus) {
-		// TODO Auto-generated method stub
-		return null;
+		if (owner == null || appStatus == null) {
+			Response.status(Status.BAD_REQUEST)
+					.entity("Request must contains appid, owner and app_status params")
+					.build();
+		}
+		if (!checkUserExist(owner)) {
+			Response.status(Status.NOT_FOUND).entity("No such user.").build();
+		}
+		Application application = mongoOps.findOne(
+				query(where("appid").is(appId)), Application.class,
+				Collections.APPLICATION_COLLECTION_NAME);
+		if (application == null) {
+			Response.status(Status.NOT_FOUND).entity("No such application.").build();
+		}
+		if (!application.getOwner().equals(owner)) {
+			Response.status(Status.FORBIDDEN).entity("Access denied.").build();
+		}
+		if (application.getAppStatus().equals(appStatus)) {
+			Response.status(Status.NOT_MODIFIED)
+					.entity("Application has not been modified.").build();
+		}
+		Query query = new Query();
+		query.addCriteria(where("appid").is(appId))
+			 .addCriteria(where("owner").is(owner))
+			 .addCriteria(where("app_status").is(appStatus));
+		mongoOps.updateFirst(query, update("app_status", appStatus),
+				Collections.APPLICATION_COLLECTION_NAME);
+		application.setAppStatus(appStatus);
+		return Response
+				.ok()
+				.entity(ObjectMappers.toJSON(MAPPER,
+						application.getModelApplication())).build();
 	}
 
 	@Override
@@ -141,17 +220,52 @@ public class ApplicationResourceImpl implements ApplicationResource {
 	@Path("token")
 	public Response cancelAuthorization(@QueryParam("uid") String uid, 
 			@QueryParam("appid") String appId) {
-		// TODO Auto-generated method stub
-		return null;
+		if (uid == null || appId == null) {
+			Response.status(Status.BAD_REQUEST)
+					.entity("Request must contains uid and appid param")
+					.build();
+		}
+		if (!checkUserExist(uid)) {
+			Response.status(Status.NOT_FOUND).entity("No such user.").build();
+		}
+		if (!checkApplicationExist(appId)) {
+			Response.status(Status.NOT_FOUND).entity("No such application.").build();
+		}
+		Query query = new Query();
+		query.addCriteria(where("uid").is(uid))
+			 .addCriteria(where("appid").is(appId));
+		mongoOps.remove(query, Collections.TOKEN_COLLECTION_NAME);
+		return Response.noContent().build();
 	}
 
 	@Override
 	@DELETE
 	@Path("delete/{appid}")
 	public Response delete(@PathParam("appid") String appId, 
-			@QueryParam("uid") String uid) {
-		// TODO Auto-generated method stub
-		return null;
+			@QueryParam("owner") String owner) {
+		if (owner == null) {
+			Response.status(Status.BAD_REQUEST)
+					.entity("Request must contains owner param")
+					.build();
+		}
+		if (!checkUserExist(owner)) {
+			Response.status(Status.NOT_FOUND).entity("No such user.").build();
+		}
+		Application application = mongoOps.findOne(
+				query(where("appid").is(appId)), Application.class,
+				Collections.APPLICATION_COLLECTION_NAME);
+		if (application == null) {
+			Response.status(Status.NOT_FOUND).entity("No such application.").build();
+		}
+		if (!application.getOwner().equals(owner)) {
+			Response.status(Status.FORBIDDEN).entity("Access denied.").build();
+		}
+		cancelAllAuthorization(appId);
+		Query query = new Query();
+		query.addCriteria(where("appid").is(appId))
+			 .addCriteria(where("owner").is(owner));
+		mongoOps.remove(query, Collections.APPLICATION_COLLECTION_NAME);
+		return Response.noContent().build();
 	}
 	
 	private boolean checkApplicationExist(String appId) {
@@ -173,6 +287,10 @@ public class ApplicationResourceImpl implements ApplicationResource {
 		Application app = mongoOps.findOne(query, Application.class,
 				Collections.APPLICATION_COLLECTION_NAME);
 		return app == null;
+	}
+	
+	private void cancelAllAuthorization(String appId) {
+		mongoOps.remove(query(where("appid").is(appId)), Collections.TOKEN_COLLECTION_NAME);
 	}
 
 }
