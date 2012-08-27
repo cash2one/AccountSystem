@@ -14,7 +14,6 @@
 	
 	<context:property-placeholder location="classpath:mongo.properties" />
 		
-	<!-- 
 	<mongo:mongo host="${mongo.host}" port="${mongo.port}">
 		<mongo:options 
 			connections-per-host="${mongo.connectionsPerHost}"
@@ -31,8 +30,5 @@
 	</mongo:mongo>
 	
 	<mongo:db-factory dbname="account-system" mongo-ref="mongo"/>
-	 -->
-	 
-	<mongo:mongo host="localhost" port="27017"/>
 
 </beans>

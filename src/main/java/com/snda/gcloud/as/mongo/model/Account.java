@@ -1,5 +1,7 @@
 package com.snda.gcloud.as.mongo.model;
 
+import static com.snda.gcloud.as.rest.util.Constants.ACCOUNT_COLLECTION_NAME;
+
 import java.util.List;
 
 import org.joda.time.DateTime;
@@ -10,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import com.google.common.collect.Lists;
 
 
-@Document(collection = "account")
+@Document(collection = ACCOUNT_COLLECTION_NAME)
 public class Account {
 
 	@Id
@@ -43,72 +45,81 @@ public class Account {
 		return id;
 	}
 
-	public void setId(String id) {
+	public Account setId(String id) {
 		this.id = id;
+		return this;
 	}
 
 	public String getSndaId() {
 		return sndaId;
 	}
 
-	public void setSndaId(String sndaId) {
+	public Account setSndaId(String sndaId) {
 		this.sndaId = sndaId;
+		return this;
 	}
 
 	public String getUid() {
 		return uid;
 	}
 
-	public void setUid(String uid) {
+	public Account setUid(String uid) {
 		this.uid = uid;
+		return this;
 	}
 
 	public String getDisplayName() {
 		return displayName;
 	}
 
-	public void setDisplayName(String displayName) {
+	public Account setDisplayName(String displayName) {
 		this.displayName = displayName;
+		return this;
 	}
 
 	public String getEmail() {
 		return email;
 	}
 
-	public void setEmail(String email) {
+	public Account setEmail(String email) {
 		this.email = email;
+		return this;
 	}
 
 	public String getLocale() {
 		return locale;
 	}
 
-	public void setLocale(String locale) {
+	public Account setLocale(String locale) {
 		this.locale = locale;
+		return this;
 	}
 
 	public long getCreationTime() {
 		return creationTime;
 	}
 
-	public void setCreationTime(long creationTime) {
+	public Account setCreationTime(long creationTime) {
 		this.creationTime = creationTime;
+		return this;
 	}
 
 	public List<Device> getDevices() {
 		return devices;
 	}
 
-	public void setDevices(List<Device> devices) {
+	public Account setDevices(List<Device> devices) {
 		this.devices = devices;
+		return this;
 	}
 
 	public boolean isAvailable() {
 		return available;
 	}
 
-	public void setAvailable(boolean available) {
+	public Account setAvailable(boolean available) {
 		this.available = available;
+		return this;
 	}
 	
 	@Override

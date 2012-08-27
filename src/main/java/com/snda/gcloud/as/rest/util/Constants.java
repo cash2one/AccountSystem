@@ -13,5 +13,7 @@ public class Constants {
 	public static final String POST_AUTHORIZE_REDIRECT_URI = "http://www.abc.com/gcloud/redirect";
 	
 	public static final String ACCOUNT_COLLECTION_NAME = "accounts";
+	
+	public static final String APPLICATION_COLLECTION_NAME = "applications";
 
 }
