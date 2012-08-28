@@ -13,8 +13,9 @@
 
 	
 	<context:property-placeholder location="classpath:mongo.properties" />
-		
-	<mongo:mongo host="${mongo.host}" port="${mongo.port}">
+	
+	<!-- 	
+	<mongo:mongo id="mongo" host="${mongo.host}" port="${mongo.port}">
 		<mongo:options 
 			connections-per-host="${mongo.connectionsPerHost}"
 			threads-allowed-to-block-for-connection-multiplier="${mongo.threadsAllowedToBlockForConnectionMultiplier}"
@@ -28,7 +29,26 @@
 			write-timeout="0" 
 			write-fsync="true" />
 	</mongo:mongo>
+	 -->
+	 
+	<!-- <mongo:mongo id="mongo" host="${mongo.host}" port="${mongo.port}" /> -->
 	
-	<mongo:db-factory dbname="account-system" mongo-ref="mongo"/>
+	<mongo:db-factory dbname="account-system" host="${mongo.host}" port="${mongo.port}" />
+	<mongo:mapping-converter id="mongoConverter" />
+	<bean id="noClassMongoConverter" class="com.snda.gcloud.as.mongo.MongoConverterEnhanceFactoryBean">
+		<property name="converter" ref="mongoConverter" />
+	</bean>
+	
+
+	<!-- 
+	<bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+		<constructor-arg ref="mongo" />
+    	<constructor-arg value="account-system" />
+	</bean>
+	 -->
+	<bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+	    <constructor-arg name="mongoDbFactory" ref="mongoDbFactory" />
+	    <constructor-arg name="mongoConverter" ref="noClassMongoConverter" />
+	</bean>	
 
 </beans>

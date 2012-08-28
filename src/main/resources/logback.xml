@@ -16,7 +16,7 @@
     
     <logger name="com.snda.gcloud" level="DEBUG"/>
     
-    <root level="ERROR">
+    <root level="DEBUG">
         <appender-ref ref="service"/>
     </root>
     
