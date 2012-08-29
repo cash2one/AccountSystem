@@ -31,4 +31,11 @@ public class Collections {
 		public static final String OWNER = "owner";
 	}
 	
+	public abstract class Token {
+		public static final String UID = "uid";
+		public static final String APPID = "appid";
+		public static final String TOKEN = "token";
+		public static final String EXPIRE = "expire";
+	}
+	
 }

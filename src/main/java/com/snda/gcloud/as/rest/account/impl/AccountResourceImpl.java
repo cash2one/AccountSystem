@@ -17,7 +17,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.codehaus.jackson.map.ObjectMapper;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoOperations;
@@ -29,7 +28,6 @@ import com.snda.gcloud.as.mongo.model.Application;
 import com.snda.gcloud.as.mongo.model.Collections;
 import com.snda.gcloud.as.rest.account.AccountResource;
 import com.snda.gcloud.as.rest.util.ApplicationKeys;
-import com.snda.gcloud.as.rest.util.Constants;
 import com.snda.gcloud.as.rest.util.ObjectMappers;
 
 @Service
@@ -55,20 +53,21 @@ public class AccountResourceImpl implements AccountResource {
 			@QueryParam("email") String email,
 			@QueryParam("locale") String locale) {
 		if (isBlank(sndaId) || isBlank(displayName)) {
-			return Response.status(Status.BAD_REQUEST)
+			return Response
+					.status(Status.BAD_REQUEST)
 					.entity("Request must contains sndaId and display_name params.")
 					.build();
 		}
 		String uid = ApplicationKeys.generateAccessKeyId();
-		if (locale == null) {
+		if (isBlank(locale)) {
 			locale = "zh_CN";
 		}
 		Account account = new Account(sndaId, uid, displayName, email, locale,
 				System.currentTimeMillis(), true);
-		mongoOps.insert(account, Constants.ACCOUNT_COLLECTION_NAME);
+		mongoOps.insert(account, Collections.ACCOUNT_COLLECTION_NAME);
 		return Response
 				.ok()
-				.entity(ObjectMappers.toJSON(MAPPER, getModelAccount(account)))
+				.entity(ObjectMappers.toJSON(MAPPER, account.getModelAccount()))
 				.build();
 	}
 
@@ -80,34 +79,44 @@ public class AccountResourceImpl implements AccountResource {
 			@QueryParam("email") String email,
 			@QueryParam("locale") String locale) {
 		if (isBlank(sndaId)) {
-			return Response.status(Status.BAD_REQUEST)
+			return Response
+					.status(Status.BAD_REQUEST)
 					.entity("Request must contains sndaId param.")
 					.build();
 		}
-		Account account = mongoOps.findOne(query(where("snda_id").is(sndaId)),
-				Account.class, Constants.ACCOUNT_COLLECTION_NAME);
+		Account account = mongoOps.findOne(query(where(Collections.Account.SNDA_ID).is(sndaId)),
+				Account.class, Collections.ACCOUNT_COLLECTION_NAME);
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug("Account : {}", account);
+		}
 		if (account == null) {
-			return Response.status(Status.NOT_FOUND).entity("No such account.")
+			return Response
+					.status(Status.NOT_FOUND)
+					.entity("No such account.")
 					.build();
 		}
-		if (account.getDisplayName().equals(displayName)
-				&& account.getEmail().equalsIgnoreCase(email)
-				&& account.getLocale().equals(locale)) {
-			return Response.status(Status.NOT_MODIFIED)
-					.entity("Account has not been changed.").build();
+		if (isBlank(displayName) && isBlank(email) && isBlank(locale)) {
+			return Response
+					.status(Status.NOT_MODIFIED)
+					.entity("Account has not been changed.")
+					.build();
 		}
 
 		Update update = new Update();
-		update.set("display_name", displayName).set("email", email)
-				.set("locale", locale);
-		account.setDisplayName(displayName);
-		account.setEmail(email);
-		account.setLocale(locale);
-		mongoOps.updateFirst(query(where("snda_id").is(sndaId)), update,
-				Constants.ACCOUNT_COLLECTION_NAME);
+		String modifiedDisplayName = isBlank(displayName) ? account.getDisplayName() : displayName;
+		String modifiedEmail = isBlank(email) ? account.getEmail() : email;
+		String modifiedLocale = isBlank(locale) ? account.getLocale() : locale;
+		update.set(Collections.Account.DISPLAY_NAME, modifiedDisplayName)
+			  .set(Collections.Account.EMAIL, modifiedEmail)
+			  .set(Collections.Account.LOCALE, modifiedLocale);
+		account.setDisplayName(modifiedDisplayName)
+			   .setEmail(modifiedEmail)
+			   .setLocale(modifiedLocale);
+		mongoOps.updateFirst(query(where(Collections.Account.SNDA_ID)
+				.is(sndaId)), update, Collections.ACCOUNT_COLLECTION_NAME);
 		return Response
 				.ok()
-				.entity(ObjectMappers.toJSON(MAPPER, getModelAccount(account)))
+				.entity(ObjectMappers.toJSON(MAPPER, account.getModelAccount()))
 				.build();
 	}
 
@@ -117,22 +126,27 @@ public class AccountResourceImpl implements AccountResource {
 	public Response available(@PathParam("snda_id") String sndaId,
 			@QueryParam("available") String available) {
 		if (isBlank(sndaId) || isBlank(available)) {
-			return Response.status(Status.BAD_REQUEST)
+			return Response
+					.status(Status.BAD_REQUEST)
 					.entity("Request must contains sndaId and available params.")
 					.build();
 		}
 		if (!checkAccountExist(sndaId)) {
-			return Response.status(Status.NOT_FOUND).entity("No such account.")
+			return Response
+					.status(Status.NOT_FOUND)
+					.entity("No such account.")
 					.build();
 		}
 		boolean enable = Boolean.parseBoolean(available);
-		mongoOps.updateFirst(query(where("snda_id").is(sndaId)),
-				update("available", enable), Constants.ACCOUNT_COLLECTION_NAME);
-		Account account = mongoOps.findOne(query(where("snda_id").is(sndaId)),
-				Account.class, Constants.ACCOUNT_COLLECTION_NAME);
+		mongoOps.updateFirst(query(where(Collections.Account.SNDA_ID)
+				.is(sndaId)), update(Collections.Account.AVAILABLE, enable),
+				Collections.ACCOUNT_COLLECTION_NAME);
+		Account account = mongoOps.findOne(
+				query(where(Collections.Account.SNDA_ID).is(sndaId)),
+				Account.class, Collections.ACCOUNT_COLLECTION_NAME);
 		return Response
 				.ok()
-				.entity(ObjectMappers.toJSON(MAPPER, getModelAccount(account)))
+				.entity(ObjectMappers.toJSON(MAPPER, account.getModelAccount()))
 				.build();
 	}
 
@@ -141,19 +155,23 @@ public class AccountResourceImpl implements AccountResource {
 	@Path("status/{snda_id}")
 	public Response status(@PathParam("snda_id") String sndaId) {
 		if (isBlank(sndaId)) {
-			return Response.status(Status.BAD_REQUEST)
+			return Response
+					.status(Status.BAD_REQUEST)
 					.entity("Request must contains sndaId param.")
 					.build();
 		}
-		Account account = mongoOps.findOne(query(where("snda_id").is(sndaId)),
-				Account.class, Constants.ACCOUNT_COLLECTION_NAME);
+		Account account = mongoOps.findOne(
+				query(where(Collections.Account.SNDA_ID).is(sndaId)),
+				Account.class, Collections.ACCOUNT_COLLECTION_NAME);
 		if (account == null) {
-			return Response.status(Status.NOT_FOUND).entity("No such account.")
+			return Response
+					.status(Status.NOT_FOUND)
+					.entity("No such account.")
 					.build();
 		}
 		return Response
 				.ok()
-				.entity(ObjectMappers.toJSON(MAPPER, getModelAccount(account)))
+				.entity(ObjectMappers.toJSON(MAPPER, account.getModelAccount()))
 				.build();
 	}
 
@@ -162,16 +180,22 @@ public class AccountResourceImpl implements AccountResource {
 	@Path("applications/{snda_id}")
 	public Response applications(@PathParam("snda_id") String sndaId) {
 		if (isBlank(sndaId)) {
-			return Response.status(Status.BAD_REQUEST)
+			return Response
+					.status(Status.BAD_REQUEST)
 					.entity("Request must contains sndaId param.")
 					.build();
 		}
-		if (!checkAccountExist(sndaId)) {
-			return Response.status(Status.NOT_FOUND).entity("No such account.")
+		Account account = mongoOps.findOne(
+				query(where(Collections.Account.SNDA_ID).is(sndaId)),
+				Account.class, Collections.ACCOUNT_COLLECTION_NAME);
+		if (account == null) {
+			return Response
+					.status(Status.NOT_FOUND)
+					.entity("No such account.")
 					.build();
 		}
 		List<Application> apps = mongoOps.find(
-				query(where(Collections.Application.OWNER).is(sndaId)),
+				query(where(Collections.Application.OWNER).is(account.getUid())),
 				Application.class, Collections.APPLICATION_COLLECTION_NAME);
 		return Response
 				.ok()
@@ -180,20 +204,10 @@ public class AccountResourceImpl implements AccountResource {
 	}
 	
 	private boolean checkAccountExist(String sndaId) {
-		Account account = mongoOps.findOne(query(where("snda_id").is(sndaId)),
-				Account.class, Constants.ACCOUNT_COLLECTION_NAME);
-		return account == null;
+		Account account = mongoOps.findOne(
+				query(where(Collections.Account.SNDA_ID).is(sndaId)),
+				Account.class, Collections.ACCOUNT_COLLECTION_NAME);
+		return account != null;
 	}
 	
-	public com.snda.gcloud.as.rest.model.Account getModelAccount(Account fromAccount) {
-		com.snda.gcloud.as.rest.model.Account account = new com.snda.gcloud.as.rest.model.Account();
-		account.setUid(fromAccount.getUid());
-		account.setDisplay_name(fromAccount.getDisplayName());
-		account.setEmail(fromAccount.getEmail());
-		account.setLocale(fromAccount.getLocale());
-		account.setCreationTime(new DateTime(fromAccount.getCreationTime()));
-		account.setAvailable(fromAccount.isAvailable());
-		return account;
-	}
-
 }

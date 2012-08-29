@@ -116,8 +116,9 @@ public class ApplicationResourceImpl implements ApplicationResource {
 					.entity("Access denied.")
 					.build();
 		}
-		List<Token> tokens = mongoOps.find(query(where("appid").is(appId)), Token.class,
-				Collections.TOKEN_COLLECTION_NAME);
+		List<Token> tokens = mongoOps.find(
+				query(where(Collections.Application.APPID).is(appId)),
+				Token.class, Collections.TOKEN_COLLECTION_NAME);
 		return Response
 				.ok()
 				.entity(ObjectMappers.toJSON(MAPPER, Token.getModelTokens(tokens)))
@@ -142,8 +143,8 @@ public class ApplicationResourceImpl implements ApplicationResource {
 					.build();
 		}
 		Application application = mongoOps.findOne(
-				query(where("appid").is(appId)), Application.class,
-				Collections.APPLICATION_COLLECTION_NAME);
+				query(where(Collections.Application.APPID).is(appId)),
+				Application.class, Collections.APPLICATION_COLLECTION_NAME);
 		if (application == null) {
 			return Response
 					.status(Status.NOT_FOUND)
@@ -182,8 +183,8 @@ public class ApplicationResourceImpl implements ApplicationResource {
 					.build();
 		}
 		Application application = mongoOps.findOne(
-				query(where("appid").is(appId)), Application.class,
-				Collections.APPLICATION_COLLECTION_NAME);
+				query(where(Collections.Application.APPID).is(appId)),
+				Application.class, Collections.APPLICATION_COLLECTION_NAME);
 		if (application == null) {
 			return Response
 					.status(Status.NOT_FOUND)
@@ -196,23 +197,23 @@ public class ApplicationResourceImpl implements ApplicationResource {
 					.entity("Access denied.")
 					.build();
 		}
-		if ( (appDescription == null && website == null)
-				|| (application.getAppDescription().equals(appDescription)
-						&& application.getWebsite().equals(website)) ) {
+		if (isBlank(appDescription) && isBlank(website)) {
 			return Response
 					.status(Status.NOT_MODIFIED)
 					.entity("Application has not been modified.")
 					.build();
 		}
 		Query query = new Query();
-		query.addCriteria(where("appid").is(appId))
-			 .addCriteria(where("owner").is(owner));
+		query.addCriteria(where(Collections.Application.APPID).is(appId))
+			 .addCriteria(where(Collections.Application.OWNER).is(owner));
 		Update update = new Update();
-		update.set("app_description", appDescription)
-			  .set("website", website);
+		String modifiedAppDescription = isBlank(appDescription) ? application.getAppDescription() : appDescription;
+		String modifiedWebsite = isBlank(website) ? application.getWebsite() : website;
+		update.set(Collections.Application.APP_DESCRIPTION, modifiedAppDescription)
+			  .set(Collections.Application.WEBSITE, modifiedWebsite);
 		mongoOps.updateFirst(query, update, Collections.APPLICATION_COLLECTION_NAME);
-		application.setAppDescription(appDescription)
-				   .setWebsite(website);
+		application.setAppDescription(modifiedAppDescription)
+				   .setWebsite(modifiedWebsite);
 		return Response
 				.ok()
 				.entity(ObjectMappers.toJSON(MAPPER,
@@ -238,7 +239,7 @@ public class ApplicationResourceImpl implements ApplicationResource {
 					.build();
 		}
 		Application application = mongoOps.findOne(
-				query(where("appid").is(appId)), Application.class,
+				query(where(Collections.Application.APPID).is(appId)), Application.class,
 				Collections.APPLICATION_COLLECTION_NAME);
 		if (application == null) {
 			return Response
@@ -259,10 +260,10 @@ public class ApplicationResourceImpl implements ApplicationResource {
 					.build();
 		}
 		Query query = new Query();
-		query.addCriteria(where("appid").is(appId))
-			 .addCriteria(where("owner").is(owner))
-			 .addCriteria(where("app_status").is(appStatus));
-		mongoOps.updateFirst(query, update("app_status", appStatus),
+		query.addCriteria(where(Collections.Application.APPID).is(appId))
+			 .addCriteria(where(Collections.Application.OWNER).is(owner))
+			 .addCriteria(where(Collections.Application.APP_STAUTS).is(appStatus));
+		mongoOps.updateFirst(query, update(Collections.Application.APP_STAUTS, appStatus),
 				Collections.APPLICATION_COLLECTION_NAME);
 		application.setAppStatus(appStatus);
 		return Response
@@ -295,8 +296,8 @@ public class ApplicationResourceImpl implements ApplicationResource {
 					.build();
 		}
 		Query query = new Query();
-		query.addCriteria(where("uid").is(uid))
-			 .addCriteria(where("appid").is(appId));
+		query.addCriteria(where(Collections.Token.UID).is(uid))
+			 .addCriteria(where(Collections.Token.APPID).is(appId));
 		mongoOps.remove(query, Collections.TOKEN_COLLECTION_NAME);
 		return Response.noContent().build();
 	}
@@ -319,7 +320,7 @@ public class ApplicationResourceImpl implements ApplicationResource {
 					.build();
 		}
 		Application application = mongoOps.findOne(
-				query(where("appid").is(appId)), Application.class,
+				query(where(Collections.Token.APPID).is(appId)), Application.class,
 				Collections.APPLICATION_COLLECTION_NAME);
 		if (application == null) {
 			return Response
@@ -335,35 +336,46 @@ public class ApplicationResourceImpl implements ApplicationResource {
 		}
 		cancelAllAuthorization(appId);
 		Query query = new Query();
-		query.addCriteria(where("appid").is(appId))
-			 .addCriteria(where("owner").is(owner));
+		query.addCriteria(where(Collections.Application.APPID).is(appId))
+			 .addCriteria(where(Collections.Application.OWNER).is(owner));
 		mongoOps.remove(query, Collections.APPLICATION_COLLECTION_NAME);
 		return Response.noContent().build();
 	}
 	
 	private boolean checkApplicationExist(String appId) {
-		Application app = mongoOps.findOne(query(where("appid").is(appId)),
+		Application app = mongoOps.findOne(
+				query(where(Collections.Application.APPID).is(appId)),
 				Application.class, Collections.APPLICATION_COLLECTION_NAME);
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug("Application : {}", app);
+		}
 		return app != null;
 	}
 	
 	private boolean checkAccountExist(String uid) {
-		Account account = mongoOps.findOne(query(where("uid").is(uid)),
-				Account.class, Collections.ACCOUNT_COLLECTION_NAME);
+		Account account = mongoOps.findOne(query(where(Collections.Account.UID)
+				.is(uid)), Account.class, Collections.ACCOUNT_COLLECTION_NAME);
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug("Account : {}", account);
+		}
 		return account != null;
 	}
 	
 	private boolean checkOwner(String appId, String owner) {
 		Query query = new Query();
-		query.addCriteria(where("appid").is(appId));
-		query.addCriteria(where("owner").is(owner));
+		query.addCriteria(where(Collections.Application.APPID).is(appId));
+		query.addCriteria(where(Collections.Application.OWNER).is(owner));
 		Application app = mongoOps.findOne(query, Application.class,
 				Collections.APPLICATION_COLLECTION_NAME);
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug("Application : {}", app);
+		}
 		return app != null;
 	}
 	
 	private void cancelAllAuthorization(String appId) {
-		mongoOps.remove(query(where("appid").is(appId)), Collections.TOKEN_COLLECTION_NAME);
+		mongoOps.remove(query(where(Collections.Token.APPID).is(appId)),
+				Collections.TOKEN_COLLECTION_NAME);
 	}
 
 }

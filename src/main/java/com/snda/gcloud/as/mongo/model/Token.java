@@ -7,6 +7,7 @@ import java.util.List;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import com.google.common.collect.Lists;
 
@@ -16,9 +17,17 @@ public class Token {
 	
 	@Id
 	private String id;
+	
+	@Field(Collections.Token.UID)
 	private String uid;
+	
+	@Field(Collections.Token.APPID)
 	private String appId;
+	
+	@Field(Collections.Token.TOKEN)
 	private String token;
+	
+	@Field(Collections.Token.EXPIRE)
 	private long expire;
 	
 	@PersistenceConstructor

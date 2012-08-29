@@ -7,22 +7,42 @@ import java.util.List;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import com.google.common.collect.Lists;
+
 
 @Document(collection = APPLICATION_COLLECTION_NAME)
 public class Application {
 
 	@Id
 	private String id;
+	
+	@Field(Collections.Application.APPID)
 	private String appid;
+	
+	@Field(Collections.Application.APP_DESCRIPTION)
 	private String appDescription;
+	
+	@Field(Collections.Application.APP_STAUTS)
 	private String appStatus;
+	
+	@Field(Collections.Application.APP_KEY)
 	private String appKey;
+	
+	@Field(Collections.Application.APP_SECRET)
 	private String appSecret;
+	
+	@Field(Collections.Application.SCOPE)
 	private String scope;
+	
+	@Field(Collections.Application.WEBSITE)
 	private String website;
+	
+	@Field(Collections.Application.CREATION_TIME)
 	private long creationTime;
+	
+	@Field(Collections.Application.OWNER)
 	private String owner;
 
 	@PersistenceConstructor
