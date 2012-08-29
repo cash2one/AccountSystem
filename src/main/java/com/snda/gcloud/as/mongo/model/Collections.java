@@ -6,6 +6,8 @@ public class Collections {
 	
 	public static final String APPLICATION_COLLECTION_NAME = "applications";
 	
+	public static final String AUTHORIZATION_COLLECTION_NAME = "authorizations";
+	
 	public static final String TOKEN_COLLECTION_NAME = "tokens";
 	
 	public abstract class Account {
@@ -31,11 +33,16 @@ public class Collections {
 		public static final String OWNER = "owner";
 	}
 	
-	public abstract class Token {
+	public abstract class Authorization {
 		public static final String UID = "uid";
 		public static final String APPID = "appid";
-		public static final String TOKEN = "token";
+		public static final String REFRESH_TOKEN = "refresh_token";
 		public static final String EXPIRE = "expire";
+	}
+	
+	public abstract class Token {
+		public static final String REFRESH_TOKEN = "refresh_token";
+		public static final String ACCESS_TOKEN = "access_token";
 	}
 	
 }

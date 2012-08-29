@@ -4,11 +4,11 @@ import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 
 @JsonIgnoreProperties(ignoreUnknown=true)
-public class Token {
+public class Authorization {
 
 	private String uid;
 	private String appId;
-	private String token;
+	private String refreshToken;
 	private long expire;
 	
 	public String getUid() {
@@ -27,12 +27,12 @@ public class Token {
 		this.appId = appId;
 	}
 
-	public String getToken() {
-		return token;
+	public String getRefreshToken() {
+		return refreshToken;
 	}
 
-	public void setToken(String token) {
-		this.token = token;
+	public void setRefreshToken(String refreshToken) {
+		this.refreshToken = refreshToken;
 	}
 
 	public long getExpire() {

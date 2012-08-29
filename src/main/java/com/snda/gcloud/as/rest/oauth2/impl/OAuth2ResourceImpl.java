@@ -1,5 +1,9 @@
 package com.snda.gcloud.as.rest.oauth2.impl;
 
+import static org.springframework.data.mongodb.core.query.Criteria.where;
+import static org.springframework.data.mongodb.core.query.Query.query;
+import static org.springframework.data.mongodb.core.query.Update.update;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -22,6 +26,7 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.amber.oauth2.as.issuer.MD5Generator;
 import org.apache.amber.oauth2.as.issuer.OAuthIssuer;
 import org.apache.amber.oauth2.as.issuer.OAuthIssuerImpl;
+import org.apache.amber.oauth2.as.issuer.UUIDValueGenerator;
 import org.apache.amber.oauth2.as.request.OAuthAuthzRequest;
 import org.apache.amber.oauth2.as.request.OAuthTokenRequest;
 import org.apache.amber.oauth2.as.response.OAuthASResponse;
@@ -35,9 +40,16 @@ import org.apache.amber.oauth2.common.message.types.ResponseType;
 import org.apache.amber.oauth2.common.utils.OAuthUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Maps;
+import com.snda.gcloud.as.mongo.model.AccessToken;
+import com.snda.gcloud.as.mongo.model.Application;
+import com.snda.gcloud.as.mongo.model.Authorization;
+import com.snda.gcloud.as.mongo.model.Collections;
+import com.snda.gcloud.as.mongo.model.Token;
 import com.snda.gcloud.as.rest.oauth2.AuthorizationResource;
 import com.snda.gcloud.as.rest.oauth2.TokenResource;
 import com.snda.gcloud.as.rest.util.Common;
@@ -50,11 +62,16 @@ public class OAuth2ResourceImpl implements AuthorizationResource, TokenResource 
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2ResourceImpl.class);
 	
-	private final OAuthIssuer oauthIssuer;
+	private static MongoOperations mongoOps;
+	private final OAuthIssuer oauthUUIDIssuer;
+	private final OAuthIssuer oauthMD5Issuer;
 
-	public OAuth2ResourceImpl(OAuthIssuer oauthIssuer) {
+	public OAuth2ResourceImpl(UUIDValueGenerator uuidGenerator,
+			MD5Generator md5Generator, MongoOperations mongoOperations) {
 		LOGGER.info("OAuth2ResourceImpl initialized.");
-		this.oauthIssuer = oauthIssuer;
+		this.oauthUUIDIssuer = new OAuthIssuerImpl(uuidGenerator);
+		this.oauthMD5Issuer = new OAuthIssuerImpl(md5Generator);
+		OAuth2ResourceImpl.mongoOps = mongoOperations;
 	}
 
 	@Override
@@ -65,22 +82,22 @@ public class OAuth2ResourceImpl implements AuthorizationResource, TokenResource 
 	public Response exchangeToken(@Context HttpServletRequest request)
 			throws OAuthSystemException {
 		OAuthTokenRequest oauthRequest = null;
-
-		OAuthIssuer oauthIssuerImpl = new OAuthIssuerImpl(new MD5Generator());
+		String refreshToken = null;
+		String accessToken = null;
 
 		try {
 			oauthRequest = new OAuthTokenRequest(request);
 
-			// check if clientid is valid
-			if (!Common.CLIENT_ID.equals(oauthRequest
-					.getParam(OAuth.OAUTH_CLIENT_ID))) {
+			if (!checkApplicationExist(oauthRequest.getParam(OAuth.OAUTH_CLIENT_ID))) {
 				OAuthResponse response = OAuthASResponse
-						.errorResponse(HttpServletResponse.SC_BAD_REQUEST)
+						.errorResponse(HttpServletResponse.SC_NOT_FOUND)
 						.setError(OAuthError.TokenResponse.INVALID_CLIENT)
 						.setErrorDescription("client_id not found")
 						.buildJSONMessage();
-				return Response.status(response.getResponseStatus())
-						.entity(response.getBody()).build();
+				return Response
+						.status(response.getResponseStatus())
+						.entity(response.getBody())
+						.build();
 			}
 
 			// do checking for different grant types
@@ -96,7 +113,10 @@ public class OAuth2ResourceImpl implements AuthorizationResource, TokenResource 
 					return Response.status(response.getResponseStatus())
 							.entity(response.getBody()).build();
 				}
-			} else if (oauthRequest.getParam(OAuth.OAUTH_GRANT_TYPE).equals(
+				refreshToken = oauthMD5Issuer.accessToken();
+			} 
+			// individuality account, need to record the username and password
+			else if (oauthRequest.getParam(OAuth.OAUTH_GRANT_TYPE).equals(
 					GrantType.PASSWORD.toString())) {
 				if (!Common.PASSWORD.equals(oauthRequest.getPassword())
 						|| !Common.USERNAME.equals(oauthRequest.getUsername())) {
@@ -108,30 +128,52 @@ public class OAuth2ResourceImpl implements AuthorizationResource, TokenResource 
 					return Response.status(response.getResponseStatus())
 							.entity(response.getBody()).build();
 				}
-			} else if (oauthRequest.getParam(OAuth.OAUTH_GRANT_TYPE).equals(
+				refreshToken = oauthMD5Issuer.accessToken();
+			}
+			// use refresh token to get access token
+			else if (oauthRequest.getParam(OAuth.OAUTH_GRANT_TYPE).equals(
 					GrantType.REFRESH_TOKEN.toString())) {
-				OAuthResponse response = OAuthASResponse
-						.errorResponse(HttpServletResponse.SC_BAD_REQUEST)
-						.setError(OAuthError.TokenResponse.INVALID_GRANT)
-						.setErrorDescription("invalid username or password")
-						.buildJSONMessage();
-				return Response.status(response.getResponseStatus())
-						.entity(response.getBody()).build();
+				if (!checkRefreshTokenExist(oauthRequest.getClientId(),
+						oauthRequest.getRefreshToken())) {
+					OAuthResponse response = OAuthASResponse
+							.errorResponse(HttpServletResponse.SC_NOT_FOUND)
+							.setError(OAuthError.ResourceResponse.INVALID_TOKEN)
+							.setErrorDescription("invalid refresh token")
+							.buildJSONMessage();
+					return Response
+							.status(response.getResponseStatus())
+							.entity(response.getBody())
+							.build();
+				}
 			}
 
-			OAuthResponse response = OAuthASResponse
-					.tokenResponse(HttpServletResponse.SC_OK)
-					.setAccessToken(oauthIssuerImpl.accessToken())
-					.setExpiresIn("3600").buildJSONMessage();
+			accessToken = oauthMD5Issuer.accessToken();
+			OAuthResponse response = null;
+			if (refreshToken == null) {
+				response = OAuthASResponse
+						.tokenResponse(HttpServletResponse.SC_OK)
+						.setAccessToken(accessToken)
+						.setExpiresIn("3600").buildJSONMessage();
+			} else {
+				response = OAuthASResponse
+						.tokenResponse(HttpServletResponse.SC_OK)
+						.setAccessToken(accessToken)
+						.setRefreshToken(refreshToken)
+						.setExpiresIn("3600").buildJSONMessage();
+			}
 
-			return Response.status(response.getResponseStatus())
-					.entity(response.getBody()).build();
+			return Response
+					.status(response.getResponseStatus())
+					.entity(response.getBody())
+					.build();
 		} catch (OAuthProblemException e) {
 			OAuthResponse res = OAuthASResponse
 					.errorResponse(HttpServletResponse.SC_BAD_REQUEST).error(e)
 					.buildJSONMessage();
-			return Response.status(res.getResponseStatus())
-					.entity(res.getBody()).build();
+			return Response
+					.status(res.getResponseStatus())
+					.entity(res.getBody())
+					.build();
 		}
 	}
 
@@ -144,7 +186,7 @@ public class OAuth2ResourceImpl implements AuthorizationResource, TokenResource 
 			throws OAuthSystemException {
 		OAuthResponse response = OAuthASResponse
 				.tokenResponse(HttpServletResponse.SC_OK)
-				.setAccessToken(oauthIssuer.accessToken()).setExpiresIn("3600")
+				.setAccessToken(oauthUUIDIssuer.accessToken()).setExpiresIn("3600")
 				.buildJSONMessage();
 
 		return Response.status(response.getResponseStatus())
@@ -169,10 +211,10 @@ public class OAuth2ResourceImpl implements AuthorizationResource, TokenResource 
                 .authorizationResponse(request,HttpServletResponse.SC_FOUND);
 
             if (responseType.equals(ResponseType.CODE.toString())) {
-                builder.setCode(oauthIssuer.authorizationCode());
+                builder.setCode(oauthUUIDIssuer.authorizationCode());
             }
             if (responseType.equals(ResponseType.TOKEN.toString())) {
-                builder.setAccessToken(oauthIssuer.accessToken());
+                builder.setAccessToken(oauthUUIDIssuer.accessToken());
                 builder.setExpiresIn(3600L);
             }
 
@@ -243,6 +285,45 @@ public class OAuth2ResourceImpl implements AuthorizationResource, TokenResource 
 			}
 		}
 		return uriBuilder.toString().substring(0, uriBuilder.toString().length() - 1);
+	}
+	
+	private boolean checkApplicationExist(String appId) {
+		Application app = mongoOps.findOne(
+				query(where(Collections.Application.APPID).is(appId)),
+				Application.class, Collections.APPLICATION_COLLECTION_NAME);
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug("Application : {}", app);
+		}
+		return app != null;
+	}
+	
+	private boolean checkRefreshTokenExist(String appId, String refreshToken) {
+		Query query = new Query();
+		query.addCriteria(where(Collections.Authorization.APPID).is(appId))
+			 .addCriteria(where(Collections.Authorization.REFRESH_TOKEN).is(refreshToken));
+		Authorization authorization = mongoOps.findOne(query,
+				Authorization.class, Collections.AUTHORIZATION_COLLECTION_NAME);
+		return authorization != null;
+	}
+	
+	private void insertRefreshToken(String uid, String appId, String refreshToken) {
+		Authorization authorization = new Authorization(uid, appId,
+				refreshToken, System.currentTimeMillis() + 3600000);
+		mongoOps.insert(authorization, Collections.AUTHORIZATION_COLLECTION_NAME);
+	}
+	
+	private void insertAccessToken(String refreshToken, String accessToken) {
+		Token token = mongoOps.findOne(
+				query(where(Collections.Token.REFRESH_TOKEN).is(refreshToken)),
+				Token.class, Collections.TOKEN_COLLECTION_NAME);
+		long creationTime = System.currentTimeMillis();
+		AccessToken newAccessToken = new AccessToken(accessToken, creationTime,
+				creationTime + 3600000);
+		token.addAccessToken(newAccessToken);
+		mongoOps.updateFirst(
+				query(where(Collections.Token.REFRESH_TOKEN).is(refreshToken)),
+				update(Collections.Token.ACCESS_TOKEN, token.getAccessTokens()),
+				Collections.TOKEN_COLLECTION_NAME);
 	}
 
 }

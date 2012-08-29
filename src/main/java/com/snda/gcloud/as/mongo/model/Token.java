@@ -1,111 +1,75 @@
 package com.snda.gcloud.as.mongo.model;
 
-import static com.snda.gcloud.as.mongo.model.Collections.TOKEN_COLLECTION_NAME;
-
-import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 
-@Document(collection = TOKEN_COLLECTION_NAME)
+@Document(collection = Collections.TOKEN_COLLECTION_NAME)
 public class Token {
-	
+
 	@Id
 	private String id;
 	
-	@Field(Collections.Token.UID)
-	private String uid;
+	@Indexed(unique = true)
+	@Field(Collections.Token.REFRESH_TOKEN)
+	private String refreshToken;
 	
-	@Field(Collections.Token.APPID)
-	private String appId;
-	
-	@Field(Collections.Token.TOKEN)
-	private String token;
-	
-	@Field(Collections.Token.EXPIRE)
-	private long expire;
+	@DBRef
+	@Field(Collections.Token.ACCESS_TOKEN)
+	private Map<String, AccessToken> accessTokens;
 	
 	@PersistenceConstructor
-	public Token(String uid, String appId, String token, long expire) {
-		this.uid = uid;
-		this.appId = appId;
-		this.token = token;
-		this.expire = expire;
+	public Token(String refreshToken, Map<String, AccessToken> accessTokens) {
+		this.refreshToken = refreshToken;
+		this.accessTokens = Maps.newHashMap(accessTokens);
 	}
-	
+
 	public String getId() {
 		return id;
 	}
 
-	public String getUid() {
-		return uid;
+	public void setId(String id) {
+		this.id = id;
 	}
 
-	public Token setUid(String uid) {
-		this.uid = uid;
-		return this;
+	public String getRefreshToken() {
+		return refreshToken;
 	}
 
-	public String getAppId() {
-		return appId;
+	public void setRefreshToken(String refreshToken) {
+		this.refreshToken = refreshToken;
 	}
 
-	public Token setAppId(String appId) {
-		this.appId = appId;
-		return this;
+	public Map<String, AccessToken> getAccessTokens() {
+		return accessTokens;
 	}
 
-	public String getToken() {
-		return token;
-	}
-
-	public Token setToken(String token) {
-		this.token = token;
-		return this;
-	}
-
-	public long getExpire() {
-		return expire;
-	}
-
-	public Token setExpire(long expire) {
-		this.expire = expire;
-		return this;
+	public void setAccessTokens(Map<String, AccessToken> accessTokens) {
+		this.accessTokens = accessTokens;
 	}
 	
-	@Override
-	public String toString() {
-		return "Token [id=" + id +
-				", uid=" + uid +
-				", appId=" + appId +
-				", token=" + token +
-				", expire=" + expire +
-				"]";
-	}
-
-	public com.snda.gcloud.as.rest.model.Token getModelToken() {
-		com.snda.gcloud.as.rest.model.Token token = new com.snda.gcloud.as.rest.model.Token();
-		token.setUid(uid);
-		token.setAppId(appId);
-		token.setToken(this.token);
-		token.setExpire(expire);
-		return token;
-	}
-	
-	public static List<com.snda.gcloud.as.rest.model.Token> getModelTokens(List<Token> tokens) {
-		List<com.snda.gcloud.as.rest.model.Token> modelTokens = null;
-		if (tokens != null) {
-			modelTokens = Lists.newArrayList();
-			for (Token token : tokens) {
-				modelTokens.add(token.getModelToken());
-			}
+	public void addAccessToken(AccessToken accessToken) {
+		if (!accessTokens.containsKey(accessToken)) {
+			accessTokens.put(accessToken.getToken(), accessToken);
 		}
-		return modelTokens;
+	}
+	
+	public void removeAccessToken(AccessToken accessToken) {
+		this.removeAccessToken(accessToken.getToken());
+	}
+	
+	public void removeAccessToken(String accessToken) {
+		if (accessTokens.containsKey(accessToken)) {
+			accessTokens.remove(accessToken);
+		}
 	}
 	
 }

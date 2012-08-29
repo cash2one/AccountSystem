@@ -28,7 +28,7 @@ import org.springframework.stereotype.Service;
 import com.snda.gcloud.as.mongo.model.Account;
 import com.snda.gcloud.as.mongo.model.Application;
 import com.snda.gcloud.as.mongo.model.Collections;
-import com.snda.gcloud.as.mongo.model.Token;
+import com.snda.gcloud.as.mongo.model.Authorization;
 import com.snda.gcloud.as.rest.application.ApplicationResource;
 import com.snda.gcloud.as.rest.util.ApplicationKeys;
 import com.snda.gcloud.as.rest.util.ObjectMappers;
@@ -45,7 +45,7 @@ public class ApplicationResourceImpl implements ApplicationResource {
 	public ApplicationResourceImpl(MongoOperations mongoOperations) {
 		checkNotNull(mongoOperations, "MongoTemplate is null.");
 		LOGGER.info("ApplicationResourceImpl initialized.");
-		mongoOps = mongoOperations;
+		ApplicationResourceImpl.mongoOps = mongoOperations;
 	}
 
 	@Override
@@ -116,12 +116,12 @@ public class ApplicationResourceImpl implements ApplicationResource {
 					.entity("Access denied.")
 					.build();
 		}
-		List<Token> tokens = mongoOps.find(
+		List<Authorization> tokens = mongoOps.find(
 				query(where(Collections.Application.APPID).is(appId)),
-				Token.class, Collections.TOKEN_COLLECTION_NAME);
+				Authorization.class, Collections.AUTHORIZATION_COLLECTION_NAME);
 		return Response
 				.ok()
-				.entity(ObjectMappers.toJSON(MAPPER, Token.getModelTokens(tokens)))
+				.entity(ObjectMappers.toJSON(MAPPER, Authorization.getModelAuthorizations(tokens)))
 				.build();
 	}
 
@@ -296,9 +296,9 @@ public class ApplicationResourceImpl implements ApplicationResource {
 					.build();
 		}
 		Query query = new Query();
-		query.addCriteria(where(Collections.Token.UID).is(uid))
-			 .addCriteria(where(Collections.Token.APPID).is(appId));
-		mongoOps.remove(query, Collections.TOKEN_COLLECTION_NAME);
+		query.addCriteria(where(Collections.Authorization.UID).is(uid))
+			 .addCriteria(where(Collections.Authorization.APPID).is(appId));
+		mongoOps.remove(query, Collections.AUTHORIZATION_COLLECTION_NAME);
 		return Response.noContent().build();
 	}
 
@@ -320,7 +320,7 @@ public class ApplicationResourceImpl implements ApplicationResource {
 					.build();
 		}
 		Application application = mongoOps.findOne(
-				query(where(Collections.Token.APPID).is(appId)), Application.class,
+				query(where(Collections.Authorization.APPID).is(appId)), Application.class,
 				Collections.APPLICATION_COLLECTION_NAME);
 		if (application == null) {
 			return Response
@@ -374,8 +374,8 @@ public class ApplicationResourceImpl implements ApplicationResource {
 	}
 	
 	private void cancelAllAuthorization(String appId) {
-		mongoOps.remove(query(where(Collections.Token.APPID).is(appId)),
-				Collections.TOKEN_COLLECTION_NAME);
+		mongoOps.remove(query(where(Collections.Authorization.APPID).is(appId)),
+				Collections.AUTHORIZATION_COLLECTION_NAME);
 	}
 
 }
