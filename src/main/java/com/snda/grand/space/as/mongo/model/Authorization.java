@@ -27,15 +27,15 @@ public class Authorization {
 	@Field(Collections.Authorization.REFRESH_TOKEN)
 	private String refreshToken;
 	
-	@Field(Collections.Authorization.EXPIRE)
-	private long expire;
+	@Field(Collections.Authorization.AUTHORIZED_TIME)
+	private long authorizedTime;
 	
 	@PersistenceConstructor
-	public Authorization(String uid, String appId, String refreshToken, long expire) {
+	public Authorization(String uid, String appId, String refreshToken, long authorizedTime) {
 		this.uid = uid;
 		this.appId = appId;
 		this.refreshToken = refreshToken;
-		this.expire = expire;
+		this.authorizedTime = authorizedTime;
 	}
 	
 	public String getId() {
@@ -68,23 +68,23 @@ public class Authorization {
 		this.refreshToken = refreshToken;
 		return this;
 	}
-
-	public long getExpire() {
-		return expire;
+	
+	public long getAuthorizedTime() {
+		return authorizedTime;
 	}
 
-	public Authorization setExpire(long expire) {
-		this.expire = expire;
+	public Authorization setAuthorizedTime(long authorizedTime) {
+		this.authorizedTime = authorizedTime;
 		return this;
 	}
-	
+
 	@Override
 	public String toString() {
 		return "Authorization [id=" + id +
 				", uid=" + uid +
 				", appId=" + appId +
 				", token=" + refreshToken +
-				", expire=" + expire +
+				", authorizedTime=" + authorizedTime +
 				"]";
 	}
 
@@ -93,7 +93,7 @@ public class Authorization {
 		authorization.setUid(uid);
 		authorization.setAppId(appId);
 		authorization.setRefreshToken(this.refreshToken);
-		authorization.setExpire(expire);
+		authorization.setAuthorizedTime(authorizedTime);
 		return authorization;
 	}
 	
@@ -107,5 +107,5 @@ public class Authorization {
 		}
 		return modelAuthorizations;
 	}
-	
+
 }

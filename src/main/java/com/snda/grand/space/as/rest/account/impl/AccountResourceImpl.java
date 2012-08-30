@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
-import static org.springframework.data.mongodb.core.query.Update.update;
 
 import java.util.List;
 
@@ -62,8 +61,9 @@ public class AccountResourceImpl implements AccountResource {
 		if (isBlank(locale)) {
 			locale = "zh_CN";
 		}
+		long creationTime = System.currentTimeMillis();
 		Account account = new Account(sndaId, uid, displayName, email, locale,
-				System.currentTimeMillis(), true);
+				creationTime, creationTime, true);
 		mongoOps.insert(account, Collections.ACCOUNT_COLLECTION_NAME);
 		return Response
 				.ok()
@@ -102,16 +102,19 @@ public class AccountResourceImpl implements AccountResource {
 					.build();
 		}
 
+		long modifiedTime = System.currentTimeMillis();
 		Update update = new Update();
 		String modifiedDisplayName = isBlank(displayName) ? account.getDisplayName() : displayName;
 		String modifiedEmail = isBlank(email) ? account.getEmail() : email;
 		String modifiedLocale = isBlank(locale) ? account.getLocale() : locale;
 		update.set(Collections.Account.DISPLAY_NAME, modifiedDisplayName)
 			  .set(Collections.Account.EMAIL, modifiedEmail)
-			  .set(Collections.Account.LOCALE, modifiedLocale);
+			  .set(Collections.Account.LOCALE, modifiedLocale)
+			  .set(Collections.Account.MODIFIED_TIME, modifiedTime);
 		account.setDisplayName(modifiedDisplayName)
 			   .setEmail(modifiedEmail)
-			   .setLocale(modifiedLocale);
+			   .setLocale(modifiedLocale)
+			   .setCreationTime(modifiedTime);
 		mongoOps.updateFirst(query(where(Collections.Account.SNDA_ID)
 				.is(sndaId)), update, Collections.ACCOUNT_COLLECTION_NAME);
 		return Response
@@ -137,10 +140,13 @@ public class AccountResourceImpl implements AccountResource {
 					.entity("No such account.")
 					.build();
 		}
+		long modifiedTime = System.currentTimeMillis();
 		boolean enable = Boolean.parseBoolean(available);
+		Update update = new Update();
+		update.set(Collections.Account.AVAILABLE, enable)
+			  .set(Collections.Account.MODIFIED_TIME, modifiedTime);
 		mongoOps.updateFirst(query(where(Collections.Account.SNDA_ID)
-				.is(sndaId)), update(Collections.Account.AVAILABLE, enable),
-				Collections.ACCOUNT_COLLECTION_NAME);
+				.is(sndaId)), update, Collections.ACCOUNT_COLLECTION_NAME);
 		Account account = mongoOps.findOne(
 				query(where(Collections.Account.SNDA_ID).is(sndaId)),
 				Account.class, Collections.ACCOUNT_COLLECTION_NAME);

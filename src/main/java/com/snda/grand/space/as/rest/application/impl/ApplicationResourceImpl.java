@@ -1,10 +1,9 @@
 package com.snda.grand.space.as.rest.application.impl;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
-import static org.springframework.data.mongodb.core.query.Update.update;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.List;
 
@@ -79,7 +78,7 @@ public class ApplicationResourceImpl implements ApplicationResource {
 		Application app = new Application(appId, appDescription, appStatus,
 				ApplicationKeys.generateAccessKeyId(),
 				ApplicationKeys.generateSecretAccessKey(), scope, website,
-				creationTime, uid);
+				creationTime, creationTime, uid);
 		mongoOps.insert(app, Collections.APPLICATION_COLLECTION_NAME);
 		return Response
 				.ok()
@@ -203,6 +202,7 @@ public class ApplicationResourceImpl implements ApplicationResource {
 					.entity("Application has not been modified.")
 					.build();
 		}
+		long modifiedTime = System.currentTimeMillis();
 		Query query = new Query();
 		query.addCriteria(where(Collections.Application.APPID).is(appId))
 			 .addCriteria(where(Collections.Application.OWNER).is(owner));
@@ -210,10 +210,12 @@ public class ApplicationResourceImpl implements ApplicationResource {
 		String modifiedAppDescription = isBlank(appDescription) ? application.getAppDescription() : appDescription;
 		String modifiedWebsite = isBlank(website) ? application.getWebsite() : website;
 		update.set(Collections.Application.APP_DESCRIPTION, modifiedAppDescription)
-			  .set(Collections.Application.WEBSITE, modifiedWebsite);
+			  .set(Collections.Application.WEBSITE, modifiedWebsite)
+			  .set(Collections.Application.MODIFIED_TIME, modifiedTime);
 		mongoOps.updateFirst(query, update, Collections.APPLICATION_COLLECTION_NAME);
 		application.setAppDescription(modifiedAppDescription)
-				   .setWebsite(modifiedWebsite);
+				   .setWebsite(modifiedWebsite)
+				   .setModifiedTime(modifiedTime);
 		return Response
 				.ok()
 				.entity(ObjectMappers.toJSON(MAPPER,
@@ -259,13 +261,18 @@ public class ApplicationResourceImpl implements ApplicationResource {
 					.entity("Application has not been modified.")
 					.build();
 		}
+		long modifiedTime = System.currentTimeMillis();
 		Query query = new Query();
 		query.addCriteria(where(Collections.Application.APPID).is(appId))
 			 .addCriteria(where(Collections.Application.OWNER).is(owner))
 			 .addCriteria(where(Collections.Application.APP_STAUTS).is(appStatus));
-		mongoOps.updateFirst(query, update(Collections.Application.APP_STAUTS, appStatus),
+		Update update = new Update();
+		update.set(Collections.Application.APP_STAUTS, appStatus)
+			  .set(Collections.Application.MODIFIED_TIME, modifiedTime);
+		mongoOps.updateFirst(query, update,
 				Collections.APPLICATION_COLLECTION_NAME);
-		application.setAppStatus(appStatus);
+		application.setAppStatus(appStatus)
+				   .setModifiedTime(modifiedTime);
 		return Response
 				.ok()
 				.entity(ObjectMappers.toJSON(MAPPER,

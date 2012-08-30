@@ -42,13 +42,16 @@ public class Application {
 	@Field(Collections.Application.CREATION_TIME)
 	private long creationTime;
 	
+	@Field(Collections.Application.MODIFIED_TIME)
+	private long modifiedTime;
+	
 	@Field(Collections.Application.OWNER)
 	private String owner;
 
 	@PersistenceConstructor
 	public Application(String appid, String appDescription, String appStatus,
 			String appKey, String appSecret, String scope, String website,
-			long creationTime, String owner) {
+			long creationTime, long modifiedTime, String owner) {
 		this.appid = appid;
 		this.appDescription = appDescription;
 		this.appStatus = appStatus;
@@ -57,6 +60,7 @@ public class Application {
 		this.scope = scope;
 		this.website = website;
 		this.creationTime = creationTime;
+		this.modifiedTime = modifiedTime;
 		this.owner = owner;
 	}
 
@@ -134,6 +138,14 @@ public class Application {
 	public Application setCreationTime(long creationTime) {
 		this.creationTime = creationTime;
 		return this;
+	}
+
+	public long getModifiedTime() {
+		return modifiedTime;
+	}
+
+	public void setModifiedTime(long modifiedTime) {
+		this.modifiedTime = modifiedTime;
 	}
 
 	public String getOwner() {

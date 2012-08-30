@@ -10,6 +10,10 @@ public class Collections {
 	
 	public static final String TOKEN_COLLECTION_NAME = "tokens";
 	
+	public static final String CODE_COLLECTION_NAME = "codes";
+	
+	public static final long CODE_EXPIRE_TIME = 5 * 60 * 1000L;
+	
 	public abstract class Account {
 		public static final String SNDA_ID = "snda_id";
 		public static final String UID = "uid";
@@ -17,6 +21,7 @@ public class Collections {
 		public static final String EMAIL = "email";
 		public static final String LOCALE = "locale";
 		public static final String CREATION_TIME = "creation_time";
+		public static final String MODIFIED_TIME = "modified_time";
 		//TODO Devices definations
 		public static final String AVAILABLE = "available";
 	}
@@ -30,6 +35,7 @@ public class Collections {
 		public static final String SCOPE = "scope";
 		public static final String WEBSITE = "website";
 		public static final String CREATION_TIME = "creation_time";
+		public static final String MODIFIED_TIME = "modified_time";
 		public static final String OWNER = "owner";
 	}
 	
@@ -37,7 +43,7 @@ public class Collections {
 		public static final String UID = "uid";
 		public static final String APPID = "appid";
 		public static final String REFRESH_TOKEN = "refresh_token";
-		public static final String EXPIRE = "expire";
+		public static final String AUTHORIZED_TIME = "authorized_time";
 	}
 	
 	public abstract class Token {
@@ -45,6 +51,11 @@ public class Collections {
 		public static final String ACCESS_TOKEN = "access_token";
 		public static final String CREATION_TIME = "creation_time";
 		public static final String EXPIRE = "expire";
+	}
+	
+	public abstract class Code {
+		public static final String CODE = "code";
+		public static final String CREATION_TIME = "creation_time";
 	}
 	
 }

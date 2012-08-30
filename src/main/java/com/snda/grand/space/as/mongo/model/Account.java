@@ -31,6 +31,9 @@ public class Account {
 	@Field(Collections.Account.CREATION_TIME)
 	private long creationTime;
 	
+	@Field(Collections.Account.MODIFIED_TIME)
+	private long modifiedTime;
+	
 	@Field(Collections.Account.AVAILABLE)
 	private boolean available;
 	
@@ -38,13 +41,14 @@ public class Account {
 	public Account(String sndaId, String uid,
 			String displayName, String email,
 			String locale, long creationTime,
-			boolean available) {
+			long modifiedTime, boolean available) {
 		this.sndaId = sndaId;
 		this.uid = uid;
 		this.displayName = displayName;
 		this.email = email;
 		this.locale = locale;
 		this.creationTime = creationTime;
+		this.modifiedTime = modifiedTime;
 		this.available = available;
 	}
 	
@@ -104,6 +108,14 @@ public class Account {
 	public Account setCreationTime(long creationTime) {
 		this.creationTime = creationTime;
 		return this;
+	}
+
+	public long getModifiedTime() {
+		return modifiedTime;
+	}
+
+	public void setModifiedTime(long modifiedTime) {
+		this.modifiedTime = modifiedTime;
 	}
 
 	public boolean isAvailable() {

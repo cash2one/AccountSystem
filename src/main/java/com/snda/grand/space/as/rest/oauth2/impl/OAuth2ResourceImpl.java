@@ -46,6 +46,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.Maps;
 import com.snda.grand.space.as.mongo.model.Application;
 import com.snda.grand.space.as.mongo.model.Authorization;
+import com.snda.grand.space.as.mongo.model.Code;
 import com.snda.grand.space.as.mongo.model.Collections;
 import com.snda.grand.space.as.mongo.model.Token;
 import com.snda.grand.space.as.rest.oauth2.AuthorizationResource;
@@ -101,12 +102,24 @@ public class OAuth2ResourceImpl implements AuthorizationResource, TokenResource,
 			// do checking for different grant types
 			if (oauthRequest.getParam(OAuth.OAUTH_GRANT_TYPE).equals(
 					GrantType.AUTHORIZATION_CODE.toString())) {
-				if (!Common.AUTHORIZATION_CODE.equals(oauthRequest
-						.getParam(OAuth.OAUTH_CODE))) {
+				Code code = mongoOps.findOne(
+						query(where(Collections.Code.CODE).is(
+								oauthRequest.getCode())), Code.class,
+						Collections.CODE_COLLECTION_NAME);
+				if (code == null) {
 					OAuthResponse response = OAuthASResponse
-							.errorResponse(HttpServletResponse.SC_BAD_REQUEST)
+							.errorResponse(HttpServletResponse.SC_NOT_FOUND)
 							.setError(OAuthError.TokenResponse.INVALID_GRANT)
-							.setErrorDescription("invalid authorization code")
+							.setErrorDescription("no such authorization code")
+							.buildJSONMessage();
+					return Response.status(response.getResponseStatus())
+							.entity(response.getBody()).build();
+				}
+				else if (System.currentTimeMillis() > code.getCreationTime() + Collections.CODE_EXPIRE_TIME) {
+					OAuthResponse response = OAuthASResponse
+							.errorResponse(HttpServletResponse.SC_FORBIDDEN)
+							.setError(OAuthError.TokenResponse.INVALID_GRANT)
+							.setErrorDescription("authorization code expired")
 							.buildJSONMessage();
 					return Response.status(response.getResponseStatus())
 							.entity(response.getBody()).build();
@@ -200,7 +213,9 @@ public class OAuth2ResourceImpl implements AuthorizationResource, TokenResource,
 							HttpServletResponse.SC_FOUND);
 
 			if (responseType.equals(ResponseType.CODE.toString())) {
-				builder.setCode(oauthUUIDIssuer.authorizationCode());
+				String code = oauthUUIDIssuer.authorizationCode();
+				insertCode(code);
+				builder.setCode(code);
 			}
 //			if (responseType.equals(ResponseType.TOKEN.toString())) {
 //				builder.setAccessToken(oauthUUIDIssuer.accessToken());
@@ -376,7 +391,7 @@ public class OAuth2ResourceImpl implements AuthorizationResource, TokenResource,
 	
 	private void insertRefreshToken(String uid, String appId, String refreshToken) {
 		Authorization authorization = new Authorization(uid, appId,
-				refreshToken, System.currentTimeMillis() + 3600000);
+				refreshToken, System.currentTimeMillis());
 		mongoOps.insert(authorization, Collections.AUTHORIZATION_COLLECTION_NAME);
 	}
 	
@@ -392,6 +407,11 @@ public class OAuth2ResourceImpl implements AuthorizationResource, TokenResource,
 				query(where(Collections.Token.ACCESS_TOKEN).is(accessToken)),
 				Token.class, Collections.TOKEN_COLLECTION_NAME);
 		return token != null;
+	}
+	
+	private void insertCode(String codeString) {
+		Code code = new Code(codeString, System.currentTimeMillis());
+		mongoOps.insert(code, Collections.CODE_COLLECTION_NAME);
 	}
 
 }

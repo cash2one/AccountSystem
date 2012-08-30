@@ -9,7 +9,7 @@ public class Authorization {
 	private String uid;
 	private String appId;
 	private String refreshToken;
-	private long expire;
+	private long authorizedTime;
 	
 	public String getUid() {
 		return uid;
@@ -34,13 +34,13 @@ public class Authorization {
 	public void setRefreshToken(String refreshToken) {
 		this.refreshToken = refreshToken;
 	}
-
-	public long getExpire() {
-		return expire;
-	}
-
-	public void setExpire(long expire) {
-		this.expire = expire;
-	}
 	
+	public long getAuthorizedTime() {
+		return authorizedTime;
+	}
+
+	public void setAuthorizedTime(long authorizedTime) {
+		this.authorizedTime = authorizedTime;
+	}
+
 }
