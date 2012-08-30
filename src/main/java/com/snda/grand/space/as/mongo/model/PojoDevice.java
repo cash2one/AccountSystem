@@ -1,13 +1,13 @@
 package com.snda.grand.space.as.mongo.model;
 
 
-public class Device {
+public class PojoDevice {
 	
 	private String name;
 	private long lastLogin;
 	private String ipv4;
 	
-	public Device(String name, long lastLogin, String ipv4) {
+	public PojoDevice(String name, long lastLogin, String ipv4) {
 		this.name = name;
 		this.lastLogin = lastLogin;
 		this.ipv4 = ipv4;

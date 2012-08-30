@@ -11,7 +11,9 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -22,10 +24,13 @@ import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
-import com.snda.grand.space.as.mongo.model.Account;
-import com.snda.grand.space.as.mongo.model.Application;
+import com.snda.grand.space.as.exception.InvalidDisplayNameException;
+import com.snda.grand.space.as.exception.InvalidSndaIdException;
+import com.snda.grand.space.as.mongo.model.PojoAccount;
+import com.snda.grand.space.as.mongo.model.PojoApplication;
 import com.snda.grand.space.as.mongo.model.Collections;
 import com.snda.grand.space.as.rest.account.AccountResource;
+import com.snda.grand.space.as.rest.model.Account;
 import com.snda.grand.space.as.rest.util.ApplicationKeys;
 import com.snda.grand.space.as.rest.util.ObjectMappers;
 
@@ -47,28 +52,23 @@ public class AccountResourceImpl implements AccountResource {
 	@Override
 	@POST
 	@Path("create/{snda_id}")
-	public Response create(@PathParam("snda_id") String sndaId,
+	@Produces(MediaType.APPLICATION_JSON)
+	public Account create(@PathParam("snda_id") String sndaId,
 			@QueryParam("display_name") String displayName,
 			@QueryParam("email") String email,
 			@QueryParam("locale") String locale) {
-		if (isBlank(sndaId) || isBlank(displayName)) {
-			return Response
-					.status(Status.BAD_REQUEST)
-					.entity("Request must contains sndaId and display_name params.")
-					.build();
-		}
+		checkSndaId(sndaId);
+		checkDisplayName(displayName);
+		checkEmail(email);
 		String uid = ApplicationKeys.generateAccessKeyId();
 		if (isBlank(locale)) {
 			locale = "zh_CN";
 		}
 		long creationTime = System.currentTimeMillis();
-		Account account = new Account(sndaId, uid, displayName, email, locale,
+		PojoAccount account = new PojoAccount(sndaId, uid, displayName, email, locale,
 				creationTime, creationTime, true);
 		mongoOps.insert(account, Collections.ACCOUNT_COLLECTION_NAME);
-		return Response
-				.ok()
-				.entity(ObjectMappers.toJSON(MAPPER, account.getModelAccount()))
-				.build();
+		return account.getAccount();
 	}
 
 	@Override
@@ -84,8 +84,8 @@ public class AccountResourceImpl implements AccountResource {
 					.entity("Request must contains sndaId param.")
 					.build();
 		}
-		Account account = mongoOps.findOne(query(where(Collections.Account.SNDA_ID).is(sndaId)),
-				Account.class, Collections.ACCOUNT_COLLECTION_NAME);
+		PojoAccount account = mongoOps.findOne(query(where(Collections.Account.SNDA_ID).is(sndaId)),
+				PojoAccount.class, Collections.ACCOUNT_COLLECTION_NAME);
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Account : {}", account);
 		}
@@ -119,7 +119,7 @@ public class AccountResourceImpl implements AccountResource {
 				.is(sndaId)), update, Collections.ACCOUNT_COLLECTION_NAME);
 		return Response
 				.ok()
-				.entity(ObjectMappers.toJSON(MAPPER, account.getModelAccount()))
+				.entity(ObjectMappers.toJSON(MAPPER, account.getAccount()))
 				.build();
 	}
 
@@ -147,12 +147,12 @@ public class AccountResourceImpl implements AccountResource {
 			  .set(Collections.Account.MODIFIED_TIME, modifiedTime);
 		mongoOps.updateFirst(query(where(Collections.Account.SNDA_ID)
 				.is(sndaId)), update, Collections.ACCOUNT_COLLECTION_NAME);
-		Account account = mongoOps.findOne(
+		PojoAccount account = mongoOps.findOne(
 				query(where(Collections.Account.SNDA_ID).is(sndaId)),
-				Account.class, Collections.ACCOUNT_COLLECTION_NAME);
+				PojoAccount.class, Collections.ACCOUNT_COLLECTION_NAME);
 		return Response
 				.ok()
-				.entity(ObjectMappers.toJSON(MAPPER, account.getModelAccount()))
+				.entity(ObjectMappers.toJSON(MAPPER, account.getAccount()))
 				.build();
 	}
 
@@ -166,9 +166,9 @@ public class AccountResourceImpl implements AccountResource {
 					.entity("Request must contains sndaId param.")
 					.build();
 		}
-		Account account = mongoOps.findOne(
+		PojoAccount account = mongoOps.findOne(
 				query(where(Collections.Account.SNDA_ID).is(sndaId)),
-				Account.class, Collections.ACCOUNT_COLLECTION_NAME);
+				PojoAccount.class, Collections.ACCOUNT_COLLECTION_NAME);
 		if (account == null) {
 			return Response
 					.status(Status.NOT_FOUND)
@@ -177,7 +177,7 @@ public class AccountResourceImpl implements AccountResource {
 		}
 		return Response
 				.ok()
-				.entity(ObjectMappers.toJSON(MAPPER, account.getModelAccount()))
+				.entity(ObjectMappers.toJSON(MAPPER, account.getAccount()))
 				.build();
 	}
 
@@ -191,29 +191,46 @@ public class AccountResourceImpl implements AccountResource {
 					.entity("Request must contains sndaId param.")
 					.build();
 		}
-		Account account = mongoOps.findOne(
+		PojoAccount account = mongoOps.findOne(
 				query(where(Collections.Account.SNDA_ID).is(sndaId)),
-				Account.class, Collections.ACCOUNT_COLLECTION_NAME);
+				PojoAccount.class, Collections.ACCOUNT_COLLECTION_NAME);
 		if (account == null) {
 			return Response
 					.status(Status.NOT_FOUND)
 					.entity("No such account.")
 					.build();
 		}
-		List<Application> apps = mongoOps.find(
+		List<PojoApplication> apps = mongoOps.find(
 				query(where(Collections.Application.OWNER).is(account.getUid())),
-				Application.class, Collections.APPLICATION_COLLECTION_NAME);
+				PojoApplication.class, Collections.APPLICATION_COLLECTION_NAME);
 		return Response
 				.ok()
-				.entity(ObjectMappers.toJSON(MAPPER, Application.getModelApplications(apps)))
+				.entity(ObjectMappers.toJSON(MAPPER, PojoApplication.getApplications(apps)))
 				.build();
 	}
 	
 	private boolean checkAccountExist(String sndaId) {
-		Account account = mongoOps.findOne(
+		PojoAccount account = mongoOps.findOne(
 				query(where(Collections.Account.SNDA_ID).is(sndaId)),
-				Account.class, Collections.ACCOUNT_COLLECTION_NAME);
+				PojoAccount.class, Collections.ACCOUNT_COLLECTION_NAME);
 		return account != null;
+	}
+	
+	private void checkSndaId(String sndaId) {
+		if (isBlank(sndaId)) {
+			throw new InvalidSndaIdException();
+		}
+	}
+	
+	private void checkDisplayName(String displayName) {
+		if (isBlank(displayName)) {
+			throw new InvalidDisplayNameException();
+		}
+	}
+	
+	private void checkEmail(String email) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 }

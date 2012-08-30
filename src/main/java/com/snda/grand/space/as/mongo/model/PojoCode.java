@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 
 
 @Document(collection = Collections.CODE_COLLECTION_NAME)
-public class Code {
+public class PojoCode {
 
 	@Id
 	private String id;
@@ -21,7 +21,7 @@ public class Code {
 	private long creationTime;
 	
 	@PersistenceConstructor
-	public Code(String code, long creationTime) {
+	public PojoCode(String code, long creationTime) {
 		this.code = code;
 		this.creationTime = creationTime;
 	}

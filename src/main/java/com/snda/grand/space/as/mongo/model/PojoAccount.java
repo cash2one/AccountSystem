@@ -7,9 +7,11 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import com.snda.grand.space.as.rest.model.Account;
+
 
 @Document(collection=Collections.ACCOUNT_COLLECTION_NAME)
-public class Account {
+public class PojoAccount {
 
 	@Id
 	private String id;
@@ -42,7 +44,7 @@ public class Account {
 	private boolean available;
 	
 	@PersistenceConstructor
-	public Account(String sndaId, String uid,
+	public PojoAccount(String sndaId, String uid,
 			String displayName, String email,
 			String locale, long creationTime,
 			long modifiedTime, boolean available) {
@@ -64,7 +66,7 @@ public class Account {
 		return sndaId;
 	}
 
-	public Account setSndaId(String sndaId) {
+	public PojoAccount setSndaId(String sndaId) {
 		this.sndaId = sndaId;
 		return this;
 	}
@@ -73,7 +75,7 @@ public class Account {
 		return uid;
 	}
 
-	public Account setUid(String uid) {
+	public PojoAccount setUid(String uid) {
 		this.uid = uid;
 		return this;
 	}
@@ -82,7 +84,7 @@ public class Account {
 		return displayName;
 	}
 
-	public Account setDisplayName(String displayName) {
+	public PojoAccount setDisplayName(String displayName) {
 		this.displayName = displayName;
 		return this;
 	}
@@ -91,7 +93,7 @@ public class Account {
 		return email;
 	}
 
-	public Account setEmail(String email) {
+	public PojoAccount setEmail(String email) {
 		this.email = email;
 		return this;
 	}
@@ -100,7 +102,7 @@ public class Account {
 		return locale;
 	}
 
-	public Account setLocale(String locale) {
+	public PojoAccount setLocale(String locale) {
 		this.locale = locale;
 		return this;
 	}
@@ -109,7 +111,7 @@ public class Account {
 		return creationTime;
 	}
 
-	public Account setCreationTime(long creationTime) {
+	public PojoAccount setCreationTime(long creationTime) {
 		this.creationTime = creationTime;
 		return this;
 	}
@@ -126,7 +128,7 @@ public class Account {
 		return available;
 	}
 
-	public Account setAvailable(boolean available) {
+	public PojoAccount setAvailable(boolean available) {
 		this.available = available;
 		return this;
 	}
@@ -144,8 +146,8 @@ public class Account {
 				"]";
 	}
 	
-	public com.snda.grand.space.as.rest.model.Account getModelAccount() {
-		com.snda.grand.space.as.rest.model.Account account = new com.snda.grand.space.as.rest.model.Account();
+	public Account getAccount() {
+		Account account = new Account();
 		account.setUid(getUid());
 		account.setDisplay_name(getDisplayName());
 		account.setEmail(getEmail());

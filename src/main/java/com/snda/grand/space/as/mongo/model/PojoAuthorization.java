@@ -4,16 +4,18 @@ import static com.snda.grand.space.as.mongo.model.Collections.AUTHORIZATION_COLL
 
 import java.util.List;
 
+import org.joda.time.DateTime;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import com.google.common.collect.Lists;
+import com.snda.grand.space.as.rest.model.Authorization;
 
 
 @Document(collection = AUTHORIZATION_COLLECTION_NAME)
-public class Authorization {
+public class PojoAuthorization {
 	
 	@Id
 	private String id;
@@ -31,7 +33,7 @@ public class Authorization {
 	private long authorizedTime;
 	
 	@PersistenceConstructor
-	public Authorization(String uid, String appId, String refreshToken, long authorizedTime) {
+	public PojoAuthorization(String uid, String appId, String refreshToken, long authorizedTime) {
 		this.uid = uid;
 		this.appId = appId;
 		this.refreshToken = refreshToken;
@@ -46,7 +48,7 @@ public class Authorization {
 		return uid;
 	}
 
-	public Authorization setUid(String uid) {
+	public PojoAuthorization setUid(String uid) {
 		this.uid = uid;
 		return this;
 	}
@@ -55,7 +57,7 @@ public class Authorization {
 		return appId;
 	}
 
-	public Authorization setAppId(String appId) {
+	public PojoAuthorization setAppId(String appId) {
 		this.appId = appId;
 		return this;
 	}
@@ -64,7 +66,7 @@ public class Authorization {
 		return refreshToken;
 	}
 
-	public Authorization setRefreshToken(String refreshToken) {
+	public PojoAuthorization setRefreshToken(String refreshToken) {
 		this.refreshToken = refreshToken;
 		return this;
 	}
@@ -73,7 +75,7 @@ public class Authorization {
 		return authorizedTime;
 	}
 
-	public Authorization setAuthorizedTime(long authorizedTime) {
+	public PojoAuthorization setAuthorizedTime(long authorizedTime) {
 		this.authorizedTime = authorizedTime;
 		return this;
 	}
@@ -88,24 +90,24 @@ public class Authorization {
 				"]";
 	}
 
-	public com.snda.grand.space.as.rest.model.Authorization getModelAuthorization() {
-		com.snda.grand.space.as.rest.model.Authorization authorization = new com.snda.grand.space.as.rest.model.Authorization();
+	public Authorization getAuthorization() {
+		Authorization authorization = new Authorization();
 		authorization.setUid(uid);
 		authorization.setAppId(appId);
 		authorization.setRefreshToken(this.refreshToken);
-		authorization.setAuthorizedTime(authorizedTime);
+		authorization.setAuthorizedTime(new DateTime(authorizedTime));
 		return authorization;
 	}
 	
-	public static List<com.snda.grand.space.as.rest.model.Authorization> getModelAuthorizations(List<Authorization> authorizations) {
-		List<com.snda.grand.space.as.rest.model.Authorization> modelAuthorizations = null;
-		if (authorizations != null) {
-			modelAuthorizations = Lists.newArrayList();
-			for (Authorization authorization : authorizations) {
-				modelAuthorizations.add(authorization.getModelAuthorization());
+	public static List<Authorization> getAuthorizations(List<PojoAuthorization> pojoAuthorizations) {
+		List<Authorization> authorizations = null;
+		if (pojoAuthorizations != null) {
+			authorizations = Lists.newArrayList();
+			for (PojoAuthorization pojoAuthorization : pojoAuthorizations) {
+				authorizations.add(pojoAuthorization.getAuthorization());
 			}
 		}
-		return modelAuthorizations;
+		return authorizations;
 	}
 
 }

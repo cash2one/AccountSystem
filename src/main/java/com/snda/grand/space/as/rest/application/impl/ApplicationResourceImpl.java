@@ -24,9 +24,9 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
-import com.snda.grand.space.as.mongo.model.Account;
-import com.snda.grand.space.as.mongo.model.Application;
-import com.snda.grand.space.as.mongo.model.Authorization;
+import com.snda.grand.space.as.mongo.model.PojoAccount;
+import com.snda.grand.space.as.mongo.model.PojoApplication;
+import com.snda.grand.space.as.mongo.model.PojoAuthorization;
 import com.snda.grand.space.as.mongo.model.Collections;
 import com.snda.grand.space.as.rest.application.ApplicationResource;
 import com.snda.grand.space.as.rest.util.ApplicationKeys;
@@ -75,14 +75,14 @@ public class ApplicationResourceImpl implements ApplicationResource {
 					.build();
 		}
 		long creationTime = System.currentTimeMillis();
-		Application app = new Application(appId, appDescription, appStatus,
+		PojoApplication app = new PojoApplication(appId, appDescription, appStatus,
 				ApplicationKeys.generateAccessKeyId(),
 				ApplicationKeys.generateSecretAccessKey(), scope, website,
 				creationTime, creationTime, uid);
 		mongoOps.insert(app, Collections.APPLICATION_COLLECTION_NAME);
 		return Response
 				.ok()
-				.entity(ObjectMappers.toJSON(MAPPER, app.getModelApplication()))
+				.entity(ObjectMappers.toJSON(MAPPER, app.getApplication()))
 				.build();
 	}
 
@@ -115,12 +115,12 @@ public class ApplicationResourceImpl implements ApplicationResource {
 					.entity("Access denied.")
 					.build();
 		}
-		List<Authorization> tokens = mongoOps.find(
+		List<PojoAuthorization> tokens = mongoOps.find(
 				query(where(Collections.Application.APPID).is(appId)),
-				Authorization.class, Collections.AUTHORIZATION_COLLECTION_NAME);
+				PojoAuthorization.class, Collections.AUTHORIZATION_COLLECTION_NAME);
 		return Response
 				.ok()
-				.entity(ObjectMappers.toJSON(MAPPER, Authorization.getModelAuthorizations(tokens)))
+				.entity(ObjectMappers.toJSON(MAPPER, PojoAuthorization.getAuthorizations(tokens)))
 				.build();
 	}
 
@@ -141,9 +141,9 @@ public class ApplicationResourceImpl implements ApplicationResource {
 					.entity("No such user.")
 					.build();
 		}
-		Application application = mongoOps.findOne(
+		PojoApplication application = mongoOps.findOne(
 				query(where(Collections.Application.APPID).is(appId)),
-				Application.class, Collections.APPLICATION_COLLECTION_NAME);
+				PojoApplication.class, Collections.APPLICATION_COLLECTION_NAME);
 		if (application == null) {
 			return Response
 					.status(Status.NOT_FOUND)
@@ -159,7 +159,7 @@ public class ApplicationResourceImpl implements ApplicationResource {
 		return Response
 				.ok()
 				.entity(ObjectMappers.toJSON(MAPPER,
-						application.getModelApplication())).build();
+						application.getApplication())).build();
 	}
 
 	@Override
@@ -181,9 +181,9 @@ public class ApplicationResourceImpl implements ApplicationResource {
 					.entity("No such user.")
 					.build();
 		}
-		Application application = mongoOps.findOne(
+		PojoApplication application = mongoOps.findOne(
 				query(where(Collections.Application.APPID).is(appId)),
-				Application.class, Collections.APPLICATION_COLLECTION_NAME);
+				PojoApplication.class, Collections.APPLICATION_COLLECTION_NAME);
 		if (application == null) {
 			return Response
 					.status(Status.NOT_FOUND)
@@ -219,7 +219,7 @@ public class ApplicationResourceImpl implements ApplicationResource {
 		return Response
 				.ok()
 				.entity(ObjectMappers.toJSON(MAPPER,
-						application.getModelApplication())).build();
+						application.getApplication())).build();
 	}
 
 	@Override
@@ -240,8 +240,8 @@ public class ApplicationResourceImpl implements ApplicationResource {
 					.entity("No such user.")
 					.build();
 		}
-		Application application = mongoOps.findOne(
-				query(where(Collections.Application.APPID).is(appId)), Application.class,
+		PojoApplication application = mongoOps.findOne(
+				query(where(Collections.Application.APPID).is(appId)), PojoApplication.class,
 				Collections.APPLICATION_COLLECTION_NAME);
 		if (application == null) {
 			return Response
@@ -276,7 +276,7 @@ public class ApplicationResourceImpl implements ApplicationResource {
 		return Response
 				.ok()
 				.entity(ObjectMappers.toJSON(MAPPER,
-						application.getModelApplication())).build();
+						application.getApplication())).build();
 	}
 
 	@Override
@@ -326,8 +326,8 @@ public class ApplicationResourceImpl implements ApplicationResource {
 					.entity("No such user.")
 					.build();
 		}
-		Application application = mongoOps.findOne(
-				query(where(Collections.Authorization.APPID).is(appId)), Application.class,
+		PojoApplication application = mongoOps.findOne(
+				query(where(Collections.Authorization.APPID).is(appId)), PojoApplication.class,
 				Collections.APPLICATION_COLLECTION_NAME);
 		if (application == null) {
 			return Response
@@ -350,9 +350,9 @@ public class ApplicationResourceImpl implements ApplicationResource {
 	}
 	
 	private boolean checkApplicationExist(String appId) {
-		Application app = mongoOps.findOne(
+		PojoApplication app = mongoOps.findOne(
 				query(where(Collections.Application.APPID).is(appId)),
-				Application.class, Collections.APPLICATION_COLLECTION_NAME);
+				PojoApplication.class, Collections.APPLICATION_COLLECTION_NAME);
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Application : {}", app);
 		}
@@ -360,8 +360,8 @@ public class ApplicationResourceImpl implements ApplicationResource {
 	}
 	
 	private boolean checkAccountExist(String uid) {
-		Account account = mongoOps.findOne(query(where(Collections.Account.UID)
-				.is(uid)), Account.class, Collections.ACCOUNT_COLLECTION_NAME);
+		PojoAccount account = mongoOps.findOne(query(where(Collections.Account.UID)
+				.is(uid)), PojoAccount.class, Collections.ACCOUNT_COLLECTION_NAME);
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Account : {}", account);
 		}
@@ -372,7 +372,7 @@ public class ApplicationResourceImpl implements ApplicationResource {
 		Query query = new Query();
 		query.addCriteria(where(Collections.Application.APPID).is(appId));
 		query.addCriteria(where(Collections.Application.OWNER).is(owner));
-		Application app = mongoOps.findOne(query, Application.class,
+		PojoApplication app = mongoOps.findOne(query, PojoApplication.class,
 				Collections.APPLICATION_COLLECTION_NAME);
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Application : {}", app);

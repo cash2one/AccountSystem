@@ -4,16 +4,18 @@ import static com.snda.grand.space.as.mongo.model.Collections.APPLICATION_COLLEC
 
 import java.util.List;
 
+import org.joda.time.DateTime;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import com.google.common.collect.Lists;
+import com.snda.grand.space.as.rest.model.Application;
 
 
 @Document(collection = APPLICATION_COLLECTION_NAME)
-public class Application {
+public class PojoApplication {
 
 	@Id
 	private String id;
@@ -49,7 +51,7 @@ public class Application {
 	private String owner;
 
 	@PersistenceConstructor
-	public Application(String appid, String appDescription, String appStatus,
+	public PojoApplication(String appid, String appDescription, String appStatus,
 			String appKey, String appSecret, String scope, String website,
 			long creationTime, long modifiedTime, String owner) {
 		this.appid = appid;
@@ -72,7 +74,7 @@ public class Application {
 		return appid;
 	}
 
-	public Application setAppid(String appid) {
+	public PojoApplication setAppid(String appid) {
 		this.appid = appid;
 		return this;
 	}
@@ -81,7 +83,7 @@ public class Application {
 		return appDescription;
 	}
 
-	public Application setAppDescription(String appDescription) {
+	public PojoApplication setAppDescription(String appDescription) {
 		this.appDescription = appDescription;
 		return this;
 	}
@@ -90,7 +92,7 @@ public class Application {
 		return appStatus;
 	}
 
-	public Application setAppStatus(String appStatus) {
+	public PojoApplication setAppStatus(String appStatus) {
 		this.appStatus = appStatus;
 		return this;
 	}
@@ -99,7 +101,7 @@ public class Application {
 		return appKey;
 	}
 
-	public Application setAppKey(String appKey) {
+	public PojoApplication setAppKey(String appKey) {
 		this.appKey = appKey;
 		return this;
 	}
@@ -108,7 +110,7 @@ public class Application {
 		return appSecret;
 	}
 
-	public Application setAppSecret(String appSecret) {
+	public PojoApplication setAppSecret(String appSecret) {
 		this.appSecret = appSecret;
 		return this;
 	}
@@ -117,7 +119,7 @@ public class Application {
 		return scope;
 	}
 
-	public Application setScope(String scope) {
+	public PojoApplication setScope(String scope) {
 		this.scope = scope;
 		return this;
 	}
@@ -126,7 +128,7 @@ public class Application {
 		return website;
 	}
 
-	public Application setWebsite(String website) {
+	public PojoApplication setWebsite(String website) {
 		this.website = website;
 		return this;
 	}
@@ -135,7 +137,7 @@ public class Application {
 		return creationTime;
 	}
 
-	public Application setCreationTime(long creationTime) {
+	public PojoApplication setCreationTime(long creationTime) {
 		this.creationTime = creationTime;
 		return this;
 	}
@@ -152,13 +154,13 @@ public class Application {
 		return owner;
 	}
 
-	public Application setOwner(String owner) {
+	public PojoApplication setOwner(String owner) {
 		this.owner = owner;
 		return this;
 	}
 
-	public com.snda.grand.space.as.rest.model.Application getModelApplication() {
-		com.snda.grand.space.as.rest.model.Application application = new com.snda.grand.space.as.rest.model.Application();
+	public Application getApplication() {
+		Application application = new Application();
 		application.setAppid(appid);
 		application.setAppDescription(appDescription);
 		application.setAppStatus(appStatus);
@@ -166,20 +168,20 @@ public class Application {
 		application.setAppSecret(appSecret);
 		application.setScope(scope);
 		application.setWebsite(website);
-		application.setCreationTime(creationTime);
+		application.setCreationTime(new DateTime(creationTime));
 		application.setOwner(owner);
 		return application;
 	}
 	
-	public static List<com.snda.grand.space.as.rest.model.Application> getModelApplications(List<Application> apps) {
-		List<com.snda.grand.space.as.rest.model.Application> modelApps = null;
-		if (apps != null) {
-			modelApps = Lists.newArrayList();
-			for (Application app : apps) {
-				modelApps.add(app.getModelApplication());
+	public static List<Application> getApplications(List<PojoApplication> pojoApps) {
+		List<Application> apps = null;
+		if (pojoApps != null) {
+			apps = Lists.newArrayList();
+			for (PojoApplication pojoApp : pojoApps) {
+				apps.add(pojoApp.getApplication());
 			}
 		}
-		return modelApps;
+		return apps;
 	}
 
 }

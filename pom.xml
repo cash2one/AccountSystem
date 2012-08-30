@@ -287,7 +287,7 @@
 					<source>${java.version}</source>
 					<target>${java.version}</target>
 					<encoding>${encoding}</encoding>
-					<debug>false</debug>
+					<debug>true</debug>
 					<optimize>true</optimize>
 				</configuration>
 			</plugin>

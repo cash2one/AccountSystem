@@ -44,11 +44,11 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Maps;
-import com.snda.grand.space.as.mongo.model.Application;
-import com.snda.grand.space.as.mongo.model.Authorization;
-import com.snda.grand.space.as.mongo.model.Code;
+import com.snda.grand.space.as.mongo.model.PojoApplication;
+import com.snda.grand.space.as.mongo.model.PojoAuthorization;
+import com.snda.grand.space.as.mongo.model.PojoCode;
 import com.snda.grand.space.as.mongo.model.Collections;
-import com.snda.grand.space.as.mongo.model.Token;
+import com.snda.grand.space.as.mongo.model.PojoToken;
 import com.snda.grand.space.as.rest.oauth2.AuthorizationResource;
 import com.snda.grand.space.as.rest.oauth2.TokenResource;
 import com.snda.grand.space.as.rest.oauth2.ValidateResource;
@@ -102,9 +102,9 @@ public class OAuth2ResourceImpl implements AuthorizationResource, TokenResource,
 			// do checking for different grant types
 			if (oauthRequest.getParam(OAuth.OAUTH_GRANT_TYPE).equals(
 					GrantType.AUTHORIZATION_CODE.toString())) {
-				Code code = mongoOps.findOne(
+				PojoCode code = mongoOps.findOne(
 						query(where(Collections.Code.CODE).is(
-								oauthRequest.getCode())), Code.class,
+								oauthRequest.getCode())), PojoCode.class,
 						Collections.CODE_COLLECTION_NAME);
 				if (code == null) {
 					OAuthResponse response = OAuthASResponse
@@ -366,10 +366,10 @@ public class OAuth2ResourceImpl implements AuthorizationResource, TokenResource,
 		return uriBuilder.toString().substring(0, uriBuilder.toString().length() - 1);
 	}
 	
-	private Application getApplication(String appId) {
-		Application app = mongoOps.findOne(
+	private PojoApplication getApplication(String appId) {
+		PojoApplication app = mongoOps.findOne(
 				query(where(Collections.Application.APPID).is(appId)),
-				Application.class, Collections.APPLICATION_COLLECTION_NAME);
+				PojoApplication.class, Collections.APPLICATION_COLLECTION_NAME);
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Application : {}", app);
 		}
@@ -384,33 +384,33 @@ public class OAuth2ResourceImpl implements AuthorizationResource, TokenResource,
 		Query query = new Query();
 		query.addCriteria(where(Collections.Authorization.APPID).is(appId))
 			 .addCriteria(where(Collections.Authorization.REFRESH_TOKEN).is(refreshToken));
-		Authorization authorization = mongoOps.findOne(query,
-				Authorization.class, Collections.AUTHORIZATION_COLLECTION_NAME);
+		PojoAuthorization authorization = mongoOps.findOne(query,
+				PojoAuthorization.class, Collections.AUTHORIZATION_COLLECTION_NAME);
 		return authorization != null;
 	}
 	
 	private void insertRefreshToken(String uid, String appId, String refreshToken) {
-		Authorization authorization = new Authorization(uid, appId,
+		PojoAuthorization authorization = new PojoAuthorization(uid, appId,
 				refreshToken, System.currentTimeMillis());
 		mongoOps.insert(authorization, Collections.AUTHORIZATION_COLLECTION_NAME);
 	}
 	
 	private void insertAccessToken(String refreshToken, String accessToken) {
 		long creationTime = System.currentTimeMillis();
-		Token token = new Token(refreshToken, accessToken, creationTime,
+		PojoToken token = new PojoToken(refreshToken, accessToken, creationTime,
 				creationTime + 3600000);
 		mongoOps.insert(token, Collections.TOKEN_COLLECTION_NAME);
 	}
 	
 	private boolean verifyAccessToken(String accessToken) {
-		Token token = mongoOps.findOne(
+		PojoToken token = mongoOps.findOne(
 				query(where(Collections.Token.ACCESS_TOKEN).is(accessToken)),
-				Token.class, Collections.TOKEN_COLLECTION_NAME);
+				PojoToken.class, Collections.TOKEN_COLLECTION_NAME);
 		return token != null;
 	}
 	
 	private void insertCode(String codeString) {
-		Code code = new Code(codeString, System.currentTimeMillis());
+		PojoCode code = new PojoCode(codeString, System.currentTimeMillis());
 		mongoOps.insert(code, Collections.CODE_COLLECTION_NAME);
 	}
 

@@ -1,6 +1,7 @@
 package com.snda.grand.space.as.rest.model;
 
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import org.joda.time.DateTime;
 
 
 @JsonIgnoreProperties(ignoreUnknown=true)
@@ -9,7 +10,7 @@ public class Authorization {
 	private String uid;
 	private String appId;
 	private String refreshToken;
-	private long authorizedTime;
+	private DateTime authorizedTime;
 	
 	public String getUid() {
 		return uid;
@@ -35,11 +36,11 @@ public class Authorization {
 		this.refreshToken = refreshToken;
 	}
 	
-	public long getAuthorizedTime() {
+	public DateTime getAuthorizedTime() {
 		return authorizedTime;
 	}
 
-	public void setAuthorizedTime(long authorizedTime) {
+	public void setAuthorizedTime(DateTime authorizedTime) {
 		this.authorizedTime = authorizedTime;
 	}
 

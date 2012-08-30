@@ -1,6 +1,7 @@
 package com.snda.grand.space.as.rest.model;
 
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import org.joda.time.DateTime;
 
 
 @JsonIgnoreProperties(ignoreUnknown=true)
@@ -13,7 +14,7 @@ public class Application {
 	private String appSecret;
 	private String scope;
 	private String website;
-	private long creationTime;
+	private DateTime creationTime;
 	private String owner;
 	
 	public String getAppid() {
@@ -72,11 +73,11 @@ public class Application {
 		this.website = website;
 	}
 
-	public long getCreationTime() {
+	public DateTime getCreationTime() {
 		return creationTime;
 	}
 
-	public void setCreationTime(long creationTime) {
+	public void setCreationTime(DateTime creationTime) {
 		this.creationTime = creationTime;
 	}
 

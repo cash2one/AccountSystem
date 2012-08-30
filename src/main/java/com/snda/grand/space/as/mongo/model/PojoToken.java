@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 
 
 @Document(collection = Collections.TOKEN_COLLECTION_NAME)
-public class Token {
+public class PojoToken {
 
 	@Id
 	private String id;
@@ -25,7 +25,7 @@ public class Token {
 	private long expire;
 	
 	@PersistenceConstructor
-	public Token(String refreshToken, String accessToken, long creationTime, long expire) {
+	public PojoToken(String refreshToken, String accessToken, long creationTime, long expire) {
 		this.refreshToken = refreshToken;
 		this.accessToken = accessToken;
 		this.creationTime = creationTime;
