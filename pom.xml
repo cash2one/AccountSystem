@@ -2,8 +2,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.snda.gcloud</groupId>
-	<artifactId>gcloud-account-system</artifactId>
+	<groupId>com.snda.grand.space</groupId>
+	<artifactId>grand-space-account-system</artifactId>
 	<packaging>${packaging}</packaging>
 	<version>0.1.0-SNAPSHOT</version>
 
@@ -243,7 +243,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>gcloud-account-system</finalName>
+		<finalName>grand-space-account-system</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
