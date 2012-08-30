@@ -3,6 +3,7 @@ package com.snda.grand.space.as.mongo.model;
 import org.joda.time.DateTime;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -13,9 +14,11 @@ public class Account {
 	@Id
 	private String id;
 	
+	@Indexed(unique = true)
 	@Field(Collections.Account.SNDA_ID)
 	private String sndaId;
 	
+	@Indexed
 	@Field(Collections.Account.UID)
 	private String uid;
 	
@@ -34,6 +37,7 @@ public class Account {
 	@Field(Collections.Account.MODIFIED_TIME)
 	private long modifiedTime;
 	
+	@Indexed
 	@Field(Collections.Account.AVAILABLE)
 	private boolean available;
 	
