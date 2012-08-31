@@ -8,10 +8,12 @@ import org.joda.time.DateTime;
 public class Account {
 
 	private String uid;
-	private String display_name;
+	private String usernameNorm;
+	private String displayName;
 	private String email;
 	private String locale;
 	private DateTime creationTime;
+	private DateTime modifiedTime;
 	private boolean available;
 	
 	public String getUid() {
@@ -22,12 +24,20 @@ public class Account {
 		this.uid = uid;
 	}
 	
-	public String getDisplay_name() {
-		return display_name;
+	public String getUsernameNorm() {
+		return usernameNorm;
+	}
+
+	public void setUsernameNorm(String usernameNorm) {
+		this.usernameNorm = usernameNorm;
 	}
 	
-	public void setDisplay_name(String display_name) {
-		this.display_name = display_name;
+	public String getDisplayName() {
+		return displayName;
+	}
+	
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
 	}
 	
 	public String getEmail() {
@@ -54,6 +64,14 @@ public class Account {
 		this.creationTime = creationTime;
 	}
 	
+	public DateTime getModifiedTime() {
+		return modifiedTime;
+	}
+
+	public void setModifiedTime(DateTime modifiedTime) {
+		this.modifiedTime = modifiedTime;
+	}
+	
 	public boolean isAvailable() {
 		return available;
 	}
@@ -61,5 +79,5 @@ public class Account {
 	public void setAvailable(boolean available) {
 		this.available = available;
 	}
-	
+
 }

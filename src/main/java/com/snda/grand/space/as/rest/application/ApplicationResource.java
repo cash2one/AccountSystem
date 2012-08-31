@@ -2,9 +2,11 @@ package com.snda.grand.space.as.rest.application;
 
 import javax.ws.rs.core.Response;
 
+import com.snda.grand.space.as.rest.model.Application;
+
 public interface ApplicationResource {
 
-	Response create(String appId, String uid, String appDescription,
+	Application create(String appId, String uid, String appDescription,
 			String appStatus, String scope, String website);
 	
 	Response listAuthorized(String appId, String owner);

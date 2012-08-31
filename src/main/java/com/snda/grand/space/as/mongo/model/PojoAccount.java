@@ -24,6 +24,9 @@ public class PojoAccount {
 	@Field(Collections.Account.UID)
 	private String uid;
 	
+	@Field(Collections.Account.USERNAME_NORM)
+	private String usernameNorm;
+	
 	@Field(Collections.Account.DISPLAY_NAME)
 	private String displayName;
 	
@@ -44,9 +47,8 @@ public class PojoAccount {
 	private boolean available;
 	
 	@PersistenceConstructor
-	public PojoAccount(String sndaId, String uid,
-			String displayName, String email,
-			String locale, long creationTime,
+	public PojoAccount(String sndaId, String uid, String usernameNorm,
+			String displayName, String email, String locale, long creationTime,
 			long modifiedTime, boolean available) {
 		this.sndaId = sndaId;
 		this.uid = uid;
@@ -77,6 +79,15 @@ public class PojoAccount {
 
 	public PojoAccount setUid(String uid) {
 		this.uid = uid;
+		return this;
+	}
+
+	public String getUsernameNorm() {
+		return usernameNorm;
+	}
+
+	public PojoAccount setUsernameNorm(String usernameNorm) {
+		this.usernameNorm = usernameNorm;
 		return this;
 	}
 
@@ -138,22 +149,26 @@ public class PojoAccount {
 		return "Account [id=" + id +
 				", snda_id=" + sndaId +
 				", uid=" + uid +
+				", username_norm=" + usernameNorm +
 				", display_name=" + displayName +
 				", email=" + email + 
 				", locale=" + locale +
 				", creation_time=" + creationTime +
+				", modified_time=" + modifiedTime +
 				", available=" + available +
 				"]";
 	}
 	
 	public Account getAccount() {
 		Account account = new Account();
-		account.setUid(getUid());
-		account.setDisplay_name(getDisplayName());
-		account.setEmail(getEmail());
-		account.setLocale(getLocale());
-		account.setCreationTime(new DateTime(getCreationTime()));
-		account.setAvailable(isAvailable());
+		account.setUid(uid);
+		account.setUsernameNorm(usernameNorm);
+		account.setDisplayName(displayName);
+		account.setEmail(email);
+		account.setLocale(locale);
+		account.setCreationTime(new DateTime(creationTime));
+		account.setModifiedTime(new DateTime(modifiedTime));
+		account.setAvailable(available);
 		return account;
 	}
 	

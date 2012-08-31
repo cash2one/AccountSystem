@@ -1,8 +1,9 @@
 package com.snda.grand.space.as.rest.account;
 
-import javax.ws.rs.core.Response;
+import java.util.List;
 
 import com.snda.grand.space.as.rest.model.Account;
+import com.snda.grand.space.as.rest.model.Application;
 
 
 
@@ -10,12 +11,12 @@ public interface AccountResource {
 
 	Account create(String sndaId, String displayName, String email, String locale);
 	
-	Response modify(String sndaId, String displayName, String email, String locale);
+	Account modify(String sndaId, String displayName, String email, String locale);
 	
-	Response available(String sndaId, String available);
+	Account available(String sndaId, String available);
 	
-	Response status(String sndaId);
+	Account status(String sndaId);
 	
-	Response applications(String sndaId);
+	List<Application> applications(String sndaId);
 	
 }

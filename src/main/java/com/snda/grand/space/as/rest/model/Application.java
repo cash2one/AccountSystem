@@ -15,6 +15,7 @@ public class Application {
 	private String scope;
 	private String website;
 	private DateTime creationTime;
+	private DateTime modifiedTime;
 	private String owner;
 	
 	public String getAppid() {
@@ -79,6 +80,14 @@ public class Application {
 
 	public void setCreationTime(DateTime creationTime) {
 		this.creationTime = creationTime;
+	}
+	
+	public DateTime getModifiedTime() {
+		return modifiedTime;
+	}
+
+	public void setModifiedTime(DateTime modifiedTime) {
+		this.modifiedTime = modifiedTime;
 	}
 
 	public String getOwner() {

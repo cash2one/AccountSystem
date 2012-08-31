@@ -14,34 +14,35 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
+import com.snda.grand.space.as.exception.AccountAlreadyExistException;
+import com.snda.grand.space.as.exception.InvalidAvailableParamException;
 import com.snda.grand.space.as.exception.InvalidDisplayNameException;
 import com.snda.grand.space.as.exception.InvalidSndaIdException;
+import com.snda.grand.space.as.exception.NoSuchAccountException;
+import com.snda.grand.space.as.exception.NotModifiedException;
+import com.snda.grand.space.as.mongo.model.Collections;
 import com.snda.grand.space.as.mongo.model.PojoAccount;
 import com.snda.grand.space.as.mongo.model.PojoApplication;
-import com.snda.grand.space.as.mongo.model.Collections;
 import com.snda.grand.space.as.rest.account.AccountResource;
 import com.snda.grand.space.as.rest.model.Account;
+import com.snda.grand.space.as.rest.model.Application;
 import com.snda.grand.space.as.rest.util.ApplicationKeys;
-import com.snda.grand.space.as.rest.util.ObjectMappers;
+import com.snda.grand.space.as.rest.util.Preconditions;
+import com.snda.grand.space.as.rest.util.Rule;
 
 @Service
 @Path("account")
 public class AccountResourceImpl implements AccountResource {
 
-	private static final Logger LOGGER = LoggerFactory
-			.getLogger(AccountResourceImpl.class);
-	private static final ObjectMapper MAPPER = new ObjectMapper();
-	private static MongoOperations mongoOps;
+	private static final Logger LOGGER = LoggerFactory.getLogger(AccountResourceImpl.class);
+	private final MongoOperations mongoOps;
 
 	public AccountResourceImpl(MongoOperations mongoOperations) {
 		checkNotNull(mongoOperations, "MongoTemplate is null.");
@@ -59,14 +60,17 @@ public class AccountResourceImpl implements AccountResource {
 			@QueryParam("locale") String locale) {
 		checkSndaId(sndaId);
 		checkDisplayName(displayName);
-		checkEmail(email);
+		Rule.checkEmail(email);
+		if (Preconditions.getAccountBySndaId(mongoOps, sndaId) != null) {
+			throw new AccountAlreadyExistException();
+		}
 		String uid = ApplicationKeys.generateAccessKeyId();
 		if (isBlank(locale)) {
 			locale = "zh_CN";
 		}
 		long creationTime = System.currentTimeMillis();
-		PojoAccount account = new PojoAccount(sndaId, uid, displayName, email, locale,
-				creationTime, creationTime, true);
+		PojoAccount account = new PojoAccount(sndaId, uid, email, displayName,
+				email, locale, creationTime, creationTime, true);
 		mongoOps.insert(account, Collections.ACCOUNT_COLLECTION_NAME);
 		return account.getAccount();
 	}
@@ -74,32 +78,22 @@ public class AccountResourceImpl implements AccountResource {
 	@Override
 	@POST
 	@Path("modify/{snda_id}")
-	public Response modify(@PathParam("snda_id") String sndaId,
+	@Produces(MediaType.APPLICATION_JSON)
+	public Account modify(@PathParam("snda_id") String sndaId,
 			@QueryParam("display_name") String displayName,
 			@QueryParam("email") String email,
 			@QueryParam("locale") String locale) {
-		if (isBlank(sndaId)) {
-			return Response
-					.status(Status.BAD_REQUEST)
-					.entity("Request must contains sndaId param.")
-					.build();
-		}
+		checkSndaId(sndaId);
 		PojoAccount account = mongoOps.findOne(query(where(Collections.Account.SNDA_ID).is(sndaId)),
 				PojoAccount.class, Collections.ACCOUNT_COLLECTION_NAME);
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Account : {}", account);
 		}
 		if (account == null) {
-			return Response
-					.status(Status.NOT_FOUND)
-					.entity("No such account.")
-					.build();
+			throw new NoSuchAccountException();
 		}
 		if (isBlank(displayName) && isBlank(email) && isBlank(locale)) {
-			return Response
-					.status(Status.NOT_MODIFIED)
-					.entity("Account has not been changed.")
-					.build();
+			throw new NotModifiedException();
 		}
 
 		long modifiedTime = System.currentTimeMillis();
@@ -117,31 +111,21 @@ public class AccountResourceImpl implements AccountResource {
 			   .setCreationTime(modifiedTime);
 		mongoOps.updateFirst(query(where(Collections.Account.SNDA_ID)
 				.is(sndaId)), update, Collections.ACCOUNT_COLLECTION_NAME);
-		return Response
-				.ok()
-				.entity(ObjectMappers.toJSON(MAPPER, account.getAccount()))
-				.build();
+		return account.getAccount();
 	}
 
 	@Override
 	@POST
 	@Path("available/{snda_id}")
-	public Response available(@PathParam("snda_id") String sndaId,
+	@Produces(MediaType.APPLICATION_JSON)
+	public Account available(@PathParam("snda_id") String sndaId,
 			@QueryParam("available") String available) {
-		if (isBlank(sndaId) || isBlank(available)) {
-			return Response
-					.status(Status.BAD_REQUEST)
-					.entity("Request must contains sndaId and available params.")
-					.build();
-		}
-		if (!checkAccountExist(sndaId)) {
-			return Response
-					.status(Status.NOT_FOUND)
-					.entity("No such account.")
-					.build();
+		checkSndaId(sndaId);
+		boolean enable = checkAvailableParam(available);
+		if (Preconditions.getAccountBySndaId(mongoOps, sndaId) == null) {
+			throw new NoSuchAccountException();
 		}
 		long modifiedTime = System.currentTimeMillis();
-		boolean enable = Boolean.parseBoolean(available);
 		Update update = new Update();
 		update.set(Collections.Account.AVAILABLE, enable)
 			  .set(Collections.Account.MODIFIED_TIME, modifiedTime);
@@ -150,70 +134,36 @@ public class AccountResourceImpl implements AccountResource {
 		PojoAccount account = mongoOps.findOne(
 				query(where(Collections.Account.SNDA_ID).is(sndaId)),
 				PojoAccount.class, Collections.ACCOUNT_COLLECTION_NAME);
-		return Response
-				.ok()
-				.entity(ObjectMappers.toJSON(MAPPER, account.getAccount()))
-				.build();
+		return account.getAccount();
 	}
 
 	@Override
 	@GET
 	@Path("status/{snda_id}")
-	public Response status(@PathParam("snda_id") String sndaId) {
-		if (isBlank(sndaId)) {
-			return Response
-					.status(Status.BAD_REQUEST)
-					.entity("Request must contains sndaId param.")
-					.build();
-		}
-		PojoAccount account = mongoOps.findOne(
-				query(where(Collections.Account.SNDA_ID).is(sndaId)),
-				PojoAccount.class, Collections.ACCOUNT_COLLECTION_NAME);
+	@Produces(MediaType.APPLICATION_JSON)
+	public Account status(@PathParam("snda_id") String sndaId) {
+		checkSndaId(sndaId);
+		PojoAccount account = Preconditions.getAccountBySndaId(mongoOps, sndaId);
 		if (account == null) {
-			return Response
-					.status(Status.NOT_FOUND)
-					.entity("No such account.")
-					.build();
+			throw new NoSuchAccountException();
 		}
-		return Response
-				.ok()
-				.entity(ObjectMappers.toJSON(MAPPER, account.getAccount()))
-				.build();
+		return account.getAccount();
 	}
 
 	@Override
 	@GET
 	@Path("applications/{snda_id}")
-	public Response applications(@PathParam("snda_id") String sndaId) {
-		if (isBlank(sndaId)) {
-			return Response
-					.status(Status.BAD_REQUEST)
-					.entity("Request must contains sndaId param.")
-					.build();
-		}
-		PojoAccount account = mongoOps.findOne(
-				query(where(Collections.Account.SNDA_ID).is(sndaId)),
-				PojoAccount.class, Collections.ACCOUNT_COLLECTION_NAME);
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<Application> applications(@PathParam("snda_id") String sndaId) {
+		checkSndaId(sndaId);
+		PojoAccount account = Preconditions.getAccountBySndaId(mongoOps, sndaId);
 		if (account == null) {
-			return Response
-					.status(Status.NOT_FOUND)
-					.entity("No such account.")
-					.build();
+			throw new NoSuchAccountException();
 		}
 		List<PojoApplication> apps = mongoOps.find(
 				query(where(Collections.Application.OWNER).is(account.getUid())),
 				PojoApplication.class, Collections.APPLICATION_COLLECTION_NAME);
-		return Response
-				.ok()
-				.entity(ObjectMappers.toJSON(MAPPER, PojoApplication.getApplications(apps)))
-				.build();
-	}
-	
-	private boolean checkAccountExist(String sndaId) {
-		PojoAccount account = mongoOps.findOne(
-				query(where(Collections.Account.SNDA_ID).is(sndaId)),
-				PojoAccount.class, Collections.ACCOUNT_COLLECTION_NAME);
-		return account != null;
+		return PojoApplication.getApplications(apps);
 	}
 	
 	private void checkSndaId(String sndaId) {
@@ -228,9 +178,13 @@ public class AccountResourceImpl implements AccountResource {
 		}
 	}
 	
-	private void checkEmail(String email) {
-		// TODO Auto-generated method stub
-		
+	private boolean checkAvailableParam(String available) {
+		if (available == null 
+				|| (!"true".equalsIgnoreCase(available) 
+						&& !"false".equalsIgnoreCase(available))) {
+			throw new InvalidAvailableParamException();
+		}
+		return Boolean.valueOf(available);
 	}
 	
 }

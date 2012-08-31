@@ -169,6 +169,7 @@ public class PojoApplication {
 		application.setScope(scope);
 		application.setWebsite(website);
 		application.setCreationTime(new DateTime(creationTime));
+		application.setModifiedTime(new DateTime(modifiedTime));
 		application.setOwner(owner);
 		return application;
 	}

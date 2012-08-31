@@ -18,6 +18,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.apache.amber.oauth2.as.issuer.MD5Generator;
 import org.apache.amber.oauth2.as.issuer.OAuthIssuer;
@@ -44,11 +45,13 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Maps;
+import com.snda.grand.space.as.mongo.model.PojoAccount;
 import com.snda.grand.space.as.mongo.model.PojoApplication;
 import com.snda.grand.space.as.mongo.model.PojoAuthorization;
 import com.snda.grand.space.as.mongo.model.PojoCode;
 import com.snda.grand.space.as.mongo.model.Collections;
 import com.snda.grand.space.as.mongo.model.PojoToken;
+import com.snda.grand.space.as.rest.model.Validation;
 import com.snda.grand.space.as.rest.oauth2.AuthorizationResource;
 import com.snda.grand.space.as.rest.oauth2.TokenResource;
 import com.snda.grand.space.as.rest.oauth2.ValidateResource;
@@ -172,7 +175,7 @@ public class OAuth2ResourceImpl implements AuthorizationResource, TokenResource,
 						.setAccessToken(accessToken)
 						.setRefreshToken(refreshToken)
 						.setExpiresIn("3600").buildJSONMessage();
-				insertRefreshToken(getApplication(oauthRequest.getClientId())
+				insertRefreshToken(getApplicationByAppId(oauthRequest.getClientId())
 						.getAppid(), oauthRequest.getClientId(), refreshToken);
 				insertAccessToken(refreshToken, accessToken);
 			}
@@ -217,10 +220,11 @@ public class OAuth2ResourceImpl implements AuthorizationResource, TokenResource,
 				insertCode(code);
 				builder.setCode(code);
 			}
-//			if (responseType.equals(ResponseType.TOKEN.toString())) {
-//				builder.setAccessToken(oauthUUIDIssuer.accessToken());
-//				builder.setExpiresIn(3600L);
-//			}
+			
+			if (responseType.equals(ResponseType.TOKEN.toString())) {
+				builder.setAccessToken(oauthUUIDIssuer.accessToken());
+				builder.setExpiresIn(3600L);
+			}
 
 			String redirectURI = oauthRequest
 					.getParam(OAuth.OAUTH_REDIRECT_URI);
@@ -279,7 +283,7 @@ public class OAuth2ResourceImpl implements AuthorizationResource, TokenResource,
 	@Override
 	@GET
 	@Path("validate")
-	public Response validate(@Context HttpServletRequest request)
+	public Validation validate(@Context HttpServletRequest request)
 			throws OAuthSystemException {
 		try {
 
@@ -290,28 +294,43 @@ public class OAuth2ResourceImpl implements AuthorizationResource, TokenResource,
 			// Get the access token
 			String accessToken = oauthRequest.getAccessToken();
 
-			// Validate the access token
-			if (!verifyAccessToken(accessToken)) {
-
-				// Return the OAuth error message
-				OAuthResponse oauthResponse = OAuthRSResponse
-						.errorResponse(HttpServletResponse.SC_UNAUTHORIZED)
-						.setRealm(Common.RESOURCE_SERVER_NAME)
-						.setError(OAuthError.ResourceResponse.INVALID_TOKEN)
-						.buildHeaderMessage();
-
-				// return Response.status(Response.Status.UNAUTHORIZED).build();
-				return Response
-						.status(Response.Status.UNAUTHORIZED)
-						.header(OAuth.HeaderType.WWW_AUTHENTICATE,
-								oauthResponse
-										.getHeader(OAuth.HeaderType.WWW_AUTHENTICATE))
-						.build();
-
+			PojoToken token = getToken(accessToken);
+			if (token == null) {
+				// TODO
+				// throw invalid access token exception
+			} else if (token.getExpire() > System.currentTimeMillis()) {
+				// TODO
+				// throw expire exception
 			}
-
-			// Return the resource
-			return Response.noContent().build();
+			PojoAuthorization authorization = getAuthorizationByRefreshToken(token
+					.getRefreshToken());
+			PojoApplication application = getApplicationByAppId(authorization
+					.getAppId());
+			PojoAccount account = getAccountByUid(authorization.getUid());
+			Validation validation = new Validation(account.getUsernameNorm(),
+					application.getScope(), token.getAccessToken(),
+					token.getExpire());
+			return validation;
+			// Validate the access token
+//			if (!checkAccessTokenExist(accessToken)) {
+//
+//				// Return the OAuth error message
+//				OAuthResponse oauthResponse = OAuthRSResponse
+//						.errorResponse(HttpServletResponse.SC_UNAUTHORIZED)
+//						.setRealm(Common.RESOURCE_SERVER_NAME)
+//						.setError(OAuthError.ResourceResponse.INVALID_TOKEN)
+//						.buildHeaderMessage();
+//
+//				// return Response.status(Response.Status.UNAUTHORIZED).build();
+//				return Response
+//						.status(Response.Status.UNAUTHORIZED)
+//						.header(OAuth.HeaderType.WWW_AUTHENTICATE,
+//								oauthResponse
+//										.getHeader(OAuth.HeaderType.WWW_AUTHENTICATE))
+//						.build();
+//
+//			
+//			}
 
 		} catch (OAuthProblemException e) {
 			// Check if the error code has been set
@@ -326,12 +345,13 @@ public class OAuth2ResourceImpl implements AuthorizationResource, TokenResource,
 
 				// If no error code then return a standard 401 Unauthorized
 				// response
-				return Response
-						.status(Response.Status.UNAUTHORIZED)
-						.header(OAuth.HeaderType.WWW_AUTHENTICATE,
-								oauthResponse
-										.getHeader(OAuth.HeaderType.WWW_AUTHENTICATE))
-						.build();
+//				return Response
+//						.status(Response.Status.UNAUTHORIZED)
+//						.header(OAuth.HeaderType.WWW_AUTHENTICATE,
+//								oauthResponse
+//										.getHeader(OAuth.HeaderType.WWW_AUTHENTICATE))
+//						.build();
+				return null;
 			}
 
 			OAuthResponse oauthResponse = OAuthRSResponse
@@ -341,12 +361,13 @@ public class OAuth2ResourceImpl implements AuthorizationResource, TokenResource,
 					.setErrorDescription(e.getDescription())
 					.setErrorUri(e.getUri()).buildHeaderMessage();
 
-			return Response
-					.status(Response.Status.BAD_REQUEST)
-					.header(OAuth.HeaderType.WWW_AUTHENTICATE,
-							oauthResponse
-									.getHeader(OAuth.HeaderType.WWW_AUTHENTICATE))
-					.build();
+//			return Response
+//					.status(Response.Status.BAD_REQUEST)
+//					.header(OAuth.HeaderType.WWW_AUTHENTICATE,
+//							oauthResponse
+//									.getHeader(OAuth.HeaderType.WWW_AUTHENTICATE))
+//					.build();
+			return null;
 		}
 	}
 	
@@ -366,7 +387,17 @@ public class OAuth2ResourceImpl implements AuthorizationResource, TokenResource,
 		return uriBuilder.toString().substring(0, uriBuilder.toString().length() - 1);
 	}
 	
-	private PojoApplication getApplication(String appId) {
+	private PojoAccount getAccountByUid(String uid) {
+		PojoAccount account = mongoOps.findOne(
+				query(where(Collections.Account.UID).is(uid)),
+				PojoAccount.class, Collections.ACCOUNT_COLLECTION_NAME);
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug("Account : {}", account);
+		}
+		return account;
+	}
+	
+	private PojoApplication getApplicationByAppId(String appId) {
 		PojoApplication app = mongoOps.findOne(
 				query(where(Collections.Application.APPID).is(appId)),
 				PojoApplication.class, Collections.APPLICATION_COLLECTION_NAME);
@@ -377,7 +408,28 @@ public class OAuth2ResourceImpl implements AuthorizationResource, TokenResource,
 	}
 	
 	private boolean checkApplicationExist(String appId) {
-		return getApplication(appId) != null;
+		return getApplicationByAppId(appId) != null;
+	}
+	
+	private PojoAuthorization getAuthorizationByRefreshToken(String refreshToken) {
+		PojoAuthorization authorization = mongoOps.findOne(
+				query(where(Collections.Authorization.REFRESH_TOKEN).is(
+						refreshToken)), PojoAuthorization.class,
+				Collections.AUTHORIZATION_COLLECTION_NAME);
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug("Authorization : {}", authorization);
+		}
+		return authorization;
+	}
+	
+	private PojoToken getToken(String accessToken) {
+		PojoToken token = mongoOps.findOne(
+				query(where(Collections.Token.ACCESS_TOKEN).is(accessToken)),
+				PojoToken.class, Collections.TOKEN_COLLECTION_NAME);
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug("Token : {}", token);
+		}
+		return token;
 	}
 	
 	private boolean checkRefreshTokenExist(String appId, String refreshToken) {
@@ -400,13 +452,6 @@ public class OAuth2ResourceImpl implements AuthorizationResource, TokenResource,
 		PojoToken token = new PojoToken(refreshToken, accessToken, creationTime,
 				creationTime + 3600000);
 		mongoOps.insert(token, Collections.TOKEN_COLLECTION_NAME);
-	}
-	
-	private boolean verifyAccessToken(String accessToken) {
-		PojoToken token = mongoOps.findOne(
-				query(where(Collections.Token.ACCESS_TOKEN).is(accessToken)),
-				PojoToken.class, Collections.TOKEN_COLLECTION_NAME);
-		return token != null;
 	}
 	
 	private void insertCode(String codeString) {

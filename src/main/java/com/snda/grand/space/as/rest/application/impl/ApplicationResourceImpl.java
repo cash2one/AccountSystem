@@ -12,7 +12,9 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -24,13 +26,20 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
+import com.snda.grand.space.as.exception.ApplicationAlreadyExistException;
+import com.snda.grand.space.as.exception.InvalidAppDescriptionException;
+import com.snda.grand.space.as.exception.InvalidAppStatusException;
+import com.snda.grand.space.as.exception.InvalidUidException;
+import com.snda.grand.space.as.exception.NoSuchAccountException;
+import com.snda.grand.space.as.mongo.model.Collections;
 import com.snda.grand.space.as.mongo.model.PojoAccount;
 import com.snda.grand.space.as.mongo.model.PojoApplication;
 import com.snda.grand.space.as.mongo.model.PojoAuthorization;
-import com.snda.grand.space.as.mongo.model.Collections;
 import com.snda.grand.space.as.rest.application.ApplicationResource;
+import com.snda.grand.space.as.rest.model.Application;
 import com.snda.grand.space.as.rest.util.ApplicationKeys;
 import com.snda.grand.space.as.rest.util.ObjectMappers;
+import com.snda.grand.space.as.rest.util.Preconditions;
 
 
 @Service
@@ -50,45 +59,35 @@ public class ApplicationResourceImpl implements ApplicationResource {
 	@Override
 	@POST
 	@Path("create/{appid}")
-	public Response create(@PathParam("appid") String appId, 
+	@Produces(MediaType.APPLICATION_JSON)
+	public Application create(@PathParam("appid") String appId, 
 			@QueryParam("uid") String uid, 
 			@QueryParam("app_description") String appDescription,
 			@QueryParam("app_status") String appStatus, 
 			@QueryParam("scope") String scope, 
 			@QueryParam("website") String website) {
-		if (isBlank(uid) || isBlank(appDescription) || isBlank(appStatus)) {
-			return Response
-					.status(Status.BAD_REQUEST)
-					.entity("Request must contains uid, app_description and app_status params")
-					.build();
+		checkUid(uid);
+		checkAppDescription(appDescription);
+		checkAppStatus(appStatus);
+		if (Preconditions.getAccountByUid(mongoOps, uid) == null) {
+			throw new NoSuchAccountException();
 		}
-		if (!checkAccountExist(uid)) {
-			return Response
-					.status(Status.NOT_FOUND)
-					.entity("No such user.")
-					.build();
-		}
-		if (checkApplicationExist(appId)) {
-			return Response
-					.status(Status.CONFLICT)
-					.entity("Application already exists.")
-					.build();
+		if (Preconditions.getApplicationByAppId(mongoOps, appId) != null) {
+			throw new ApplicationAlreadyExistException();
 		}
 		long creationTime = System.currentTimeMillis();
-		PojoApplication app = new PojoApplication(appId, appDescription, appStatus,
+		PojoApplication application = new PojoApplication(appId, appDescription, appStatus,
 				ApplicationKeys.generateAccessKeyId(),
 				ApplicationKeys.generateSecretAccessKey(), scope, website,
 				creationTime, creationTime, uid);
-		mongoOps.insert(app, Collections.APPLICATION_COLLECTION_NAME);
-		return Response
-				.ok()
-				.entity(ObjectMappers.toJSON(MAPPER, app.getApplication()))
-				.build();
+		mongoOps.insert(application, Collections.APPLICATION_COLLECTION_NAME);
+		return application.getApplication();
 	}
 
 	@Override
 	@GET
 	@Path("authorized/{appid}")
+	@Produces(MediaType.APPLICATION_JSON)
 	public Response listAuthorized(@PathParam("appid") String appId, 
 			@QueryParam("owner") String owner) {
 		if (isBlank(owner)) {
@@ -384,5 +383,25 @@ public class ApplicationResourceImpl implements ApplicationResource {
 		mongoOps.remove(query(where(Collections.Authorization.APPID).is(appId)),
 				Collections.AUTHORIZATION_COLLECTION_NAME);
 	}
+	
+	private void checkUid(String uid) {
+		if (isBlank(uid)) {
+			throw new InvalidUidException();
+		}
+	}
 
+	private void checkAppDescription(String appDescription) {
+		if (isBlank(appDescription)) {
+			throw new InvalidAppDescriptionException();
+		}
+	}
+
+	private void checkAppStatus(String appStatus) {
+		if (appStatus == null 
+				|| (!"development".equalsIgnoreCase(appStatus)
+						&& !"release".equalsIgnoreCase(appStatus))) {
+			throw new InvalidAppStatusException();
+		}
+	}
+	
 }

@@ -17,6 +17,7 @@ public class Collections {
 	public abstract class Account {
 		public static final String SNDA_ID = "snda_id";
 		public static final String UID = "uid";
+		public static final String USERNAME_NORM = "username_norm";
 		public static final String DISPLAY_NAME = "display_name";
 		public static final String EMAIL = "email";
 		public static final String LOCALE = "locale";
