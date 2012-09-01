@@ -18,7 +18,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
 import org.apache.amber.oauth2.as.issuer.MD5Generator;
 import org.apache.amber.oauth2.as.issuer.OAuthIssuer;
@@ -45,11 +44,11 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Maps;
+import com.snda.grand.space.as.mongo.model.Collections;
 import com.snda.grand.space.as.mongo.model.PojoAccount;
 import com.snda.grand.space.as.mongo.model.PojoApplication;
 import com.snda.grand.space.as.mongo.model.PojoAuthorization;
 import com.snda.grand.space.as.mongo.model.PojoCode;
-import com.snda.grand.space.as.mongo.model.Collections;
 import com.snda.grand.space.as.mongo.model.PojoToken;
 import com.snda.grand.space.as.rest.model.Validation;
 import com.snda.grand.space.as.rest.oauth2.AuthorizationResource;

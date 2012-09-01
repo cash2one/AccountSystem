@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import com.snda.grand.space.as.exception.AccountAlreadyExistException;
 import com.snda.grand.space.as.exception.InvalidAvailableParamException;
 import com.snda.grand.space.as.exception.InvalidDisplayNameException;
+import com.snda.grand.space.as.exception.InvalidEmailException;
 import com.snda.grand.space.as.exception.InvalidSndaIdException;
 import com.snda.grand.space.as.exception.NoSuchAccountException;
 import com.snda.grand.space.as.exception.NotModifiedException;
@@ -60,7 +61,7 @@ public class AccountResourceImpl implements AccountResource {
 			@QueryParam("locale") String locale) {
 		checkSndaId(sndaId);
 		checkDisplayName(displayName);
-		Rule.checkEmail(email);
+		Preconditions.checkEmail(email);
 		if (Preconditions.getAccountBySndaId(mongoOps, sndaId) != null) {
 			throw new AccountAlreadyExistException();
 		}
@@ -94,6 +95,9 @@ public class AccountResourceImpl implements AccountResource {
 		}
 		if (isBlank(displayName) && isBlank(email) && isBlank(locale)) {
 			throw new NotModifiedException();
+		}
+		if (email != null && !Rule.checkEmail(email)) {
+			throw new InvalidEmailException();
 		}
 
 		long modifiedTime = System.currentTimeMillis();

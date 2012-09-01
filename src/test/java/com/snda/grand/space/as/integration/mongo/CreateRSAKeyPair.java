@@ -18,6 +18,7 @@ import com.mongodb.Mongo;
 import com.snda.grand.space.as.mongo.model.Collections;
 import com.snda.grand.space.as.mongo.model.PojoAccount;
 import com.snda.grand.space.as.rest.util.ApplicationKeys;
+import com.snda.grand.space.as.rest.util.Rule;
 
 public class CreateRSAKeyPair {
 
@@ -56,5 +57,10 @@ public class CreateRSAKeyPair {
 //				Account.class, Collections.ACCOUNT_COLLECTION_NAME);
 //		System.out.println(account);
 //	}
+	
+	@Test
+	public void testCheckEmail() {
+		Rule.checkEmail("jian.g123@1.com");
+	}
 	
 }

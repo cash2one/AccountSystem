@@ -5,6 +5,7 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 
 import org.springframework.data.mongodb.core.MongoOperations;
 
+import com.snda.grand.space.as.exception.InvalidEmailException;
 import com.snda.grand.space.as.mongo.model.Collections;
 import com.snda.grand.space.as.mongo.model.PojoAccount;
 import com.snda.grand.space.as.mongo.model.PojoApplication;
@@ -33,6 +34,12 @@ public final class Preconditions {
 				query(where(Collections.Application.APPID).is(appId)),
 				PojoApplication.class, Collections.APPLICATION_COLLECTION_NAME);
 		return application;
+	}
+	
+	public static void checkEmail(String email) {
+		if (!Rule.checkEmail(email)) {
+			throw new InvalidEmailException();
+		}
 	}
 
 }

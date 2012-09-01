@@ -15,10 +15,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoOperations;
@@ -26,19 +23,22 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
+import com.snda.grand.space.as.exception.AccessDeniedException;
 import com.snda.grand.space.as.exception.ApplicationAlreadyExistException;
 import com.snda.grand.space.as.exception.InvalidAppDescriptionException;
 import com.snda.grand.space.as.exception.InvalidAppStatusException;
+import com.snda.grand.space.as.exception.InvalidRequestParamsException;
 import com.snda.grand.space.as.exception.InvalidUidException;
 import com.snda.grand.space.as.exception.NoSuchAccountException;
+import com.snda.grand.space.as.exception.NoSuchApplicationException;
+import com.snda.grand.space.as.exception.NotModifiedException;
 import com.snda.grand.space.as.mongo.model.Collections;
-import com.snda.grand.space.as.mongo.model.PojoAccount;
 import com.snda.grand.space.as.mongo.model.PojoApplication;
 import com.snda.grand.space.as.mongo.model.PojoAuthorization;
 import com.snda.grand.space.as.rest.application.ApplicationResource;
 import com.snda.grand.space.as.rest.model.Application;
+import com.snda.grand.space.as.rest.model.Authorization;
 import com.snda.grand.space.as.rest.util.ApplicationKeys;
-import com.snda.grand.space.as.rest.util.ObjectMappers;
 import com.snda.grand.space.as.rest.util.Preconditions;
 
 
@@ -47,7 +47,6 @@ import com.snda.grand.space.as.rest.util.Preconditions;
 public class ApplicationResourceImpl implements ApplicationResource {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationResourceImpl.class);
-	private static final ObjectMapper MAPPER = new ObjectMapper();
 	private static MongoOperations mongoOps;
 	
 	public ApplicationResourceImpl(MongoOperations mongoOperations) {
@@ -88,118 +87,66 @@ public class ApplicationResourceImpl implements ApplicationResource {
 	@GET
 	@Path("authorized/{appid}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response listAuthorized(@PathParam("appid") String appId, 
+	public List<Authorization> listAuthorized(@PathParam("appid") String appId, 
 			@QueryParam("owner") String owner) {
-		if (isBlank(owner)) {
-			return Response
-					.status(Status.BAD_REQUEST)
-					.entity("Request must contains owner param")
-					.build();
+		checkOwner(owner);
+		if (Preconditions.getAccountByUid(mongoOps, owner) == null) {
+			throw new NoSuchAccountException();
 		}
-		if (!checkAccountExist(owner)) {
-			return Response
-					.status(Status.NOT_FOUND)
-					.entity("No such user.")
-					.build();
+		PojoApplication application = Preconditions.getApplicationByAppId(mongoOps, appId);
+		if (application == null) {
+			throw new NoSuchApplicationException();
 		}
-		if (!checkApplicationExist(appId)) {
-			return Response
-					.status(Status.NOT_FOUND)
-					.entity("No such application.")
-					.build();
+		if (!owner.equals(application.getOwner())) {
+			throw new AccessDeniedException();
 		}
-		if (!checkOwner(appId, owner)) {
-			return Response
-					.status(Status.FORBIDDEN)
-					.entity("Access denied.")
-					.build();
-		}
-		List<PojoAuthorization> tokens = mongoOps.find(
+		List<PojoAuthorization> authorizations = mongoOps.find(
 				query(where(Collections.Application.APPID).is(appId)),
 				PojoAuthorization.class, Collections.AUTHORIZATION_COLLECTION_NAME);
-		return Response
-				.ok()
-				.entity(ObjectMappers.toJSON(MAPPER, PojoAuthorization.getAuthorizations(tokens)))
-				.build();
+		return PojoAuthorization.getAuthorizations(authorizations);
 	}
 
 	@Override
 	@GET
 	@Path("status/{appid}")
-	public Response status(@PathParam("appid") String appId, 
+	@Produces(MediaType.APPLICATION_JSON)
+	public Application status(@PathParam("appid") String appId, 
 			@QueryParam("owner") String owner) {
-		if (isBlank(owner)) {
-			return Response
-					.status(Status.BAD_REQUEST)
-					.entity("Request must contains owner param")
-					.build();
+		checkOwner(owner);
+		if (Preconditions.getAccountByUid(mongoOps, owner) == null) {
+			throw new NoSuchAccountException();
 		}
-		if (!checkAccountExist(owner)) {
-			return Response
-					.status(Status.NOT_FOUND)
-					.entity("No such user.")
-					.build();
-		}
-		PojoApplication application = mongoOps.findOne(
-				query(where(Collections.Application.APPID).is(appId)),
-				PojoApplication.class, Collections.APPLICATION_COLLECTION_NAME);
+		PojoApplication application = Preconditions.getApplicationByAppId(mongoOps, appId);
 		if (application == null) {
-			return Response
-					.status(Status.NOT_FOUND)
-					.entity("No such application.")
-					.build();
+			throw new NoSuchApplicationException();
 		}
-		if (!application.getOwner().equals(owner)) {
-			return Response
-					.status(Status.FORBIDDEN)
-					.entity("Access denied.")
-					.build();
+		if (!owner.equals(application.getOwner())) {
+			throw new AccessDeniedException();
 		}
-		return Response
-				.ok()
-				.entity(ObjectMappers.toJSON(MAPPER,
-						application.getApplication())).build();
+		return application.getApplication();
 	}
 
 	@Override
 	@POST
 	@Path("modify/{appid}")
-	public Response modify(@PathParam("appid") String appId, 
+	@Produces(MediaType.APPLICATION_JSON)
+	public Application modify(@PathParam("appid") String appId, 
 			@QueryParam("owner") String owner, 
 			@QueryParam("app_description") String appDescription,
 			@QueryParam("website") String website) {
-		if (isBlank(owner)) {
-			return Response
-					.status(Status.BAD_REQUEST)
-					.entity("Request must contains owner param")
-					.build();
+		checkOwner(owner);
+		if (Preconditions.getAccountByUid(mongoOps, owner) == null) {
+			throw new NoSuchAccountException();
 		}
-		if (!checkAccountExist(owner)) {
-			return Response
-					.status(Status.NOT_FOUND)
-					.entity("No such user.")
-					.build();
-		}
-		PojoApplication application = mongoOps.findOne(
-				query(where(Collections.Application.APPID).is(appId)),
-				PojoApplication.class, Collections.APPLICATION_COLLECTION_NAME);
+		PojoApplication application = Preconditions.getApplicationByAppId(mongoOps, appId);
 		if (application == null) {
-			return Response
-					.status(Status.NOT_FOUND)
-					.entity("No such application.")
-					.build();
+			throw new NoSuchApplicationException();
 		}
-		if (!application.getOwner().equals(owner)) {
-			return Response
-					.status(Status.FORBIDDEN)
-					.entity("Access denied.")
-					.build();
+		if (!owner.equals(application.getOwner())) {
+			throw new AccessDeniedException();
 		}
 		if (isBlank(appDescription) && isBlank(website)) {
-			return Response
-					.status(Status.NOT_MODIFIED)
-					.entity("Application has not been modified.")
-					.build();
+			throw new NotModifiedException();
 		}
 		long modifiedTime = System.currentTimeMillis();
 		Query query = new Query();
@@ -215,50 +162,30 @@ public class ApplicationResourceImpl implements ApplicationResource {
 		application.setAppDescription(modifiedAppDescription)
 				   .setWebsite(modifiedWebsite)
 				   .setModifiedTime(modifiedTime);
-		return Response
-				.ok()
-				.entity(ObjectMappers.toJSON(MAPPER,
-						application.getApplication())).build();
+		return application.getApplication();
 	}
 
 	@Override
 	@POST
 	@Path("status/{appid}")
-	public Response changeStatus(@PathParam("appid") String appId, 
+	@Produces(MediaType.APPLICATION_JSON)
+	public Application changeStatus(@PathParam("appid") String appId, 
 			@QueryParam("owner") String owner, 
 			@QueryParam("app_status") String appStatus) {
-		if (isBlank(owner) || isBlank(appStatus)) {
-			return Response
-					.status(Status.BAD_REQUEST)
-					.entity("Request must contains appid, owner and app_status params")
-					.build();
+		checkOwner(owner);
+		checkAppStatus(appStatus);
+		if (Preconditions.getAccountByUid(mongoOps, owner) == null) {
+			throw new NoSuchAccountException();
 		}
-		if (!checkAccountExist(owner)) {
-			return Response
-					.status(Status.NOT_FOUND)
-					.entity("No such user.")
-					.build();
-		}
-		PojoApplication application = mongoOps.findOne(
-				query(where(Collections.Application.APPID).is(appId)), PojoApplication.class,
-				Collections.APPLICATION_COLLECTION_NAME);
+		PojoApplication application = Preconditions.getApplicationByAppId(mongoOps, appId);
 		if (application == null) {
-			return Response
-					.status(Status.NOT_FOUND)
-					.entity("No such application.")
-					.build();
+			throw new NoSuchApplicationException();
 		}
-		if (!application.getOwner().equals(owner)) {
-			return Response
-					.status(Status.FORBIDDEN)
-					.entity("Access denied.")
-					.build();
+		if (!owner.equals(application.getOwner())) {
+			throw new AccessDeniedException();
 		}
 		if (application.getAppStatus().equals(appStatus)) {
-			return Response
-					.status(Status.NOT_MODIFIED)
-					.entity("Application has not been modified.")
-					.build();
+			throw new NotModifiedException();
 		}
 		long modifiedTime = System.currentTimeMillis();
 		Query query = new Query();
@@ -272,116 +199,69 @@ public class ApplicationResourceImpl implements ApplicationResource {
 				Collections.APPLICATION_COLLECTION_NAME);
 		application.setAppStatus(appStatus)
 				   .setModifiedTime(modifiedTime);
-		return Response
-				.ok()
-				.entity(ObjectMappers.toJSON(MAPPER,
-						application.getApplication())).build();
+		return application.getApplication();
 	}
 
 	@Override
 	@DELETE
 	@Path("token")
-	public Response cancelAuthorization(@QueryParam("uid") String uid, 
+	@Produces(MediaType.APPLICATION_JSON)
+	public void cancelAuthorization(@QueryParam("uid") String uid, 
 			@QueryParam("appid") String appId) {
-		if (isBlank(uid) || isBlank(appId)) {
-			return Response
-					.status(Status.BAD_REQUEST)
-					.entity("Request must contains uid and appid param")
-					.build();
+		checkUid(uid);
+		checkAppid(appId);
+		if (Preconditions.getAccountByUid(mongoOps, uid) == null) {
+			throw new NoSuchAccountException();
 		}
-		if (!checkAccountExist(uid)) {
-			return Response
-					.status(Status.NOT_FOUND)
-					.entity("No such user.")
-					.build();
-		}
-		if (!checkApplicationExist(appId)) {
-			return Response
-					.status(Status.NOT_FOUND)
-					.entity("No such application.")
-					.build();
+		if (Preconditions.getApplicationByAppId(mongoOps, appId) == null) {
+			throw new NoSuchApplicationException();
 		}
 		Query query = new Query();
 		query.addCriteria(where(Collections.Authorization.UID).is(uid))
 			 .addCriteria(where(Collections.Authorization.APPID).is(appId));
 		mongoOps.remove(query, Collections.AUTHORIZATION_COLLECTION_NAME);
-		return Response.noContent().build();
 	}
 
 	@Override
 	@DELETE
 	@Path("delete/{appid}")
-	public Response delete(@PathParam("appid") String appId, 
+	@Produces(MediaType.APPLICATION_JSON)
+	public void delete(@PathParam("appid") String appId, 
 			@QueryParam("owner") String owner) {
-		if (isBlank(owner)) {
-			return Response
-					.status(Status.BAD_REQUEST)
-					.entity("Request must contains owner param")
-					.build();
+		checkOwner(owner);
+		if (Preconditions.getAccountByUid(mongoOps, owner) == null) {
+			throw new NoSuchAccountException();
 		}
-		if (!checkAccountExist(owner)) {
-			return Response
-					.status(Status.NOT_FOUND)
-					.entity("No such user.")
-					.build();
-		}
-		PojoApplication application = mongoOps.findOne(
-				query(where(Collections.Authorization.APPID).is(appId)), PojoApplication.class,
-				Collections.APPLICATION_COLLECTION_NAME);
+		PojoApplication application = Preconditions.getApplicationByAppId(mongoOps, appId);
 		if (application == null) {
-			return Response
-					.status(Status.NOT_FOUND)
-					.entity("No such application.")
-					.build();
+			throw new NoSuchApplicationException();
 		}
-		if (!application.getOwner().equals(owner)) {
-			return Response
-					.status(Status.FORBIDDEN)
-					.entity("Access denied.")
-					.build();
+		if (!owner.equals(application.getOwner())) {
+			throw new AccessDeniedException();
 		}
 		cancelAllAuthorization(appId);
 		Query query = new Query();
 		query.addCriteria(where(Collections.Application.APPID).is(appId))
 			 .addCriteria(where(Collections.Application.OWNER).is(owner));
 		mongoOps.remove(query, Collections.APPLICATION_COLLECTION_NAME);
-		return Response.noContent().build();
 	}
 	
-	private boolean checkApplicationExist(String appId) {
-		PojoApplication app = mongoOps.findOne(
-				query(where(Collections.Application.APPID).is(appId)),
-				PojoApplication.class, Collections.APPLICATION_COLLECTION_NAME);
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("Application : {}", app);
-		}
-		return app != null;
-	}
-	
-	private boolean checkAccountExist(String uid) {
-		PojoAccount account = mongoOps.findOne(query(where(Collections.Account.UID)
-				.is(uid)), PojoAccount.class, Collections.ACCOUNT_COLLECTION_NAME);
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("Account : {}", account);
-		}
-		return account != null;
-	}
-	
-	private boolean checkOwner(String appId, String owner) {
-		Query query = new Query();
-		query.addCriteria(where(Collections.Application.APPID).is(appId));
-		query.addCriteria(where(Collections.Application.OWNER).is(owner));
-		PojoApplication app = mongoOps.findOne(query, PojoApplication.class,
-				Collections.APPLICATION_COLLECTION_NAME);
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("Application : {}", app);
-		}
-		return app != null;
-	}
 	
 	private void cancelAllAuthorization(String appId) {
 		mongoOps.remove(query(where(Collections.Authorization.APPID).is(appId)),
 				Collections.AUTHORIZATION_COLLECTION_NAME);
+	}
+	
+	private void checkOwner(String owner) {
+		if (isBlank(owner)) {
+			throw new InvalidRequestParamsException("owner");
+		}
+	}
+	
+	private void checkAppid(String appid) {
+		if (isBlank(appid)) {
+			throw new InvalidRequestParamsException("appid");
+		}
 	}
 	
 	private void checkUid(String uid) {
