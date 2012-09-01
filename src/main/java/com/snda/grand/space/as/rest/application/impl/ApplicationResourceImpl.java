@@ -28,7 +28,9 @@ import com.snda.grand.space.as.exception.ApplicationAlreadyExistException;
 import com.snda.grand.space.as.exception.InvalidAppDescriptionException;
 import com.snda.grand.space.as.exception.InvalidAppStatusException;
 import com.snda.grand.space.as.exception.InvalidRequestParamsException;
+import com.snda.grand.space.as.exception.InvalidScopeException;
 import com.snda.grand.space.as.exception.InvalidUidException;
+import com.snda.grand.space.as.exception.InvalidWebSiteException;
 import com.snda.grand.space.as.exception.NoSuchAccountException;
 import com.snda.grand.space.as.exception.NoSuchApplicationException;
 import com.snda.grand.space.as.exception.NotModifiedException;
@@ -40,6 +42,7 @@ import com.snda.grand.space.as.rest.model.Application;
 import com.snda.grand.space.as.rest.model.Authorization;
 import com.snda.grand.space.as.rest.util.ApplicationKeys;
 import com.snda.grand.space.as.rest.util.Preconditions;
+import com.snda.grand.space.as.rest.util.Rule;
 
 
 @Service
@@ -68,6 +71,13 @@ public class ApplicationResourceImpl implements ApplicationResource {
 		checkUid(uid);
 		checkAppDescription(appDescription);
 		checkAppStatus(appStatus);
+		checkScope(scope);
+		if (website != null &&  !Rule.checkDomain(website)) {
+			throw new InvalidWebSiteException();
+		}
+		if (scope == null) {
+			scope = "app";
+		}
 		if (Preconditions.getAccountByUid(mongoOps, uid) == null) {
 			throw new NoSuchAccountException();
 		}
@@ -135,6 +145,9 @@ public class ApplicationResourceImpl implements ApplicationResource {
 			@QueryParam("app_description") String appDescription,
 			@QueryParam("website") String website) {
 		checkOwner(owner);
+		if (website != null &&  !Rule.checkDomain(website)) {
+			throw new InvalidWebSiteException();
+		}
 		if (Preconditions.getAccountByUid(mongoOps, owner) == null) {
 			throw new NoSuchAccountException();
 		}
@@ -190,8 +203,7 @@ public class ApplicationResourceImpl implements ApplicationResource {
 		long modifiedTime = System.currentTimeMillis();
 		Query query = new Query();
 		query.addCriteria(where(Collections.Application.APPID).is(appId))
-			 .addCriteria(where(Collections.Application.OWNER).is(owner))
-			 .addCriteria(where(Collections.Application.APP_STAUTS).is(appStatus));
+			 .addCriteria(where(Collections.Application.OWNER).is(owner));
 		Update update = new Update();
 		update.set(Collections.Application.APP_STAUTS, appStatus)
 			  .set(Collections.Application.MODIFIED_TIME, modifiedTime);
@@ -281,6 +293,14 @@ public class ApplicationResourceImpl implements ApplicationResource {
 				|| (!"development".equalsIgnoreCase(appStatus)
 						&& !"release".equalsIgnoreCase(appStatus))) {
 			throw new InvalidAppStatusException();
+		}
+	}
+	
+	private void checkScope(String scope) {
+		if (scope != null 
+				&& (!"full".equalsIgnoreCase(scope)
+						&& !"app".equalsIgnoreCase(scope))) {
+			throw new InvalidScopeException();
 		}
 	}
 	
