@@ -3,6 +3,8 @@ package com.snda.grand.space.as.rest.util;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
+import java.util.List;
+
 import org.springframework.data.mongodb.core.MongoOperations;
 
 import com.snda.grand.space.as.exception.InvalidEmailException;
@@ -10,6 +12,7 @@ import com.snda.grand.space.as.exception.InvalidWebSiteException;
 import com.snda.grand.space.as.mongo.model.Collections;
 import com.snda.grand.space.as.mongo.model.PojoAccount;
 import com.snda.grand.space.as.mongo.model.PojoApplication;
+import com.snda.grand.space.as.mongo.model.PojoAuthorization;
 
 public final class Preconditions {
 
@@ -35,6 +38,15 @@ public final class Preconditions {
 				query(where(Collections.Application.APPID).is(appId)),
 				PojoApplication.class, Collections.APPLICATION_COLLECTION_NAME);
 		return application;
+	}
+	
+	public static List<PojoAuthorization> getAuthorizationsByUid(MongoOperations mongoOps,
+			String uid) {
+		List<PojoAuthorization> authorizations = mongoOps.find(
+				query(where(Collections.Authorization.UID).is(uid)),
+				PojoAuthorization.class,
+				Collections.AUTHORIZATION_COLLECTION_NAME);
+		return authorizations;
 	}
 	
 	public static void checkEmail(String email) {

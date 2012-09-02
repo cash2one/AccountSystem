@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.snda.grand.space.as.rest.model.Account;
 import com.snda.grand.space.as.rest.model.Application;
+import com.snda.grand.space.as.rest.model.Authorization;
 
 
 
@@ -18,5 +19,7 @@ public interface AccountResource {
 	Account status(String sndaId);
 	
 	List<Application> applications(String sndaId);
+	
+	List<Authorization> listAuthorizations(String sndaId);
 	
 }

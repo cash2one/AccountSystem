@@ -18,9 +18,13 @@
 <script type="text/javascript">
 	function checkstat(stat){
 	    if (stat.CAS_LOGIN_STATE=="") {
-	        window.location.href="https://cas.sdo.com/cas/login?appId=201159400&appArea=0&service=http%3A%2F%2F58.215.173.61%2Fgcloud%2Fredirect";
+	    	// not login status 
+	    	// TODO 
+	    	// redirect also need to contains all the params 
+	        window.location.href="http://login.sdo.com/sdo/Login/LoginFrameFC.php?appId=917&appArea=1&customSecurityLevel=1&returnURL=http%3A%2F%2F58.215.173.61%2Fweb%2Fredirect";
 	    } else {
-	    	var redirect_uri = "http://58.215.173.61/authorize?";
+	    	// alread longin 
+	    	var redirect_uri = "http://58.215.173.61/api/authorize?";
 	    	var queries = "";
 	    	for (var i = 0; i < paramArray.length; i++) {
 	    		queries = queries + paramArray[i].key + "=" + paramArray[i].value + "&";
@@ -30,6 +34,9 @@
 	        		+ encodeURIComponent(redirect_uri) 
 	        		+ "&appId=201159400&appArea=0&customSecurityLevel=1";
 	        document.getElementById("login_frame").src = encodeURI(url);
+	        // In this redirection, we can get the ticket from sdo 
+	        // take this ticket to access the next page to get the sndaId using validate interface 
+	        // TODO 
 	    }
 	}
 </script>

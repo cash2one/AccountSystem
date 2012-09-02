@@ -31,9 +31,11 @@ import com.snda.grand.space.as.exception.NotModifiedException;
 import com.snda.grand.space.as.mongo.model.Collections;
 import com.snda.grand.space.as.mongo.model.PojoAccount;
 import com.snda.grand.space.as.mongo.model.PojoApplication;
+import com.snda.grand.space.as.mongo.model.PojoAuthorization;
 import com.snda.grand.space.as.rest.account.AccountResource;
 import com.snda.grand.space.as.rest.model.Account;
 import com.snda.grand.space.as.rest.model.Application;
+import com.snda.grand.space.as.rest.model.Authorization;
 import com.snda.grand.space.as.rest.util.ApplicationKeys;
 import com.snda.grand.space.as.rest.util.Preconditions;
 import com.snda.grand.space.as.rest.util.Rule;
@@ -168,6 +170,20 @@ public class AccountResourceImpl implements AccountResource {
 				query(where(Collections.Application.OWNER).is(account.getUid())),
 				PojoApplication.class, Collections.APPLICATION_COLLECTION_NAME);
 		return PojoApplication.getApplications(apps);
+	}
+	
+	@Override
+	@GET
+	@Path("authorizations/{snda_id}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<Authorization> listAuthorizations(String sndaId) {
+		checkSndaId(sndaId);
+		PojoAccount account = Preconditions.getAccountBySndaId(mongoOps, sndaId);
+		if (account == null) {
+			throw new NoSuchAccountException();
+		}
+		List<PojoAuthorization> authorizations = Preconditions.getAuthorizationsByUid(mongoOps, account.getUid());
+		return PojoAuthorization.getAuthorizations(authorizations);
 	}
 	
 	private void checkSndaId(String sndaId) {
