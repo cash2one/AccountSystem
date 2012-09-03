@@ -2,42 +2,81 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script src="http://crypto-js.googlecode.com/svn/tags/3.0.2/build/rollups/md5.js"></script>
 <script type="text/javascript" src="/js/util.js"></script>
 
 <script type="text/javascript">
-	paramArray = getHttpRequestParameters(window.location.href);
+	PARAM_ARRAY = getHttpRequestParameters(window.location.href);
+	CLIENT_ID = "";
+	RESPONSE_TYPE = "";
+	REDIRECT_URI = "";
+	SCOPE = "";
 	var i = 0;
-	for (i = 0; i < paramArray.length; i++) {
-		alert(paramArray[i].key + ":" + paramArray[i].value);
+	for (i = 0; i < PARAM_ARRAY.length; i++) {
+		if (PARAM_ARRAY[i].key == "client_id") {
+			CLIENT_ID = PARAM_ARRAY[i].value;
+		} else if (PARAM_ARRAY[i].key == "response_type") {
+			RESPONSE_TYPE = PARAM_ARRAY[i].value;
+		} else if (PARAM_ARRAY[i].key == "redirect_uri") {
+			REDIRECT_URI = PARAM_ARRAY[i].value;
+		} else if (PARAM_ARRAY[i].key == "scope") {
+			SCOPE = PARAM_ARRAY[i].value;
+		}
+		//alert(PARAM_ARRAY[i].key + ":" + PARAM_ARRAY[i].value);
 	}
-</script><title>Login</title>
+</script>
+<title>Login</title>
 </head>
+
 <body>
 
-<!-- <script type="text/javascript" src="/WEB-INF/js/signature.js"></script> -->
 <script type="text/javascript">
 	function checkstat(stat){
 	    if (stat.CAS_LOGIN_STATE=="") {
 	    	// not login status 
 	    	// TODO 
-	    	// redirect also need to contains all the params 
-	        window.location.href="http://login.sdo.com/sdo/Login/LoginFrameFC.php?appId=917&appArea=1&customSecurityLevel=1&returnURL=http%3A%2F%2F58.215.173.61%2Fweb%2Fredirect";
-	    } else {
-	    	// alread longin 
-	    	var redirect_uri = "http://58.215.173.61/api/authorize?";
+	    	// redirect also need to contains all the params
 	    	var queries = "";
-	    	for (var i = 0; i < paramArray.length; i++) {
-	    		queries = queries + paramArray[i].key + "=" + paramArray[i].value + "&";
+	    	for (var i = 0; i < PARAM_ARRAY.length; i++) {
+	    		queries = queries + PARAM_ARRAY[i].key + "=" + PARAM_ARRAY[i].value + "&";
 	    	}
-	    	redirect_uri += queries
-	        var url = "http://cas.sdo.com/cas/login?service=" 
-	        		+ encodeURIComponent(redirect_uri) 
-	        		+ "&appId=201159400&appArea=0&customSecurityLevel=1";
-	        document.getElementById("login_frame").src = encodeURI(url);
-	        // In this redirection, we can get the ticket from sdo 
-	        // take this ticket to access the next page to get the sndaId using validate interface 
-	        // TODO 
-	    }
+	    	var returnURL = "http://account.grandmobile.cn/web/redirect?";
+	    	returnURL += queries;
+	        window.location.href="http://login.sdo.com/sdo/Login/LoginFrameFC.php?"
+	        		+ "appId=917&"
+	        		+ "areaId=1&"
+	        		+ "customSecurityLevel=1&"
+	        		+ "returnURL="
+	        		+ encodeURIComponent(returnURL);
+	    } else {
+	    	// already login 
+	    	alert(window.location.href);
+	    	// if there is ticket in url, do validate.sigature to get sndaId 
+	    	var validateUrl = "";
+	    	for (i = 0; i < PARAM_ARRAY.length; i++) {
+	    		if (PARAM_ARRAY[i].key == "ticket") {
+	    			var timestamp = Math.ceil((new Date()).getTime() / 1000);
+	    			var stringToSign = canonicalString("1", "917", "1", String(timestamp), String(PARAM_ARRAY[i].value));
+	    			var hash = CryptoJS.MD5(stringToSign);
+					validateUrl = makeSignedUrl("1", "917", "1",
+							String(timestamp), String(PARAM_ARRAY[i].value),
+							String(hash));
+				}
+			}
+	    	
+	    	var getAuthCodeUrl = "http://account.grandmobile.cn/api/oauth2/sdo_auth?";
+	    	getAuthCodeUrl = getAuthCodeUrl + "client_id=" + CLIENT_ID + "&"
+	    									+ "response_type=" + RESPONSE_TYPE + "&"
+	    									+ "redirect_uri=" + REDIRECT_URI + "&"
+	    									+ "scope=" + SCOPE + "&"
+	    									+ "sdo_validate_url=" + encodeURIComponent(validateUrl);
+	    	
+	    	window.location.href=getAuthCodeUrl;
+	    	
+			// In this redirection, we can get the ticket from sdo 
+			// take this ticket to access the next page to get the sndaId using validate interface 
+			// TODO 
+		}
 	}
 </script>
 

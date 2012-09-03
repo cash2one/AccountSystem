@@ -3,6 +3,9 @@ package com.snda.grand.space.as.rest.oauth2.impl;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -18,6 +21,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.apache.amber.oauth2.as.issuer.MD5Generator;
 import org.apache.amber.oauth2.as.issuer.OAuthIssuer;
@@ -37,6 +41,12 @@ import org.apache.amber.oauth2.common.message.types.ResponseType;
 import org.apache.amber.oauth2.common.utils.OAuthUtils;
 import org.apache.amber.oauth2.rs.request.OAuthAccessResourceRequest;
 import org.apache.amber.oauth2.rs.response.OAuthRSResponse;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.util.EntityUtils;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoOperations;
@@ -50,23 +60,31 @@ import com.snda.grand.space.as.mongo.model.PojoApplication;
 import com.snda.grand.space.as.mongo.model.PojoAuthorization;
 import com.snda.grand.space.as.mongo.model.PojoCode;
 import com.snda.grand.space.as.mongo.model.PojoToken;
+import com.snda.grand.space.as.rest.model.SdoValidation;
 import com.snda.grand.space.as.rest.model.Validation;
 import com.snda.grand.space.as.rest.oauth2.AuthorizationResource;
+import com.snda.grand.space.as.rest.oauth2.SdoAuthResource;
 import com.snda.grand.space.as.rest.oauth2.TokenResource;
 import com.snda.grand.space.as.rest.oauth2.ValidateResource;
 import com.snda.grand.space.as.rest.util.Common;
 import com.snda.grand.space.as.rest.util.Constants;
+import com.snda.grand.space.as.rest.util.HttpClientUtils;
+import com.snda.grand.space.as.rest.util.ObjectMappers;
+import com.snda.grand.space.as.rest.util.Preconditions;
 
 
 @Service
 @Path("oauth2")
-public class OAuth2ResourceImpl implements AuthorizationResource, TokenResource, ValidateResource {
+public class OAuth2ResourceImpl implements AuthorizationResource,
+		TokenResource, ValidateResource, SdoAuthResource {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2ResourceImpl.class);
 	
 	private static MongoOperations mongoOps;
+	private final ObjectMapper mapper = new ObjectMapper();
 	private final OAuthIssuer oauthUUIDIssuer;
 	private final OAuthIssuer oauthMD5Issuer;
+	private final HttpClient httpClient = HttpClientUtils.getHttpClient();
 
 	public OAuth2ResourceImpl(UUIDValueGenerator uuidGenerator,
 			MD5Generator md5Generator, MongoOperations mongoOperations) {
@@ -214,16 +232,16 @@ public class OAuth2ResourceImpl implements AuthorizationResource, TokenResource,
 					.authorizationResponse(request,
 							HttpServletResponse.SC_FOUND);
 
-			if (responseType.equals(ResponseType.CODE.toString())) {
-				String code = oauthUUIDIssuer.authorizationCode();
-				insertCode(code);
-				builder.setCode(code);
-			}
+//			if (responseType.equals(ResponseType.CODE.toString())) {
+//				String code = oauthUUIDIssuer.authorizationCode();
+//				insertCode(code);
+//				builder.setCode(code);
+//			}
 			
-			if (responseType.equals(ResponseType.TOKEN.toString())) {
-				builder.setAccessToken(oauthUUIDIssuer.accessToken());
-				builder.setExpiresIn(3600L);
-			}
+//			if (responseType.equals(ResponseType.TOKEN.toString())) {
+//				builder.setAccessToken(oauthUUIDIssuer.accessToken());
+//				builder.setExpiresIn(3600L);
+//			}
 
 			String redirectURI = oauthRequest
 					.getParam(OAuth.OAUTH_REDIRECT_URI);
@@ -276,6 +294,102 @@ public class OAuth2ResourceImpl implements AuthorizationResource, TokenResource,
 					.location(redirectUri).buildQueryMessage();
 			final URI location = new URI(response.getLocationUri());
 			return responseBuilder.location(location).build();
+		}
+	}
+	
+	@Override
+	@GET
+	@Path("sdo_auth")
+	@Produces("application/json")
+	public Response sdoAuthorize(@Context HttpServletRequest request)
+			throws URISyntaxException, OAuthSystemException {
+		OAuthAuthzRequest oauthRequest = null;
+		HttpResponse httpResponse = null;
+		try {
+			oauthRequest = new OAuthAuthzRequest(request);
+			String sdoValidateURL = oauthRequest.getParam(Constants.SDO_VALIDATE_URL_HEADER);
+			LOGGER.info("Validate url:{}", sdoValidateURL);
+			HttpGet get = new HttpGet(sdoValidateURL);
+			httpResponse = httpClient.execute(get);
+			int status = httpResponse.getStatusLine().getStatusCode();
+			if (status >= 200 && status < 300) {
+				StringBuilder sb = new StringBuilder();
+				BufferedReader br = new BufferedReader(new InputStreamReader(
+						httpResponse.getEntity().getContent()));
+				String line = null;
+				while ( (line = br.readLine()) != null) {
+					LOGGER.info("sdo validate:{}", line);
+					sb.append(line);
+				}
+				SdoValidation sdoValidation = ObjectMappers.readJSON(mapper,
+						sb.toString(), SdoValidation.class);
+				PojoAccount pojoAccount = Preconditions.getAccountBySndaId(
+						mongoOps, sdoValidation.getData().getSndaId());
+				if (pojoAccount == null) {
+					return Response
+							.status(Status.NOT_FOUND)
+							.entity("No such account.")
+							.build();
+				}
+				
+				String responseType = oauthRequest.getParam(OAuth.OAUTH_RESPONSE_TYPE);
+				LOGGER.info("Response type:<{}>", responseType);
+
+				OAuthASResponse.OAuthAuthorizationResponseBuilder builder = OAuthASResponse
+						.authorizationResponse(request,
+								HttpServletResponse.SC_FOUND);
+
+				if (responseType.equals(ResponseType.CODE.toString())) {
+					String code = oauthUUIDIssuer.authorizationCode();
+					insertCode(code);
+					builder.setCode(code);
+				}
+				
+				if (responseType.equals(ResponseType.TOKEN.toString())) {
+					builder.setAccessToken(oauthUUIDIssuer.accessToken());
+					builder.setExpiresIn(3600L);
+				}
+				
+				final OAuthResponse response = builder.location(oauthRequest.getRedirectURI())
+						.buildQueryMessage();
+				URI url = new URI(response.getLocationUri());
+
+				return Response
+						.status(response.getResponseStatus())
+						.location(url)
+						.build();
+			}
+			return Response.noContent().build();
+			
+		} catch (OAuthProblemException e) {
+
+			final Response.ResponseBuilder responseBuilder = Response
+					.status(HttpServletResponse.SC_FOUND);
+
+			String redirectUri = e.getRedirectUri();
+
+			if (OAuthUtils.isEmpty(redirectUri)) {
+				throw new WebApplicationException(responseBuilder.entity(
+						"OAuth callback url needs to be provided by client!!!")
+						.build());
+			}
+			final OAuthResponse response = OAuthASResponse
+					.errorResponse(HttpServletResponse.SC_FOUND).error(e)
+					.location(redirectUri).buildQueryMessage();
+			final URI location = new URI(response.getLocationUri());
+			return responseBuilder.location(location).build();
+		} catch (ClientProtocolException e) {
+			return Response
+					.status(Status.INTERNAL_SERVER_ERROR)
+					.entity(e.getStackTrace())
+					.build();
+		} catch (IOException e) {
+			return Response
+					.status(Status.INTERNAL_SERVER_ERROR)
+					.entity(e.getStackTrace())
+					.build();
+		} finally {
+			responseContentConsume(httpResponse);
 		}
 	}
 	
@@ -456,6 +570,17 @@ public class OAuth2ResourceImpl implements AuthorizationResource, TokenResource,
 	private void insertCode(String codeString) {
 		PojoCode code = new PojoCode(codeString, System.currentTimeMillis());
 		mongoOps.insert(code, Collections.CODE_COLLECTION_NAME);
+	}
+	
+	private void responseContentConsume(HttpResponse response) {
+		try {
+			if (response != null && response.getEntity() != null) {
+				EntityUtils.consume(response.getEntity());
+			}
+		} catch (IOException e) {
+			LOGGER.error("Response content consume error", e);
+			throw new IllegalStateException(e);
+		}
 	}
 
 }

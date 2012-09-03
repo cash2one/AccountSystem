@@ -1,7 +1,8 @@
 HTTP_PROTOCOL = "http";
 HTTPS_PROTOCOL = "https";
 SIGNATURE_METHOD = "MD5";
-MERCHANT_NAME = "shit";
+MERCHANT_NAME = "1_917_702";
+SECRET_KEY = "za1}5DE=wyILupWX";
 
 function pair(key, value) {
 	this.key = key;
@@ -12,8 +13,8 @@ function getHttpRequestParameters(requestUri) {
 	var parameterArray = new Array();
 	var uri = requestUri.toLowerCase();
 	if (uri.indexOf(HTTP_PROTOCOL) == 0 || uri.indexOf(HTTPS_PROTOCOL) == 0) {
-		var position = uri.indexOf("?");
-		var parastr = uri.substring(position + 1);
+		var position = requestUri.indexOf("?");
+		var parastr = requestUri.substring(position + 1);
 		if (position > 0 && parastr.indexOf("&") > 0) {
 			para = parastr.split("&");
 			var i = 0;
@@ -31,12 +32,30 @@ function getHttpRequestParameters(requestUri) {
 	return;
 }
 
-function makeSignedUrl(appArea, appId, customSecurityLevel, ticket) {
+function makeSignedUrl(areaId, appId, customSecurityLevel, timestamp, ticket, hash) {
 	var signedUrl = "http://hps.sdo.com/cas/validate.signature?";
-	var timestamp = (new Date()).getTime();
+	var array = new Array(
+		      new pair("areaId", areaId),
+		      new pair("appId", appId), 
+		      new pair("customSecurityLevel", customSecurityLevel), 
+		      new pair("merchant_name", MERCHANT_NAME), 
+		      new pair("ticket", ticket), 
+		      new pair("signature_method", SIGNATURE_METHOD),
+		      new pair("timestamp", timestamp));
+	var arr = quickSort(array);
+	var i = 0;
+	for (i = 0; i < arr.length; i++) {
+		signedUrl = signedUrl + arr[i].key + "=" + arr[i].value + "&";
+	}
+	signedUrl = signedUrl + "signature=" + hash;
+	return signedUrl;
+}
+
+function canonicalString(areaId, appId, customSecurityLevel, timestamp, ticket) {
+	//var timestamp = Math.ceil((new Date()).getTime() / 1000);
 
 	var array = new Array(
-			      new pair("appArea", appArea),
+			      new pair("areaId", areaId),
 			      new pair("appId", appId), 
 			      new pair("customSecurityLevel", customSecurityLevel), 
 			      new pair("merchant_name", MERCHANT_NAME), 
@@ -47,12 +66,10 @@ function makeSignedUrl(appArea, appId, customSecurityLevel, ticket) {
 	var stringToSign = "";
 	var i = 0;
 	for (i = 0; i < arr.length; i++) {
-		signedUrl = signedUrl + arr[i].key + "=" + arr[i].value + "&";
 		stringToSign = stringToSign + arr[i].key + "=" + arr[i].value;
 	}
-	var hash = CryptoJS.MD5(stringToSign);
-	signedUrl = signedUrl + "signature=" + hash;
-	return signedUrl;
+	stringToSign += SECRET_KEY;
+	return stringToSign;
 }
 
 function quickSort(arr) {
