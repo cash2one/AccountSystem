@@ -242,6 +242,17 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 					throw new NoSuchApplicationException();
 				}
 				
+				PojoAuthorization pojoAuthorization = Preconditions
+						.getAuthorizationByUidAndAppId(mongoOps,
+								pojoAccount.getUid(),
+								pojoApplication.getAppid());
+				if (pojoAuthorization == null) {
+					// Create new Authorization for this uid to using the appid
+					Preconditions.insertRefreshToken(mongoOps,
+							pojoAccount.getUid(), pojoApplication.getAppid(),
+							oauthMD5Issuer.refreshToken());
+				}
+				
 				String responseType = oauthRequest.getParam(OAuth.OAUTH_RESPONSE_TYPE);
 				LOGGER.info("Response type:<{}>", responseType);
 
