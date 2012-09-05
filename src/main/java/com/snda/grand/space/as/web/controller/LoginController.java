@@ -35,4 +35,10 @@ public class LoginController {
 		return mv;
 	}
 	
+	@RequestMapping(value="authorize", method=RequestMethod.GET)
+	public ModelAndView authorize(HttpServletRequest request,HttpServletResponse response) {
+		ModelAndView mv = new ModelAndView("/index/authorize");
+		return mv;
+	}
+	
 }

@@ -12,7 +12,7 @@ function pair(key, value) {
 function getHttpRequestParameters(requestUri) {
 	var parameterArray = new Array();
 	var uri = requestUri.toLowerCase();
-	if (uri.indexOf(HTTP_PROTOCOL) == 0 || uri.indexOf(HTTPS_PROTOCOL) == 0) {
+	/*if (uri.indexOf(HTTP_PROTOCOL) == 0 || uri.indexOf(HTTPS_PROTOCOL) == 0)*/ {
 		var position = requestUri.indexOf("?");
 		var parastr = requestUri.substring(position + 1);
 		if (position > 0 && parastr.indexOf("&") > 0) {

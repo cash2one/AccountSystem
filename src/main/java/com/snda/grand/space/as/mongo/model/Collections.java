@@ -12,7 +12,9 @@ public class Collections {
 	
 	public static final String CODE_COLLECTION_NAME = "codes";
 	
-	public static final long CODE_EXPIRE_TIME = 5 * 60 * 1000L;
+	public static final long CODE_EXPIRE_TIME = 60 * 60 * 1000L;
+	
+	public static final long ACCESS_TOKEN_EXPIRE_TIME = 60 * 60 * 1000L;
 	
 	public abstract class Account {
 		public static final String SNDA_ID = "snda_id";
@@ -56,6 +58,8 @@ public class Collections {
 	
 	public abstract class Code {
 		public static final String CODE = "code";
+		public static final String UID = "uid";
+		public static final String APPID = "appid";
 		public static final String CREATION_TIME = "creation_time";
 	}
 	

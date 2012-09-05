@@ -1,0 +1,76 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+h1 {
+	font-weight: bold;
+}
+
+input {
+	padding: 3px 15px;
+}
+
+#auth {
+	margin: 55px auto 0 auto;
+	width: 500px;
+}
+
+#auth li,#auth p {
+	font-size: 13px;
+	line-height: 1.5em;
+	margin-bottom: 1em;
+}
+
+#auth ul {
+	margin-left: -8px;
+	width: 508px;
+}
+
+#dropbox-connect-overlay {
+	background-image: url(/static/images/dropbox_connect.png);
+	height: 82px;
+	margin: 0 auto;
+	padding: 14px 0 0 10px;
+	width: 242px;
+}
+
+#auth input {
+	font-size: 13px;
+}
+</style>
+
+<script src="http://crypto-js.googlecode.com/svn/tags/3.0.2/build/rollups/md5.js"></script>
+<script type="text/javascript" src="/js/util.js"></script>
+
+</head>
+<body>
+	<link href="/WEB-INF/css/main.css" type="text/css" rel="stylesheet">
+	<div id="outer-frame">
+		<div id="page-content">
+			<div id="auth">
+				<p class="center"></p>
+				<div id="grandspace-connect-overlay">
+					<img src="/WEB-INF/resources/dropbox_connect_q.png" alt>
+				</div>
+				<p></p>
+				<h1>The app whould like to connect with your Grand Space.</h1>
+				<p style="text-align: left; margin-botton: 0;">
+				<table>
+					<tr>
+						<td>
+						<form action="" >
+						<input class="freshbutton-blue" name="allow_access"
+							value="Allow" type="submit">
+						</form>
+						</td>
+						<td><input class="freshbutton" name="deny_access"
+							value="Deny" type="submit"></td>
+					</tr>
+				</table>
+				</p>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

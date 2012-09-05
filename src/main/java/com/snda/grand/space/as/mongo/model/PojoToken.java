@@ -5,6 +5,8 @@ import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import com.snda.grand.space.as.rest.model.Token;
+
 
 @Document(collection = Collections.TOKEN_COLLECTION_NAME)
 public class PojoToken {
@@ -70,6 +72,14 @@ public class PojoToken {
 
 	public void setExpire(long expire) {
 		this.expire = expire;
+	}
+	
+	public Token getToken(String uid) {
+		Token token = new Token();
+		token.setUid(uid);
+		token.setAccessToken(accessToken);
+		token.setExpireIn(expire - creationTime);
+		return token;
 	}
 	
 }

@@ -8,14 +8,17 @@ import java.util.UUID;
 
 import org.apache.commons.codec.binary.Base64;
 import org.junit.Test;
+import org.springframework.data.mongodb.MongoDbFactory;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 
 import com.mongodb.Mongo;
 import com.snda.grand.space.as.exception.InvalidAppStatusException;
 import com.snda.grand.space.as.mongo.model.Collections;
+import com.snda.grand.space.as.mongo.model.PojoAuthorization;
 import com.snda.grand.space.as.rest.util.ApplicationKeys;
 import com.snda.grand.space.as.rest.util.Rule;
 
@@ -64,6 +67,16 @@ public class CreateRSAKeyPair {
 						&& !"release".equalsIgnoreCase(appStatus))) {
 			throw new InvalidAppStatusException();
 		}
+	}
+	
+	@Test
+	public void testCreateAuthorization() throws UnknownHostException {
+		MongoOperations mongoOps = new MongoTemplate(new Mongo("account.grandmobile.cn", 27017), "account-system");
+		String uid = "3MR0WHSZKGSI6B908O2D191N5";
+		String appId = "poker";
+		String refreshToken = "689c196fc988439e326c8fe33befaf0";
+		PojoAuthorization auth = new PojoAuthorization(uid, appId, refreshToken, System.currentTimeMillis());
+		mongoOps.insert(auth, Collections.AUTHORIZATION_COLLECTION_NAME);
 	}
 	
 }
