@@ -16,5 +16,10 @@ public class InvalidDisplayNameException extends ApplicationWebException {
 				.entity("Invalid display_name.")
 				.build());
 	}
+
+	@Override
+	public String getMessage() {
+		return "Invalid display_name.";
+	}
 	
 }

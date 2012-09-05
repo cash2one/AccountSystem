@@ -17,4 +17,9 @@ public class InvalidScopeException extends ApplicationWebException {
 				.build());
 	}
 
+	@Override
+	public String getMessage() {
+		return "Invalid scope.";
+	}
+
 }

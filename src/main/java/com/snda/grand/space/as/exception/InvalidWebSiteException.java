@@ -17,4 +17,9 @@ public class InvalidWebSiteException extends ApplicationWebException {
 				.build());
 	}
 
+	@Override
+	public String getMessage() {
+		return "Invalid website.";
+	}
+
 }

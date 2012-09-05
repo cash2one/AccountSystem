@@ -17,4 +17,9 @@ public class NoSuchAccountException extends ApplicationWebException {
 				.build());
 	}
 
+	@Override
+	public String getMessage() {
+		return "No such account.";
+	}
+
 }

@@ -17,4 +17,9 @@ public class AccountAlreadyExistException extends ApplicationWebException {
 				.build());
 	}
 
+	@Override
+	public String getMessage() {
+		return "Account already exist.";
+	}
+
 }

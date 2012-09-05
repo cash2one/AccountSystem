@@ -17,4 +17,9 @@ public class InvalidAvailableParamException extends ApplicationWebException {
 				.build());
 	}
 
+	@Override
+	public String getMessage() {
+		return "Invalid available param.";
+	}
+
 }

@@ -18,4 +18,9 @@ public class AccessTokenExpiredException extends ApplicationWebException {
 				.build());
 	}
 
+	@Override
+	public String getMessage() {
+		return "Access token has expired.";
+	}
+
 }

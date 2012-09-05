@@ -17,4 +17,9 @@ public class NoSuchAuthorizationCodeException extends ApplicationWebException {
 				.build());
 	}
 
+	@Override
+	public String getMessage() {
+		return "No such authorization code.";
+	}
+
 }

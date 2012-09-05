@@ -17,4 +17,9 @@ public class ApplicationAlreadyExistException extends ApplicationWebException {
 				.build());
 	}
 
+	@Override
+	public String getMessage() {
+		return "Application already exist.";
+	}
+
 }

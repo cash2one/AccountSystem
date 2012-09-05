@@ -17,4 +17,9 @@ public class InvalidAccessTokenException extends ApplicationWebException {
 				.build());
 	}
 
+	@Override
+	public String getMessage() {
+		return "Invalid access token.";
+	}
+
 }

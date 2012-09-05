@@ -13,13 +13,15 @@ public class PojoCode {
 	@Id
 	private String id;
 	
+	@Indexed(unique = true)
 	@Field(Collections.Code.CODE)
-	@Indexed
 	private String code;
 	
+	@Indexed
 	@Field(Collections.Code.UID)
 	private String uid;
 	
+	@Indexed
 	@Field(Collections.Code.APPID)
 	private String appId;
 	

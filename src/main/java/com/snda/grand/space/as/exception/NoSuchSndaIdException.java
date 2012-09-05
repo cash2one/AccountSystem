@@ -16,5 +16,10 @@ public class NoSuchSndaIdException extends ApplicationWebException {
 				.entity("No such snda_id.")
 				.build());
 	}
+
+	@Override
+	public String getMessage() {
+		return "No such snda_id.";
+	}
 	
 }

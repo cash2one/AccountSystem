@@ -17,4 +17,9 @@ public class SdoValidateSignatureException extends ApplicationWebException {
 				.build());
 	}
 
+	@Override
+	public String getMessage() {
+		return "Sdo passport validate error.";
+	}
+
 }

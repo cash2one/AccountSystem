@@ -17,4 +17,9 @@ public class InvalidEmailException extends ApplicationWebException {
 				.build());
 	}
 
+	@Override
+	public String getMessage() {
+		return "Invalid email.";
+	}
+
 }

@@ -78,6 +78,10 @@ public final class Preconditions {
 		return pojoCode;
 	}
 	
+	public static void deleteCode(MongoOperations mongoOps, String code) {
+		mongoOps.remove(query(where(Collections.Code.CODE).is(code)), Collections.CODE_COLLECTION_NAME);
+	}
+	
 	public static PojoToken getTokenByAccessToken(MongoOperations mongoOps, String accessToken) {
 		PojoToken pojoToken = mongoOps.findOne(
 				query(where(Collections.Token.ACCESS_TOKEN).is(accessToken)),
@@ -87,6 +91,14 @@ public final class Preconditions {
 	
 	public static void insertAccessToken(MongoOperations mongoOps, PojoToken pojoToken) {
 		mongoOps.insert(pojoToken, Collections.TOKEN_COLLECTION_NAME);
+	}
+	
+
+	public static void deleteTokenByAccessToken(MongoOperations mongoOps,
+			String accessToken) {
+		mongoOps.remove(
+				query(where(Collections.Token.ACCESS_TOKEN).is(accessToken)),
+				Collections.TOKEN_COLLECTION_NAME);
 	}
 	
 	public static void insertRefreshToken(MongoOperations mongoOps, String uid,

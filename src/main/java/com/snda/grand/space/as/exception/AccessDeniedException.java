@@ -17,4 +17,9 @@ public class AccessDeniedException extends ApplicationWebException {
 				.build());
 	}
 
+	@Override
+	public String getMessage() {
+		return "Access Denied.";
+	}
+
 }

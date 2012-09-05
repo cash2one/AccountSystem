@@ -23,4 +23,6 @@ public abstract class ApplicationWebException extends WebApplicationException {
 		return super.getResponse().getEntity();
 	}
 	
+	public abstract String getMessage();
+	
 }

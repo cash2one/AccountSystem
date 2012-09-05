@@ -17,4 +17,9 @@ public class InvalidRefreshTokenException extends ApplicationWebException {
 				.build());
 	}
 
+	@Override
+	public String getMessage() {
+		return "Invalid refresh token";
+	}
+
 }

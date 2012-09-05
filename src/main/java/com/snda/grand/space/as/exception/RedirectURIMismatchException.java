@@ -17,4 +17,9 @@ public class RedirectURIMismatchException extends ApplicationWebException {
 				.build());
 	}
 
+	@Override
+	public String getMessage() {
+		return "Redirect URI mismatch.";
+	}
+
 }

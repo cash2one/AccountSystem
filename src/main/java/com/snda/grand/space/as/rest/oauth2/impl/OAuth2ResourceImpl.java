@@ -44,6 +44,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Maps;
 import com.snda.grand.space.as.exception.AccessTokenExpiredException;
+import com.snda.grand.space.as.exception.ApplicationAccessDeniedException;
 import com.snda.grand.space.as.exception.CodeExpiredException;
 import com.snda.grand.space.as.exception.InvalidAccessTokenException;
 import com.snda.grand.space.as.exception.InvalidRefreshTokenException;
@@ -112,20 +113,22 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 		// do checking for different grant types
 		if (oauthRequest.getParam(OAuth.OAUTH_GRANT_TYPE).equals(
 				GrantType.AUTHORIZATION_CODE.toString())) {
-			PojoCode code = Preconditions.getCode(mongoOps, oauthRequest.getCode());
-			if (code == null) {
+			PojoCode pojoCode = Preconditions.getCode(mongoOps, oauthRequest.getCode());
+			if (pojoCode == null) {
 				throw new NoSuchAuthorizationCodeException();
 			}
-			else if (System.currentTimeMillis() > code.getCreationTime() + Collections.CODE_EXPIRE_TIME) {
+			else if (System.currentTimeMillis() > pojoCode.getCreationTime() + Collections.CODE_EXPIRE_TIME) {
+				Preconditions.deleteCode(mongoOps, pojoCode.getCode());
 				throw new CodeExpiredException();
 			}
 			authorization = Preconditions.getAuthorizationByUidAndAppId(
-					mongoOps, code.getUid(), code.getAppId());
+					mongoOps, pojoCode.getUid(), pojoCode.getAppId());
 			if (authorization == null) {
 				throw new NoSuchAuthorizationCodeException();
 			}
 			insertAccessToken(authorization.getRefreshToken(), accessToken,
 					System.currentTimeMillis());
+			Preconditions.deleteCode(mongoOps, pojoCode.getCode());
 		} 
 		// use refresh token to get access token
 		else if (oauthRequest.getParam(OAuth.OAUTH_GRANT_TYPE).equals(
@@ -242,6 +245,12 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 					throw new NoSuchApplicationException();
 				}
 				
+				if (pojoApplication.getAppSecret() != null
+						&& !pojoApplication.getAppSecret().equalsIgnoreCase(
+								oauthRequest.getClientSecret())) {
+					throw new ApplicationAccessDeniedException();
+				}
+				
 				PojoAuthorization pojoAuthorization = Preconditions
 						.getAuthorizationByUidAndAppId(mongoOps,
 								pojoAccount.getUid(),
@@ -292,6 +301,7 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 		if (token == null) {
 			throw new InvalidAccessTokenException();
 		} else if (token.getExpire() < System.currentTimeMillis()) {
+			Preconditions.deleteTokenByAccessToken(mongoOps, token.getAccessToken());
 			throw new AccessTokenExpiredException();
 		}
 		
@@ -315,7 +325,7 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 		Validation validation = new Validation(account.getSndaId(),
 				application.getAppid(), application.getScope(),
 				token.getAccessToken(), token.getExpire());
-		
+		Preconditions.deleteTokenByAccessToken(mongoOps, token.getAccessToken());
 		return validation;
 	}
 	

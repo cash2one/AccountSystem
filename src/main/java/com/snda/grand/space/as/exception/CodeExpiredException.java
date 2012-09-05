@@ -17,4 +17,9 @@ public class CodeExpiredException extends ApplicationWebException {
 				.build());
 	}
 
+	@Override
+	public String getMessage() {
+		return "Code has expired.";
+	}
+
 }

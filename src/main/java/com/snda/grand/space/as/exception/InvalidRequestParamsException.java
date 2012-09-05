@@ -9,12 +9,19 @@ public class InvalidRequestParamsException extends ApplicationWebException {
 	 * 
 	 */
 	private static final long serialVersionUID = 1339199163088931881L;
+	private String param;
 
 	public InvalidRequestParamsException(String param) {
 		super(Response
 				.status(Status.BAD_REQUEST)
 				.entity("Invalid " + param + " param.")
 				.build());
+		this.param = param;
+	}
+
+	@Override
+	public String getMessage() {
+		return "Invalid " + param + " param.";
 	}
 
 }

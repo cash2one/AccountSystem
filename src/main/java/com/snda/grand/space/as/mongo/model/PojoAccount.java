@@ -20,7 +20,7 @@ public class PojoAccount {
 	@Field(Collections.Account.SNDA_ID)
 	private String sndaId;
 	
-	@Indexed
+	@Indexed(unique = true)
 	@Field(Collections.Account.UID)
 	private String uid;
 	

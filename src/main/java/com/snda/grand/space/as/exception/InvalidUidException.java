@@ -17,4 +17,9 @@ public class InvalidUidException extends ApplicationWebException {
 				.build());
 	}
 
+	@Override
+	public String getMessage() {
+		return "Invalid uid.";
+	}
+
 }

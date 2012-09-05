@@ -7,6 +7,9 @@ import java.util.List;
 import org.joda.time.DateTime;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -15,17 +18,26 @@ import com.snda.grand.space.as.rest.model.Authorization;
 
 
 @Document(collection = AUTHORIZATION_COLLECTION_NAME)
+@CompoundIndexes({
+	@CompoundIndex(name = "authorization_index", def = "{" +
+			Collections.Authorization.UID + " : 1, " +
+			Collections.Authorization.APPID + " : 1, " +
+			Collections.Authorization.REFRESH_TOKEN + " : 1}")
+})
 public class PojoAuthorization {
 	
 	@Id
 	private String id;
 	
+	@Indexed
 	@Field(Collections.Authorization.UID)
 	private String uid;
 	
+	@Indexed
 	@Field(Collections.Authorization.APPID)
 	private String appId;
 	
+	@Indexed(unique = true)
 	@Field(Collections.Authorization.REFRESH_TOKEN)
 	private String refreshToken;
 	

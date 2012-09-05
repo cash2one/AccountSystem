@@ -18,4 +18,9 @@ public class InvalidSndaIdException extends ApplicationWebException {
 				.build());
 	}
 
+	@Override
+	public String getMessage() {
+		return "Invalid sndaId.";
+	}
+
 }

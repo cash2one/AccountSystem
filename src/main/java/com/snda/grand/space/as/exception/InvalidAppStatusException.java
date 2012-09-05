@@ -17,4 +17,9 @@ public class InvalidAppStatusException extends ApplicationWebException {
 				.build());
 	}
 
+	@Override
+	public String getMessage() {
+		return "Invalid application status.";
+	}
+
 }

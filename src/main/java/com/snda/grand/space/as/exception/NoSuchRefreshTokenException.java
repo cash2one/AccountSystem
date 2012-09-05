@@ -17,4 +17,9 @@ public class NoSuchRefreshTokenException extends ApplicationWebException {
 				.build());
 	}
 
+	@Override
+	public String getMessage() {
+		return "No such refresh token.";
+	}
+
 }

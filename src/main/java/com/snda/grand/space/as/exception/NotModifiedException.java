@@ -17,4 +17,9 @@ public class NotModifiedException extends ApplicationWebException {
 				.build());
 	}
 
+	@Override
+	public String getMessage() {
+		return "Not modified.";
+	}
+
 }

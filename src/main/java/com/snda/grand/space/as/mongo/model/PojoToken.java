@@ -2,6 +2,7 @@ package com.snda.grand.space.as.mongo.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -14,9 +15,11 @@ public class PojoToken {
 	@Id
 	private String id;
 	
+	@Indexed
 	@Field(Collections.Token.REFRESH_TOKEN)
 	private String refreshToken;
 	
+	@Indexed(unique = true)
 	@Field(Collections.Token.ACCESS_TOKEN)
 	private String accessToken;
 	

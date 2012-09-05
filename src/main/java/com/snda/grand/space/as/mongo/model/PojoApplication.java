@@ -7,6 +7,7 @@ import java.util.List;
 import org.joda.time.DateTime;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -20,6 +21,7 @@ public class PojoApplication {
 	@Id
 	private String id;
 	
+	@Indexed(unique = true)
 	@Field(Collections.Application.APPID)
 	private String appid;
 	
@@ -47,6 +49,7 @@ public class PojoApplication {
 	@Field(Collections.Application.MODIFIED_TIME)
 	private long modifiedTime;
 	
+	@Indexed
 	@Field(Collections.Application.OWNER)
 	private String owner;
 

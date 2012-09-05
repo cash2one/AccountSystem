@@ -17,4 +17,9 @@ public class NoSuchApplicationException extends ApplicationWebException {
 				.build());
 	}
 
+	@Override
+	public String getMessage() {
+		return "No such application.";
+	}
+
 }
