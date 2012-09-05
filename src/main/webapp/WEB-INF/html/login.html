@@ -64,38 +64,18 @@
                                 + encodeURIComponent(service);
                 return;
         	} else {
-        		// if there is ticket in url, do validate.sigature to get sndaId
-                var validateUrl = "";
-                for (i = 0; i < PARAM_ARRAY.length; i++) {
-                        if (PARAM_ARRAY[i].key == "ticket") {
-                                var timestamp = Math.ceil((new Date()).getTime() / 1000);
-                                var stringToSign = canonicalString("1", "917", "1", String(timestamp), String(PARAM_ARRAY[i].value));
-                                var hash = CryptoJS.MD5(stringToSign);
-                                        validateUrl = makeSignedUrl("1", "917", "1",
-                                                        String(timestamp), String(PARAM_ARRAY[i].value),
-                                                        String(hash));
-                                }
-                        }
-
-                var getAuthCodeUrl = "http://account.grandmobile.cn/api/oauth2/sdo_auth?";
-                getAuthCodeUrl = getAuthCodeUrl + "client_id=" + CLIENT_ID + "&"
-                                                                                + "response_type=" + RESPONSE_TYPE + "&"
-                                                                                + "redirect_uri=" + REDIRECT_URI + "&"
-                                                                                + "scope=" + SCOPE + "&"
-                                                                                + "sdo_validate_url=" + encodeURIComponent(validateUrl);
-
-                //window.location.href=getAuthCodeUrl;
-                REDIRECT_PAGE_URI = getAuthCodeUrl;
+        		var queries = "";
+                for (var i = 0; i < PARAM_ARRAY.length; i++) 
+                {
+                    queries = queries + PARAM_ARRAY[i].key + "=" + PARAM_ARRAY[i].value + "&";
+                }
+                var service = "http://account.grandmobile.cn/web/authorize?";
+                service += queries;
+                window.location.href=service;
         	}
 		}
 	}
 </script>
-
 <script type="text/javascript" src="https://cas.sdo.com/cas/loginStateService?method=checkstat"></script>
-<script type="text/javascript">
-	window.location.href = REDIRECT_PAGE_URI;
-</script>
-<form action="http://account.grandmobile.cn/web/authorize" method="get">
-</form>
 </body>
 </html>

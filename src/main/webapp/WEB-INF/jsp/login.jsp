@@ -8,7 +8,7 @@
 </head>
 <body>
 	<div>
-		<form action="login" method="get">
+		<form action="test" method="get">
 			<input type="text" name="username"> <input type="submit"
 				value="SUBMIT">
 		</form>

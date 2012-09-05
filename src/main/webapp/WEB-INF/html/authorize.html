@@ -43,15 +43,82 @@ input {
 <script src="http://crypto-js.googlecode.com/svn/tags/3.0.2/build/rollups/md5.js"></script>
 <script type="text/javascript" src="/js/util.js"></script>
 
+<script type="text/javascript">
+    PARAM_ARRAY = getHttpRequestParameters(window.location.href);
+    CLIENT_ID = "";
+    RESPONSE_TYPE = "";
+    REDIRECT_URI = "";
+    SCOPE = "";
+    TICKET = "";
+    var i = 0;
+    for (i = 0; i < PARAM_ARRAY.length; i++) 
+    {
+        if (PARAM_ARRAY[i].key == "client_id") 
+        {
+            CLIENT_ID = PARAM_ARRAY[i].value;
+        } 
+        else if (PARAM_ARRAY[i].key == "response_type") 
+        {
+            RESPONSE_TYPE = PARAM_ARRAY[i].value;
+        } 
+        else if (PARAM_ARRAY[i].key == "redirect_uri") 
+        {
+            REDIRECT_URI = PARAM_ARRAY[i].value;
+        } 
+        else if (PARAM_ARRAY[i].key == "scope") 
+        {
+            SCOPE = PARAM_ARRAY[i].value;
+        } 
+        else if (PARAM_ARRAY[i].key == "ticket") 
+        {
+            TICKET = PARAM_ARRAY[i].value;
+        }
+    }
+    REDIRECT_PAGE_URI = "";
+</script>
+
+<script>
+    function allow()
+    {
+        // if there is ticket in url, do validate.sigature to get sndaId
+        var validateUrl = "";
+        for (i = 0; i < PARAM_ARRAY.length; i++)
+        {
+            if (PARAM_ARRAY[i].key == "ticket")
+            {
+                var timestamp = Math.ceil((new Date()).getTime() / 1000);
+                var stringToSign = canonicalString("1", "917", "1", String(timestamp), String(PARAM_ARRAY[i].value));
+                var hash = CryptoJS.MD5(stringToSign);
+                validateUrl = makeSignedUrl("1", "917", "1",
+                                  String(timestamp), String(PARAM_ARRAY[i].value),
+                                  String(hash));
+             }
+        }
+
+        var getAuthCodeUrl = "http://account.grandmobile.cn/api/oauth2/sdo_auth?";
+        getAuthCodeUrl = getAuthCodeUrl + "client_id=" + CLIENT_ID + "&"
+                                        + "response_type=" + RESPONSE_TYPE + "&"
+                                        + "redirect_uri=" + REDIRECT_URI + "&"
+                                        + "scope=" + SCOPE + "&"
+                                        + "sdo_validate_url=" + encodeURIComponent(validateUrl);
+        window.location.href=getAuthCodeUrl;
+    }
+
+    function deny()
+    {
+        window.location.href="http://account.grandmobile.cn/web/denied";
+    }
+</script>
+
 </head>
 <body>
-	<link href="/WEB-INF/css/main.css" type="text/css" rel="stylesheet">
+	<link href="/css/main.css" type="text/css" rel="stylesheet">
 	<div id="outer-frame">
 		<div id="page-content">
 			<div id="auth">
 				<p class="center"></p>
 				<div id="grandspace-connect-overlay">
-					<img src="/WEB-INF/resources/dropbox_connect_q.png" alt>
+					<img src="/resources/dropbox_connect_q.png" alt>
 				</div>
 				<p></p>
 				<h1>The app whould like to connect with your Grand Space.</h1>
@@ -59,13 +126,11 @@ input {
 				<table>
 					<tr>
 						<td>
-						<form action="" >
 						<input class="freshbutton-blue" name="allow_access"
-							value="Allow" type="submit">
-						</form>
+							value="Allow" type="submit" onclick="allow()">
 						</td>
 						<td><input class="freshbutton" name="deny_access"
-							value="Deny" type="submit"></td>
+							value="Deny" type="submit" onclick="deny()"></td>
 					</tr>
 				</table>
 				</p>

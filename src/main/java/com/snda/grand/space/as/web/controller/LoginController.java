@@ -22,10 +22,10 @@ public class LoginController {
 		LOGGER.info("LoginController initialized.");
 	}
 
-	@RequestMapping(value="login", method=RequestMethod.GET)
+	@RequestMapping(value="test", method=RequestMethod.GET)
 	public ModelAndView test(HttpServletRequest request,HttpServletResponse response,LoginForm command) {
 		String username = command.getUsername();
-		ModelAndView mv = new ModelAndView("/index/index","command","LOGIN SUCCESS, " + username);
+		ModelAndView mv = new ModelAndView("/index/test","command","LOGIN SUCCESS, " + username);
 		return mv;
 	}
 	
@@ -38,6 +38,18 @@ public class LoginController {
 	@RequestMapping(value="authorize", method=RequestMethod.GET)
 	public ModelAndView authorize(HttpServletRequest request,HttpServletResponse response) {
 		ModelAndView mv = new ModelAndView("/index/authorize");
+		return mv;
+	}
+	
+	@RequestMapping(value="redirect_successful", method=RequestMethod.GET)
+	public ModelAndView redirectToDefault(HttpServletRequest request,HttpServletResponse response) {
+		ModelAndView mv = new ModelAndView("/index/redirect_successful");
+		return mv;
+	}
+	
+	@RequestMapping(value="denied", method=RequestMethod.GET)
+	public ModelAndView denied(HttpServletRequest request,HttpServletResponse response) {
+		ModelAndView mv = new ModelAndView("/index/denied");
 		return mv;
 	}
 	
