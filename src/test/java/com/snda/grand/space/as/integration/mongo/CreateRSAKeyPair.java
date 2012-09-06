@@ -82,7 +82,12 @@ public class CreateRSAKeyPair {
 	
 	@Test
 	public void testCheckSignature() {
-		Preconditions.basicAuthorizationValidate("Basic QWxhZGluOnNlc2FtIG9wZW4=", "Aladin", "sesam open");
+		Preconditions.basicAuthorizationValidate("Basic WXpFeU16YzJNbVV0TkdaaFppMDBNVFkzTFRobVpXRXRZbU16WVRkbE4yVTROV1kzOnNlc2FtIG9wZW4=", "E6N84MWP5JJ2392QEEOMQK3UT", "YzEyMzc2MmUtNGZhZi00MTY3LThmZWEtYmMzYTdlN2U4NWY3");
+	}
+	
+	@Test
+	public void test() {
+		System.out.println(Base64.encodeBase64String("E6N84MWP5JJ2392QEEOMQK3UT:YzEyMzc2MmUtNGZhZi00MTY3LThmZWEtYmMzYTdlN2U4NWY3".getBytes()));
 	}
 	
 }

@@ -52,6 +52,7 @@ import com.snda.grand.space.as.exception.NoSuchAccountException;
 import com.snda.grand.space.as.exception.NoSuchApplicationException;
 import com.snda.grand.space.as.exception.NoSuchAuthorizationCodeException;
 import com.snda.grand.space.as.exception.NoSuchRefreshTokenException;
+import com.snda.grand.space.as.exception.RedirectUriDoesNotMatchException;
 import com.snda.grand.space.as.exception.SdoValidateSignatureException;
 import com.snda.grand.space.as.mongo.model.Collections;
 import com.snda.grand.space.as.mongo.model.PojoAccount;
@@ -102,7 +103,8 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 
 		OAuthTokenRequest oauthRequest = new OAuthTokenRequest(request);
 		String appId = oauthRequest.getParam(OAuth.OAUTH_CLIENT_ID);
-		String signature = oauthRequest.getParam(HttpHeaders.AUTHORIZATION);
+		String signature = request.getHeader(HttpHeaders.AUTHORIZATION);
+		LOGGER.debug(signature);
 
 		PojoApplication pojoApplication = Preconditions.getApplicationByAppId(mongoOps, appId);
 		if (pojoApplication == null) {
@@ -125,6 +127,9 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 			else if (System.currentTimeMillis() > pojoCode.getCreationTime() + Collections.CODE_EXPIRE_TIME) {
 				Preconditions.deleteCode(mongoOps, pojoCode.getCode());
 				throw new CodeExpiredException();
+			} else if (pojoCode.getRedirectUri() != null 
+					&& oauthRequest.getRedirectURI().equals(pojoCode.getRedirectUri())) {
+				throw new RedirectUriDoesNotMatchException();
 			}
 			authorization = Preconditions.getAuthorizationByUidAndAppId(
 					mongoOps, pojoCode.getUid(), pojoCode.getAppId());
@@ -272,7 +277,7 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 
 				if (responseType.equals(ResponseType.CODE.toString())) {
 					String code = oauthUUIDIssuer.authorizationCode();
-					Preconditions.insertCode(mongoOps, code,
+					Preconditions.insertCode(mongoOps, code, oauthRequest.getRedirectURI(), 
 							pojoAccount.getUid(), oauthRequest.getClientId());
 					builder.setCode(code);
 				}

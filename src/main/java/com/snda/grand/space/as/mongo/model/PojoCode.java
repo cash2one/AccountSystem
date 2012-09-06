@@ -17,6 +17,9 @@ public class PojoCode {
 	@Field(Collections.Code.CODE)
 	private String code;
 	
+	@Field(Collections.Code.REDIRECT_URI)
+	private String redirectUri;
+	
 	@Indexed
 	@Field(Collections.Code.UID)
 	private String uid;
@@ -29,8 +32,9 @@ public class PojoCode {
 	private long creationTime;
 	
 	@PersistenceConstructor
-	public PojoCode(String code, String uid, String appId, long creationTime) {
+	public PojoCode(String code, String redirectUri, String uid, String appId, long creationTime) {
 		this.code = code;
+		this.redirectUri = redirectUri;
 		this.uid = uid;
 		this.appId = appId;
 		this.creationTime = creationTime;
@@ -51,7 +55,7 @@ public class PojoCode {
 	public void setCode(String code) {
 		this.code = code;
 	}
-
+	
 	public String getUid() {
 		return uid;
 	}
@@ -74,6 +78,14 @@ public class PojoCode {
 
 	public void setCreationTime(long creationTime) {
 		this.creationTime = creationTime;
+	}
+
+	public String getRedirectUri() {
+		return redirectUri;
+	}
+
+	public void setRedirectUri(String redirectUri) {
+		this.redirectUri = redirectUri;
 	}
 
 }

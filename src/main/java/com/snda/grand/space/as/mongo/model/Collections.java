@@ -58,6 +58,7 @@ public class Collections {
 	
 	public abstract class Code {
 		public static final String CODE = "code";
+		public static final String REDIRECT_URI = "redirect_uri";
 		public static final String UID = "uid";
 		public static final String APPID = "appid";
 		public static final String CREATION_TIME = "creation_time";

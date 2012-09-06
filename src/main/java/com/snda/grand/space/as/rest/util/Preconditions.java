@@ -81,8 +81,8 @@ public final class Preconditions {
 		return pojoCode;
 	}
 	
-	public static void insertCode(MongoOperations mongoOps, String code, String uid, String appId) {
-		PojoCode pojoCode = new PojoCode(code, uid, appId,
+	public static void insertCode(MongoOperations mongoOps, String code, String redirectUri, String uid, String appId) {
+		PojoCode pojoCode = new PojoCode(code, redirectUri, uid, appId,
 				System.currentTimeMillis());
 		mongoOps.insert(pojoCode, Collections.CODE_COLLECTION_NAME);
 	}
