@@ -20,7 +20,7 @@
     
     <servlet>
 		<servlet-name>SpringServlet</servlet-name>
-		<servlet-class>com.sun.jersey.spi.spring.container.servlet.SpringServlet</servlet-class>
+		<servlet-class>com.snda.grand.space.as.servlet.AccountRestServlet</servlet-class>
 	</servlet>
 
 	<servlet-mapping>

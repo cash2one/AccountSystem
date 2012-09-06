@@ -2,10 +2,12 @@
 <configuration scan="true" scanPeriod="5 seconds">
 
 	<property name="log.path" value="/home/llap/apps/AccountSystem/shared/log" />
+	
+	<conversionRule conversionWord="request" converterClass="com.snda.grand.space.as.util.RequestIdConverter" />
 
     <appender name="service" class="ch.qos.logback.core.rolling.RollingFileAppender">
     	<encoder>
-              <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %thread %level %logger{0} - %msg%n</Pattern>
+              <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %request %thread %level %logger{0} - %msg%n</Pattern>
     	</encoder>
     	<file>${log.path}/service/service.log</file>
     	<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -14,10 +16,23 @@
     	</rollingPolicy>
     </appender>
     
+    <appender name="access" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    	<encoder>
+            <Pattern>%msg%n</Pattern>
+    	</encoder>
+    	<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+	    	<fileNamePattern>${log.path}/access/access.log-%d{yyyyMMdd}</fileNamePattern>
+    	</rollingPolicy>
+    </appender>
+    
     <logger name="com.snda.gcloud" level="DEBUG"/>
     
     <root level="DEBUG">
         <appender-ref ref="service"/>
     </root>
+    
+    <logger name="com.snda.llap.al.util.AccessLogger" level="INFO">
+    	<appender-ref ref="access"/>
+    </logger>
     
 </configuration>
