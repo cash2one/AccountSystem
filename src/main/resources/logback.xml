@@ -31,7 +31,7 @@
         <appender-ref ref="service"/>
     </root>
     
-    <logger name="com.snda.llap.al.util.AccessLogger" level="INFO">
+    <logger name="com.snda.grand.space.as.util.AccessLogger" level="INFO">
     	<appender-ref ref="access"/>
     </logger>
     

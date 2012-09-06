@@ -5,11 +5,14 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 
 import java.util.List;
 
+import org.apache.commons.codec.binary.Base64;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Query;
 
 import com.snda.grand.space.as.exception.InvalidEmailException;
 import com.snda.grand.space.as.exception.InvalidWebSiteException;
+import com.snda.grand.space.as.exception.NotAuthorizedException;
+import com.snda.grand.space.as.exception.SignatureDoesNotMatchException;
 import com.snda.grand.space.as.mongo.model.Collections;
 import com.snda.grand.space.as.mongo.model.PojoAccount;
 import com.snda.grand.space.as.mongo.model.PojoApplication;
@@ -78,6 +81,12 @@ public final class Preconditions {
 		return pojoCode;
 	}
 	
+	public static void insertCode(MongoOperations mongoOps, String code, String uid, String appId) {
+		PojoCode pojoCode = new PojoCode(code, uid, appId,
+				System.currentTimeMillis());
+		mongoOps.insert(pojoCode, Collections.CODE_COLLECTION_NAME);
+	}
+	
 	public static void deleteCode(MongoOperations mongoOps, String code) {
 		mongoOps.remove(query(where(Collections.Code.CODE).is(code)), Collections.CODE_COLLECTION_NAME);
 	}
@@ -91,6 +100,12 @@ public final class Preconditions {
 	
 	public static void insertAccessToken(MongoOperations mongoOps, PojoToken pojoToken) {
 		mongoOps.insert(pojoToken, Collections.TOKEN_COLLECTION_NAME);
+	}
+	
+	public static void insertAccessToken(MongoOperations mongoOps, String refreshToken, String accessToken, long creationTime) {
+		PojoToken pojoToken = new PojoToken(refreshToken, accessToken, creationTime,
+				creationTime + Collections.ACCESS_TOKEN_EXPIRE_TIME);
+		insertAccessToken(mongoOps, pojoToken);
 	}
 	
 
@@ -118,6 +133,17 @@ public final class Preconditions {
 	public static void checkDomain(String domain) {
 		if (!Rule.checkDomain(domain)) {
 			throw new InvalidWebSiteException();
+		}
+	}
+	
+	public static void basicAuthorizationValidate(String auth, String appKey, String appSecret) {
+		if (auth == null) {
+			throw new NotAuthorizedException();
+		}
+		String stringToSign = appKey + ":" + appSecret;
+		if (!auth.equals("Basic "
+						+ Base64.encodeBase64String(stringToSign.getBytes()))) {
+			throw new SignatureDoesNotMatchException();
 		}
 	}
 

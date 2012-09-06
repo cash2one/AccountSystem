@@ -17,6 +17,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 
 import org.apache.amber.oauth2.as.issuer.MD5Generator;
@@ -44,7 +45,6 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Maps;
 import com.snda.grand.space.as.exception.AccessTokenExpiredException;
-import com.snda.grand.space.as.exception.ApplicationAccessDeniedException;
 import com.snda.grand.space.as.exception.CodeExpiredException;
 import com.snda.grand.space.as.exception.InvalidAccessTokenException;
 import com.snda.grand.space.as.exception.InvalidRefreshTokenException;
@@ -102,6 +102,7 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 
 		OAuthTokenRequest oauthRequest = new OAuthTokenRequest(request);
 		String appId = oauthRequest.getParam(OAuth.OAUTH_CLIENT_ID);
+		String signature = oauthRequest.getParam(HttpHeaders.AUTHORIZATION);
 
 		PojoApplication pojoApplication = Preconditions.getApplicationByAppId(mongoOps, appId);
 		if (pojoApplication == null) {
@@ -113,6 +114,10 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 		// do checking for different grant types
 		if (oauthRequest.getParam(OAuth.OAUTH_GRANT_TYPE).equals(
 				GrantType.AUTHORIZATION_CODE.toString())) {
+			Preconditions
+					.basicAuthorizationValidate(signature,
+							pojoApplication.getAppKey(),
+							pojoApplication.getAppSecret());
 			PojoCode pojoCode = Preconditions.getCode(mongoOps, oauthRequest.getCode());
 			if (pojoCode == null) {
 				throw new NoSuchAuthorizationCodeException();
@@ -126,7 +131,8 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 			if (authorization == null) {
 				throw new NoSuchAuthorizationCodeException();
 			}
-			insertAccessToken(authorization.getRefreshToken(), accessToken,
+			Preconditions.insertAccessToken(mongoOps,
+					authorization.getRefreshToken(), accessToken,
 					System.currentTimeMillis());
 			Preconditions.deleteCode(mongoOps, pojoCode.getCode());
 		} 
@@ -138,7 +144,8 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 			if (authorization == null) {
 				throw new NoSuchRefreshTokenException();
 			}
-			insertAccessToken(authorization.getRefreshToken(), accessToken,
+			Preconditions.insertAccessToken(mongoOps,
+					authorization.getRefreshToken(), accessToken,
 					System.currentTimeMillis());
 		}
 		Token token = new Token();
@@ -245,12 +252,6 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 					throw new NoSuchApplicationException();
 				}
 				
-				if (pojoApplication.getAppSecret() != null
-						&& !pojoApplication.getAppSecret().equalsIgnoreCase(
-								oauthRequest.getClientSecret())) {
-					throw new ApplicationAccessDeniedException();
-				}
-				
 				PojoAuthorization pojoAuthorization = Preconditions
 						.getAuthorizationByUidAndAppId(mongoOps,
 								pojoAccount.getUid(),
@@ -271,7 +272,8 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 
 				if (responseType.equals(ResponseType.CODE.toString())) {
 					String code = oauthUUIDIssuer.authorizationCode();
-					insertCode(code, pojoAccount.getUid(), oauthRequest.getClientId());
+					Preconditions.insertCode(mongoOps, code,
+							pojoAccount.getUid(), oauthRequest.getClientId());
 					builder.setCode(code);
 				}
 				
@@ -325,7 +327,6 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 		Validation validation = new Validation(account.getSndaId(),
 				application.getAppid(), application.getScope(),
 				token.getAccessToken(), token.getExpire());
-		Preconditions.deleteTokenByAccessToken(mongoOps, token.getAccessToken());
 		return validation;
 	}
 	
@@ -343,18 +344,6 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 			}
 		}
 		return uriBuilder.toString().substring(0, uriBuilder.toString().length() - 1);
-	}
-	
-	private void insertAccessToken(String refreshToken, String accessToken, long creationTime) {
-		PojoToken token = new PojoToken(refreshToken, accessToken, creationTime,
-				creationTime + Collections.ACCESS_TOKEN_EXPIRE_TIME);
-		mongoOps.insert(token, Collections.TOKEN_COLLECTION_NAME);
-	}
-	
-	private void insertCode(String code, String uid, String appId) {
-		PojoCode pojoCode = new PojoCode(code, uid, appId,
-				System.currentTimeMillis());
-		mongoOps.insert(pojoCode, Collections.CODE_COLLECTION_NAME);
 	}
 	
 	private void responseContentConsume(HttpResponse response) {

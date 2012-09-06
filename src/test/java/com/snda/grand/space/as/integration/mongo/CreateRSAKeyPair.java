@@ -20,6 +20,7 @@ import com.snda.grand.space.as.exception.InvalidAppStatusException;
 import com.snda.grand.space.as.mongo.model.Collections;
 import com.snda.grand.space.as.mongo.model.PojoAuthorization;
 import com.snda.grand.space.as.rest.util.ApplicationKeys;
+import com.snda.grand.space.as.rest.util.Preconditions;
 import com.snda.grand.space.as.rest.util.Rule;
 
 public class CreateRSAKeyPair {
@@ -77,6 +78,11 @@ public class CreateRSAKeyPair {
 		String refreshToken = "689c196fc988439e326c8fe33befaf0";
 		PojoAuthorization auth = new PojoAuthorization(uid, appId, refreshToken, System.currentTimeMillis());
 		mongoOps.insert(auth, Collections.AUTHORIZATION_COLLECTION_NAME);
+	}
+	
+	@Test
+	public void testCheckSignature() {
+		Preconditions.basicAuthorizationValidate("Basic QWxhZGluOnNlc2FtIG9wZW4=", "Aladin", "sesam open");
 	}
 	
 }
