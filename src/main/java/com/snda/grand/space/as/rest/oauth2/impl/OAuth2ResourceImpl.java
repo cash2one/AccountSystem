@@ -96,7 +96,7 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 
 	@Override
 	@POST
-	@Path("access_token")
+	@Path("token")
 	@Produces("application/json")
 	public Token exchangeToken(@Context HttpServletRequest request)
 			throws OAuthProblemException, OAuthSystemException {
@@ -156,12 +156,12 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 		Token token = new Token();
 		token.setAccessToken(accessToken);
 		token.setUid(authorization.getUid());
-		token.setExpireIn(Collections.ACCESS_TOKEN_EXPIRE_TIME);
+		token.setExpireIn(Collections.ACCESS_TOKEN_EXPIRE_TIME / 1000);
 		return token;
 	}
 
 	@Override
-	@POST
+	@GET
 	@Path("authorize")
 	@Produces("application/json")
 	public Response authorize(@Context HttpServletRequest request)
@@ -257,8 +257,11 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 					throw new NoSuchApplicationException();
 				}
 				
-				Preconditions.checkSubDomain(pojoApplication.getWebsite(),
-						oauthRequest.getRedirectURI());
+				String redirectUri = oauthRequest.getRedirectURI();
+				if (redirectUri != null) {
+//					Preconditions.checkSubDomain(pojoApplication.getWebsite(),
+//							redirectUri);
+				}
 				
 				PojoAuthorization pojoAuthorization = Preconditions
 						.getAuthorizationByUidAndAppId(mongoOps,
@@ -266,9 +269,11 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 								pojoApplication.getAppid());
 				if (pojoAuthorization == null) {
 					// Create new Authorization for this uid to using the appid
-					Preconditions.insertRefreshToken(mongoOps,
+					String refreshToken = oauthMD5Issuer.refreshToken();
+					pojoAuthorization = new PojoAuthorization(
 							pojoAccount.getUid(), pojoApplication.getAppid(),
-							oauthMD5Issuer.refreshToken());
+							refreshToken, System.currentTimeMillis());
+					Preconditions.insertAuthorization(mongoOps, pojoAuthorization);
 				}
 				
 				String responseType = oauthRequest.getParam(OAuth.OAUTH_RESPONSE_TYPE);
@@ -280,13 +285,22 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 
 				if (responseType.equals(ResponseType.CODE.toString())) {
 					String code = oauthUUIDIssuer.authorizationCode();
-					Preconditions.insertCode(mongoOps, code, oauthRequest.getRedirectURI(), 
+					Preconditions.insertCode(mongoOps, code, redirectUri, 
 							pojoAccount.getUid(), oauthRequest.getClientId());
 					builder.setCode(code);
+				} else if (responseType.equals(ResponseType.TOKEN.toString())) {
+					String accessToken = oauthMD5Issuer.accessToken();
+					Preconditions.insertAccessToken(mongoOps,
+							pojoAuthorization.getRefreshToken(), accessToken,
+							System.currentTimeMillis());
+					builder.setAccessToken(accessToken);
+					builder.setExpiresIn(Collections.ACCESS_TOKEN_EXPIRE_TIME / 1000);
 				}
 				
-				final OAuthResponse response = builder.location(oauthRequest.getRedirectURI())
-						.buildQueryMessage();
+				final OAuthResponse response = builder
+						.location(
+								redirectUri == null ? Constants.DEFAULT_AUTHORIZE_SUCCESS_REDIRECT_URI
+										: redirectUri).buildQueryMessage();
 				URI url = new URI(response.getLocationUri());
 
 				return Response

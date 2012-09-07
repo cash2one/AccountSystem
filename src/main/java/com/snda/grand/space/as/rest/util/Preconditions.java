@@ -71,6 +71,12 @@ public final class Preconditions {
 		return authorization;
 	}
 	
+	public static void insertAuthorization(MongoOperations mongoOps,
+			PojoAuthorization pojoAuthorization) {
+		mongoOps.insert(pojoAuthorization,
+				Collections.AUTHORIZATION_COLLECTION_NAME);
+	}
+	
 	public static List<PojoAuthorization> getAuthorizationsByUid(MongoOperations mongoOps,
 			String uid) {
 		List<PojoAuthorization> authorizations = mongoOps.find(
@@ -125,8 +131,7 @@ public final class Preconditions {
 			String appId, String refreshToken) {
 		PojoAuthorization authorization = new PojoAuthorization(uid, appId,
 				refreshToken, System.currentTimeMillis());
-		mongoOps.insert(authorization,
-				Collections.AUTHORIZATION_COLLECTION_NAME);
+		insertAuthorization(mongoOps, authorization);
 	}
 	
 	public static void checkEmail(String email) {
