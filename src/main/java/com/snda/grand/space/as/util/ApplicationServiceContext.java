@@ -68,7 +68,7 @@ public class ApplicationServiceContext {
 	}
 	
 	private String path() {
-		return request.getContextPath();
+		return request.getPathTranslated();
 	}
 
 	private String client() {

@@ -5,6 +5,7 @@ import static org.springframework.data.mongodb.core.query.Criteria.where;
 
 import java.net.UnknownHostException;
 import java.util.UUID;
+import java.util.regex.Matcher;
 
 import org.apache.commons.codec.binary.Base64;
 import org.junit.Test;
@@ -57,12 +58,12 @@ public class CreateRSAKeyPair {
 	
 	@Test
 	public void testCheckDomain() {
-		System.out.println(Rule.checkDomain("123.abc.cn"));
+		System.out.println(Rule.checkDomain("account.grandmobile.cn:8080/abc/acb"));
 	}
 	
 	@Test
 	public void testCheckSubDomain() {
-		Preconditions.checkSubDomain("123123.123.abc", "1sd.sss.123.abc");
+		Preconditions.checkSubDomain("account.grandmobile.cn", "account.grandmobile.cn/abc/acb");
 	}
 	
 	@Test

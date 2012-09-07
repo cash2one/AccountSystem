@@ -4,8 +4,10 @@ import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
 import java.util.List;
+import java.util.regex.Matcher;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Query;
 
@@ -24,7 +26,7 @@ import com.snda.grand.space.as.mongo.model.PojoToken;
 public final class Preconditions {
 	
 	private static final String DOT_SPLITER = "\\.";
-
+	
 	public static PojoAccount getAccountBySndaId(MongoOperations mongoOps,
 			String sndaId) {
 		PojoAccount account = mongoOps.findOne(
@@ -140,10 +142,19 @@ public final class Preconditions {
 	}
 	
 	public static void checkSubDomain(String domain, String subDomain) {
-		String[] domainSplit = domain.split(DOT_SPLITER);
-		String[] subDomainSplit = subDomain.split(DOT_SPLITER);
-		if (!domainSplit[domainSplit.length - 1].equalsIgnoreCase(subDomainSplit[subDomainSplit.length - 1])
-				|| !domainSplit[domainSplit.length - 2].equalsIgnoreCase((subDomainSplit[subDomainSplit.length - 2]))) {
+		String subDomainGrep = null;
+		Matcher matcher = Rule.SUB_DOMAIN_PATTERN.matcher(subDomain);
+		if (matcher.find()) {
+			subDomainGrep = StringUtils.strip(matcher.group(), "/:");
+			String[] domainSplit = domain.split(DOT_SPLITER);
+			String[] subDomainSplit = subDomainGrep.split(DOT_SPLITER);
+			if (!domainSplit[domainSplit.length - 1]
+					.equalsIgnoreCase(subDomainSplit[subDomainSplit.length - 1])
+					|| !domainSplit[domainSplit.length - 2]
+							.equalsIgnoreCase((subDomainSplit[subDomainSplit.length - 2]))) {
+				throw new DomainDoesNotMatchException();
+			}
+		} else {
 			throw new DomainDoesNotMatchException();
 		}
 	}

@@ -128,7 +128,7 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 				Preconditions.deleteCode(mongoOps, pojoCode.getCode());
 				throw new CodeExpiredException();
 			} else if (pojoCode.getRedirectUri() != null 
-					&& oauthRequest.getRedirectURI().equals(pojoCode.getRedirectUri())) {
+					&& !oauthRequest.getRedirectURI().equals(pojoCode.getRedirectUri())) {
 				throw new RedirectUriDoesNotMatchException();
 			}
 			authorization = Preconditions.getAuthorizationByUidAndAppId(
@@ -226,9 +226,6 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 		
 		HttpResponse httpResponse = null;
 		OAuthAuthzRequest oauthRequest = new OAuthAuthzRequest(request);
-		
-		Preconditions.checkDomain(oauthRequest.getRedirectURI());
-		
 		String sdoValidateURL = oauthRequest.getParam(Constants.SDO_VALIDATE_URL_HEADER);
 		LOGGER.info("Validate url:{}", sdoValidateURL);
 		
