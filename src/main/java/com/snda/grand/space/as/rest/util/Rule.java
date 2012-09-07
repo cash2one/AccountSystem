@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 public final class Rule {
 	
 	private static final Pattern EMAIL_PATTERN = Pattern.compile("\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*");
-	private static final Pattern DOMAIN_PATTER = Pattern.compile("[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+\\.?");
+	private static final Pattern DOMAIN_PATTER = Pattern.compile("^([a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,6}$");
 	
 	private Rule() {}
 	

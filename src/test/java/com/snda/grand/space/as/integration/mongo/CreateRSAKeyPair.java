@@ -57,7 +57,12 @@ public class CreateRSAKeyPair {
 	
 	@Test
 	public void testCheckDomain() {
-		System.out.println(Rule.checkDomain("12.32"));
+		System.out.println(Rule.checkDomain("123.abc.cn"));
+	}
+	
+	@Test
+	public void testCheckSubDomain() {
+		Preconditions.checkSubDomain("123123.123.abc", "1sd.sss.123.abc");
 	}
 	
 	@Test

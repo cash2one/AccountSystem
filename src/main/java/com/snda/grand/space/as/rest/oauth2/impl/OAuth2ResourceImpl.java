@@ -226,6 +226,9 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 		
 		HttpResponse httpResponse = null;
 		OAuthAuthzRequest oauthRequest = new OAuthAuthzRequest(request);
+		
+		Preconditions.checkDomain(oauthRequest.getRedirectURI());
+		
 		String sdoValidateURL = oauthRequest.getParam(Constants.SDO_VALIDATE_URL_HEADER);
 		LOGGER.info("Validate url:{}", sdoValidateURL);
 		
@@ -256,6 +259,9 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 				if (pojoApplication == null) {
 					throw new NoSuchApplicationException();
 				}
+				
+				Preconditions.checkSubDomain(pojoApplication.getWebsite(),
+						oauthRequest.getRedirectURI());
 				
 				PojoAuthorization pojoAuthorization = Preconditions
 						.getAuthorizationByUidAndAppId(mongoOps,

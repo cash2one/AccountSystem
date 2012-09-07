@@ -9,6 +9,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Query;
 
+import com.snda.grand.space.as.exception.DomainDoesNotMatchException;
 import com.snda.grand.space.as.exception.InvalidEmailException;
 import com.snda.grand.space.as.exception.InvalidWebSiteException;
 import com.snda.grand.space.as.exception.NotAuthorizedException;
@@ -21,6 +22,8 @@ import com.snda.grand.space.as.mongo.model.PojoCode;
 import com.snda.grand.space.as.mongo.model.PojoToken;
 
 public final class Preconditions {
+	
+	private static final String DOT_SPLITER = "\\.";
 
 	public static PojoAccount getAccountBySndaId(MongoOperations mongoOps,
 			String sndaId) {
@@ -133,6 +136,15 @@ public final class Preconditions {
 	public static void checkDomain(String domain) {
 		if (!Rule.checkDomain(domain)) {
 			throw new InvalidWebSiteException();
+		}
+	}
+	
+	public static void checkSubDomain(String domain, String subDomain) {
+		String[] domainSplit = domain.split(DOT_SPLITER);
+		String[] subDomainSplit = subDomain.split(DOT_SPLITER);
+		if (!domainSplit[domainSplit.length - 1].equalsIgnoreCase(subDomainSplit[subDomainSplit.length - 1])
+				|| !domainSplit[domainSplit.length - 2].equalsIgnoreCase((subDomainSplit[subDomainSplit.length - 2]))) {
+			throw new DomainDoesNotMatchException();
 		}
 	}
 	
