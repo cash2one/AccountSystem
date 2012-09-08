@@ -14,7 +14,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
@@ -25,7 +24,6 @@ import org.apache.amber.oauth2.as.issuer.OAuthIssuer;
 import org.apache.amber.oauth2.as.issuer.OAuthIssuerImpl;
 import org.apache.amber.oauth2.as.issuer.UUIDValueGenerator;
 import org.apache.amber.oauth2.as.request.OAuthAuthzRequest;
-import org.apache.amber.oauth2.as.request.OAuthTokenRequest;
 import org.apache.amber.oauth2.as.response.OAuthASResponse;
 import org.apache.amber.oauth2.common.OAuth;
 import org.apache.amber.oauth2.common.exception.OAuthProblemException;
@@ -60,6 +58,7 @@ import com.snda.grand.space.as.mongo.model.PojoApplication;
 import com.snda.grand.space.as.mongo.model.PojoAuthorization;
 import com.snda.grand.space.as.mongo.model.PojoCode;
 import com.snda.grand.space.as.mongo.model.PojoToken;
+import com.snda.grand.space.as.rest.GrandSpaceOAuthTokenRequest;
 import com.snda.grand.space.as.rest.model.SdoValidation;
 import com.snda.grand.space.as.rest.model.Token;
 import com.snda.grand.space.as.rest.model.Validation;
@@ -97,11 +96,9 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 	@Override
 	@POST
 	@Path("token")
-	@Produces("application/json")
 	public Token exchangeToken(@Context HttpServletRequest request)
 			throws OAuthProblemException, OAuthSystemException {
-
-		OAuthTokenRequest oauthRequest = new OAuthTokenRequest(request);
+		GrandSpaceOAuthTokenRequest oauthRequest = new GrandSpaceOAuthTokenRequest(request);
 		String appId = oauthRequest.getParam(OAuth.OAUTH_CLIENT_ID);
 		String signature = request.getHeader(HttpHeaders.AUTHORIZATION);
 		LOGGER.debug(signature);
@@ -128,7 +125,7 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 				Preconditions.deleteCode(mongoOps, pojoCode.getCode());
 				throw new CodeExpiredException();
 			} else if (pojoCode.getRedirectUri() != null 
-					&& !oauthRequest.getRedirectURI().equals(pojoCode.getRedirectUri())) {
+					&& !pojoCode.getRedirectUri().equals(oauthRequest.getRedirectURI())) {
 				throw new RedirectUriDoesNotMatchException();
 			}
 			authorization = Preconditions.getAuthorizationByUidAndAppId(
@@ -153,17 +150,17 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 					authorization.getRefreshToken(), accessToken,
 					System.currentTimeMillis());
 		}
-		Token token = new Token();
-		token.setAccessToken(accessToken);
-		token.setUid(authorization.getUid());
-		token.setExpireIn(Collections.ACCESS_TOKEN_EXPIRE_TIME / 1000);
+		Token token = new Token()
+							.setRefreshToken(authorization.getRefreshToken())
+							.setAccessToken(accessToken)
+							.setUid(authorization.getUid())
+							.setExpireIn(Collections.ACCESS_TOKEN_EXPIRE_TIME / 1000);
 		return token;
 	}
 
 	@Override
 	@GET
 	@Path("authorize")
-	@Produces("application/json")
 	public Response authorize(@Context HttpServletRequest request)
 			throws OAuthProblemException, OAuthSystemException {
 		OAuthAuthzRequest oauthRequest = new OAuthAuthzRequest(request);
@@ -219,7 +216,6 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 	@Override
 	@GET
 	@Path("sdo_auth")
-	@Produces("application/json")
 	public Response sdoAuthorize(@Context HttpServletRequest request)
 			throws URISyntaxException, OAuthProblemException,
 			OAuthSystemException, IOException {
@@ -299,8 +295,8 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 				
 				final OAuthResponse response = builder
 						.location(
-								redirectUri == null ? Constants.DEFAULT_AUTHORIZE_SUCCESS_REDIRECT_URI
-										: redirectUri).buildQueryMessage();
+								(redirectUri == null ? Constants.DEFAULT_AUTHORIZE_SUCCESS_REDIRECT_URI
+										: redirectUri)).buildQueryMessage();
 				URI url = new URI(response.getLocationUri());
 
 				return Response

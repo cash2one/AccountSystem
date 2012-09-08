@@ -10,6 +10,9 @@ public class Token {
 	@JsonProperty("uid")
 	private String uid;
 	
+	@JsonProperty("refresh_token")
+	private String refreshToken;
+	
 	@JsonProperty("access_token")
 	private String accessToken;
 	
@@ -20,24 +23,36 @@ public class Token {
 		return uid;
 	}
 
-	public void setUid(String uid) {
+	public Token setUid(String uid) {
 		this.uid = uid;
+		return this;
 	}
 
 	public String getAccessToken() {
 		return accessToken;
 	}
 
-	public void setAccessToken(String accessToken) {
+	public Token setAccessToken(String accessToken) {
 		this.accessToken = accessToken;
+		return this;
 	}
 
 	public long getExpireIn() {
 		return expireIn;
 	}
 
-	public void setExpireIn(long expireIn) {
+	public Token setExpireIn(long expireIn) {
 		this.expireIn = expireIn;
+		return this;
+	}
+
+	public String getRefreshToken() {
+		return refreshToken;
+	}
+
+	public Token setRefreshToken(String refreshToken) {
+		this.refreshToken = refreshToken;
+		return this;
 	}
 
 }

@@ -21,6 +21,7 @@ import com.snda.grand.space.as.exception.InvalidAppStatusException;
 import com.snda.grand.space.as.mongo.model.Collections;
 import com.snda.grand.space.as.mongo.model.PojoAuthorization;
 import com.snda.grand.space.as.rest.util.ApplicationKeys;
+import com.snda.grand.space.as.rest.util.Constants;
 import com.snda.grand.space.as.rest.util.Preconditions;
 import com.snda.grand.space.as.rest.util.Rule;
 
@@ -28,7 +29,9 @@ public class CreateRSAKeyPair {
 
 	@Test
 	public void testCreateRSAKeyPair() {
-		
+		String redirectUri = null;
+		String result = (redirectUri == null ? Constants.DEFAULT_AUTHORIZE_SUCCESS_REDIRECT_URI : redirectUri);
+		System.out.println(result);
 	}
 	
 	@Test

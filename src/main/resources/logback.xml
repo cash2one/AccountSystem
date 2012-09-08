@@ -25,7 +25,7 @@
     	</rollingPolicy>
     </appender>
     
-    <logger name="com.snda.gcloud" level="DEBUG"/>
+    <logger name="com.snda.grand.space" level="DEBUG"/>
     
     <root level="DEBUG">
         <appender-ref ref="service"/>

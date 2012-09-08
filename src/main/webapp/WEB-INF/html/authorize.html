@@ -45,11 +45,11 @@ input {
 
 <script type="text/javascript">
     PARAM_ARRAY = getHttpRequestParameters(window.location.href);
-    CLIENT_ID = "";
-    RESPONSE_TYPE = "";
-    REDIRECT_URI = "";
-    SCOPE = "";
-    TICKET = "";
+    CLIENT_ID = null;
+    RESPONSE_TYPE = null;
+    REDIRECT_URI = null;
+    SCOPE = null;
+    TICKET = null;
     var i = 0;
     for (i = 0; i < PARAM_ARRAY.length; i++) 
     {
@@ -74,7 +74,6 @@ input {
             TICKET = PARAM_ARRAY[i].value;
         }
     }
-    REDIRECT_PAGE_URI = "";
 </script>
 
 <script>
@@ -96,11 +95,19 @@ input {
         }
 
         var getAuthCodeUrl = "http://account.grandmobile.cn/api/oauth2/sdo_auth?";
-        getAuthCodeUrl = getAuthCodeUrl + "client_id=" + CLIENT_ID + "&"
-                                        + "response_type=" + RESPONSE_TYPE + "&"
-                                        + "redirect_uri=" + REDIRECT_URI + "&"
-                                        + "scope=" + SCOPE + "&"
-                                        + "sdo_validate_url=" + encodeURIComponent(validateUrl);
+        if (CLIENT_ID != null) {
+        	getAuthCodeUrl = getAuthCodeUrl + "client_id=" + CLIENT_ID + "&";
+        }
+        if (RESPONSE_TYPE != null) {
+        	getAuthCodeUrl = getAuthCodeUrl + "response_type=" + RESPONSE_TYPE + "&";
+        }
+        if (REDIRECT_URI != null) {
+        	getAuthCodeUrl = getAuthCodeUrl + "redirect_uri=" + REDIRECT_URI + "&";
+        }
+        if (SCOPE != null) {
+        	getAuthCodeUrl = getAuthCodeUrl + "scope=" + SCOPE + "&";
+        }
+        getAuthCodeUrl = getAuthCodeUrl + "sdo_validate_url=" + encodeURIComponent(validateUrl);
         window.location.href=getAuthCodeUrl;
     }
 

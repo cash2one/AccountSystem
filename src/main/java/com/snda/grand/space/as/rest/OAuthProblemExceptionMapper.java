@@ -36,7 +36,7 @@ public class OAuthProblemExceptionMapper implements
 			return Response
 					.status(res.getResponseStatus())
 					.entity(res.getBody())
-					.type(MediaType.APPLICATION_JSON_TYPE)
+					.type(MediaType.TEXT_PLAIN_TYPE)
 					.build();
 		} catch (OAuthSystemException e) {
 			return Response
