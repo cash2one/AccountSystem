@@ -11,7 +11,6 @@ public class GrandSpaceAuthorizationCodeValidator extends AbstractValidator<Http
         requiredParams.add(OAuth.OAUTH_GRANT_TYPE);
         requiredParams.add(OAuth.OAUTH_CLIENT_ID);
         requiredParams.add(OAuth.OAUTH_CODE);
-        requiredParams.add(OAuth.OAUTH_CLIENT_SECRET);
     }
 
 }
