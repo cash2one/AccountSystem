@@ -3,26 +3,26 @@ package com.snda.grand.space.as.exception;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
-public class CodeExpiredException extends ApplicationWebException {
+public class DomainMismatchException extends ApplicationWebException {
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 1111392360542126842L;
+	private static final long serialVersionUID = 6410243236510085044L;
 
 	@Override
 	public String getMessage() {
-		return "Code has expired.";
+		return "The domain of return url does not match the application's website property.";
 	}
 
 	@Override
 	public Status getStatus() {
-		return Status.FORBIDDEN;
+		return Status.BAD_REQUEST;
 	}
 
 	@Override
 	public String getCode() {
-		return "CodeExpired";
+		return "DomainMismatch";
 	}
 
 	@Override

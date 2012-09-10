@@ -1,6 +1,5 @@
 package com.snda.grand.space.as.rest;
 
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
@@ -23,11 +22,7 @@ public class ApplicationWebExceptionMapper implements
 	public Response toResponse(ApplicationWebException exception) {
 		LOGGER.info("{} caused by : {}", exception.getClass().getSimpleName(), exception.getMessage());
 
-		return Response
-				.status(exception.getStatus())
-				.entity(exception.getEntity())
-				.type(MediaType.TEXT_PLAIN_TYPE)
-				.build();
+		return exception.toResponse();
 	}
 	
 }

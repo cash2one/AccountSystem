@@ -1,6 +1,6 @@
 package com.snda.grand.space.as.exception;
 
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
 public class ApplicationAlreadyExistException extends ApplicationWebException {
@@ -10,16 +10,24 @@ public class ApplicationAlreadyExistException extends ApplicationWebException {
 	 */
 	private static final long serialVersionUID = -403211923741416314L;
 
-	public ApplicationAlreadyExistException() {
-		super(Response
-				.status(Status.CONFLICT)
-				.entity("Application already exist.")
-				.build());
-	}
-
 	@Override
 	public String getMessage() {
 		return "Application already exist.";
+	}
+
+	@Override
+	public Status getStatus() {
+		return Status.CONFLICT;
+	}
+
+	@Override
+	public String getCode() {
+		return "ApplicationAlreadyExist";
+	}
+
+	@Override
+	public MediaType getType() {
+		return MediaType.APPLICATION_JSON_TYPE;
 	}
 
 }

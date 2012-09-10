@@ -3,16 +3,16 @@ package com.snda.grand.space.as.exception;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
-public class CodeExpiredException extends ApplicationWebException {
+public class SdoValidateSignatureFailedException extends ApplicationWebException {
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 1111392360542126842L;
+	private static final long serialVersionUID = 8578746883039449394L;
 
 	@Override
 	public String getMessage() {
-		return "Code has expired.";
+		return "Sdo passport validate failed.";
 	}
 
 	@Override
@@ -22,7 +22,7 @@ public class CodeExpiredException extends ApplicationWebException {
 
 	@Override
 	public String getCode() {
-		return "CodeExpired";
+		return "SdoValidateSignatureFailed";
 	}
 
 	@Override

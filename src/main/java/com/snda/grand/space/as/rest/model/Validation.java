@@ -1,19 +1,25 @@
 package com.snda.grand.space.as.rest.model;
 
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class Validation {
 
+	@JsonProperty("username")
 	private String username;
 	
+	@JsonProperty("appid")
 	private String appId;
 	
+	@JsonProperty("scope")
 	private String scope;
 	
+	@JsonProperty("access_token")
 	private String accessToken;
 	
+	@JsonProperty("expire")
 	private long expire;
 	
 	public Validation(String username, String appId, String scope,

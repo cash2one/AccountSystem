@@ -11,11 +11,12 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Query;
 
-import com.snda.grand.space.as.exception.DomainDoesNotMatchException;
+import com.snda.grand.space.as.exception.DomainMismatchException;
 import com.snda.grand.space.as.exception.InvalidEmailException;
 import com.snda.grand.space.as.exception.InvalidWebSiteException;
 import com.snda.grand.space.as.exception.NotAuthorizedException;
-import com.snda.grand.space.as.exception.SignatureDoesNotMatchException;
+import com.snda.grand.space.as.exception.SignatureMisatchException;
+import com.snda.grand.space.as.mongo.internal.model.Accessor;
 import com.snda.grand.space.as.mongo.model.Collections;
 import com.snda.grand.space.as.mongo.model.PojoAccount;
 import com.snda.grand.space.as.mongo.model.PojoApplication;
@@ -157,10 +158,10 @@ public final class Preconditions {
 					.equalsIgnoreCase(subDomainSplit[subDomainSplit.length - 1])
 					|| !domainSplit[domainSplit.length - 2]
 							.equalsIgnoreCase((subDomainSplit[subDomainSplit.length - 2]))) {
-				throw new DomainDoesNotMatchException();
+				throw new DomainMismatchException();
 			}
 		} else {
-			throw new DomainDoesNotMatchException();
+			throw new DomainMismatchException();
 		}
 	}
 	
@@ -171,8 +172,15 @@ public final class Preconditions {
 		String stringToSign = appKey + ":" + appSecret;
 		if (!auth.equals("Basic "
 						+ Base64.encodeBase64String(stringToSign.getBytes()))) {
-			throw new SignatureDoesNotMatchException();
+			throw new SignatureMisatchException();
 		}
+	}
+	
+	public static Accessor getAccessor(MongoOperations mongoOps, String accessKey, String secretKey) {
+		Query query = new Query()
+							.addCriteria(where(Collections.Accessor.ACCESS_KEY).is(accessKey))
+							.addCriteria(where(Collections.Accessor.SECRET_KEY).is(secretKey));
+		return mongoOps.findOne(query, Accessor.class, Collections.ACCESSOR_COLLECTION_NAME);
 	}
 
 }

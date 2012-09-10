@@ -50,8 +50,8 @@ import com.snda.grand.space.as.exception.NoSuchAccountException;
 import com.snda.grand.space.as.exception.NoSuchApplicationException;
 import com.snda.grand.space.as.exception.NoSuchAuthorizationCodeException;
 import com.snda.grand.space.as.exception.NoSuchRefreshTokenException;
-import com.snda.grand.space.as.exception.RedirectUriDoesNotMatchException;
-import com.snda.grand.space.as.exception.SdoValidateSignatureException;
+import com.snda.grand.space.as.exception.RedirectUriMisatchException;
+import com.snda.grand.space.as.exception.SdoValidateSignatureFailedException;
 import com.snda.grand.space.as.mongo.model.Collections;
 import com.snda.grand.space.as.mongo.model.PojoAccount;
 import com.snda.grand.space.as.mongo.model.PojoApplication;
@@ -126,7 +126,7 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 				throw new CodeExpiredException();
 			} else if (pojoCode.getRedirectUri() != null 
 					&& !pojoCode.getRedirectUri().equals(oauthRequest.getRedirectURI())) {
-				throw new RedirectUriDoesNotMatchException();
+				throw new RedirectUriMisatchException();
 			}
 			authorization = Preconditions.getAuthorizationByUidAndAppId(
 					mongoOps, pojoCode.getUid(), pojoCode.getAppId());
@@ -304,7 +304,7 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 						.location(url)
 						.build();
 			} else {
-				throw new SdoValidateSignatureException();
+				throw new SdoValidateSignatureFailedException();
 			}
 			
 		} finally {

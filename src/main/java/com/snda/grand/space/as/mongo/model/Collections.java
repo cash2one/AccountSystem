@@ -16,6 +16,8 @@ public class Collections {
 	
 	public static final long ACCESS_TOKEN_EXPIRE_TIME = 60 * 60 * 1000L;
 	
+	public static final String ACCESSOR_COLLECTION_NAME = "accessors";
+	
 	public abstract class Account {
 		public static final String SNDA_ID = "snda_id";
 		public static final String UID = "uid";
@@ -61,6 +63,14 @@ public class Collections {
 		public static final String REDIRECT_URI = "redirect_uri";
 		public static final String UID = "uid";
 		public static final String APPID = "appid";
+		public static final String CREATION_TIME = "creation_time";
+	}
+	
+	public abstract class Accessor {
+		public static final String USERNAME = "username";
+		public static final String ACCESS_KEY = "access_key";
+		public static final String SECRET_KEY = "secret_key";
+		public static final String DESCRIPTION = "description";
 		public static final String CREATION_TIME = "creation_time";
 	}
 	

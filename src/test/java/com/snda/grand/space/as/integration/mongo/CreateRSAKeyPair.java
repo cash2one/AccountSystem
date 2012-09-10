@@ -1,23 +1,22 @@
 package com.snda.grand.space.as.integration.mongo;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.springframework.data.mongodb.core.query.Criteria.where;
 
 import java.net.UnknownHostException;
 import java.util.UUID;
-import java.util.regex.Matcher;
 
+import org.apache.amber.oauth2.as.issuer.MD5Generator;
+import org.apache.amber.oauth2.common.exception.OAuthSystemException;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.Test;
 import org.springframework.data.mongodb.MongoDbFactory;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 
 import com.mongodb.Mongo;
 import com.snda.grand.space.as.exception.InvalidAppStatusException;
+import com.snda.grand.space.as.mongo.internal.model.Accessor;
 import com.snda.grand.space.as.mongo.model.Collections;
 import com.snda.grand.space.as.mongo.model.PojoAuthorization;
 import com.snda.grand.space.as.rest.util.ApplicationKeys;
@@ -26,6 +25,20 @@ import com.snda.grand.space.as.rest.util.Preconditions;
 import com.snda.grand.space.as.rest.util.Rule;
 
 public class CreateRSAKeyPair {
+	
+//	@Test
+//	public void testGenAccessor() throws UnknownHostException, OAuthSystemException {
+//		MongoDbFactory mongoDbFactory = new SimpleMongoDbFactory(new Mongo(
+//				"account.grandmobile.cn", 27017), "account-system");
+//		MongoOperations mongoOps = new MongoTemplate(mongoDbFactory);
+//		
+//		MD5Generator md5gen = new MD5Generator();
+//		Accessor testAccessor = new Accessor("test",
+//				md5gen.generateValue(),
+//				md5gen.generateValue(),
+//				"For test");
+//		mongoOps.insert(testAccessor, Collections.ACCESSOR_COLLECTION_NAME);
+//	}
 
 	@Test
 	public void testCreateRSAKeyPair() {

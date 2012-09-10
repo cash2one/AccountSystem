@@ -3,16 +3,16 @@ package com.snda.grand.space.as.exception;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
-public class CodeExpiredException extends ApplicationWebException {
+public class SignatureMisatchException extends ApplicationWebException {
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 1111392360542126842L;
+	private static final long serialVersionUID = -2043429470823436089L;
 
 	@Override
 	public String getMessage() {
-		return "Code has expired.";
+		return "The request signature we calculated does not match the signature you provided.";
 	}
 
 	@Override
@@ -22,7 +22,7 @@ public class CodeExpiredException extends ApplicationWebException {
 
 	@Override
 	public String getCode() {
-		return "CodeExpired";
+		return "SignatureMisatch";
 	}
 
 	@Override
