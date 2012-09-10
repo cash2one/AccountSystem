@@ -17,5 +17,7 @@
 	<context:component-scan base-package="com.snda.grand.space.as.rest" />
 	<context:component-scan base-package="com.snda.grand.space.as.rest.account.impl" />
 	<context:component-scan base-package="com.snda.grand.space.as.rest.application.impl" />
+	
+	<bean id="accessorAuthFilter" class="com.snda.grand.space.as.servlet.AccessorAuthenticateFilter" />
     
 </beans>

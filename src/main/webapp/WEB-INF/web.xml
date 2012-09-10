@@ -18,10 +18,20 @@
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
     
+    <filter>
+    	<filter-name>accessorAuthFilter</filter-name>
+    	<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+    </filter>
+    
     <servlet>
 		<servlet-name>SpringServlet</servlet-name>
 		<servlet-class>com.snda.grand.space.as.servlet.AccountRestServlet</servlet-class>
 	</servlet>
+	
+	<filter-mapping>
+		<filter-name>accessorAuthFilter</filter-name>
+		<url-pattern>/api/*</url-pattern>
+	</filter-mapping>
 
 	<servlet-mapping>
 		<servlet-name>SpringServlet</servlet-name>
