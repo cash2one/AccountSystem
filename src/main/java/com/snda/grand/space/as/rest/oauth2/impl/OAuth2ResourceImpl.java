@@ -313,7 +313,7 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 	}
 	
 	@Override
-	@GET
+	@POST
 	@Path("validate")
 	public Validation validate(@QueryParam("access_token") String accessToken) {
 
