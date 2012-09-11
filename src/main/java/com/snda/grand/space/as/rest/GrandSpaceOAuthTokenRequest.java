@@ -5,7 +5,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.amber.oauth2.as.request.OAuthRequest;
 import org.apache.amber.oauth2.as.validator.ClientCredentialValidator;
 import org.apache.amber.oauth2.as.validator.PasswordValidator;
-import org.apache.amber.oauth2.as.validator.RefreshTokenValidator;
 import org.apache.amber.oauth2.common.OAuth;
 import org.apache.amber.oauth2.common.exception.OAuthProblemException;
 import org.apache.amber.oauth2.common.exception.OAuthSystemException;
@@ -24,7 +23,7 @@ public class GrandSpaceOAuthTokenRequest extends OAuthRequest {
         validators.put(GrantType.PASSWORD.toString(), PasswordValidator.class);
         validators.put(GrantType.CLIENT_CREDENTIALS.toString(), ClientCredentialValidator.class);
         validators.put(GrantType.AUTHORIZATION_CODE.toString(), GrandSpaceAuthorizationCodeValidator.class);
-        validators.put(GrantType.REFRESH_TOKEN.toString(), RefreshTokenValidator.class);
+        validators.put(GrantType.REFRESH_TOKEN.toString(), GrandSpaceRefreshTokenValidator.class);
         String requestTypeValue = getParam(OAuth.OAUTH_GRANT_TYPE);
         if (OAuthUtils.isEmpty(requestTypeValue)) {
             throw OAuthUtils.handleOAuthProblemException("Missing grant_type parameter value");

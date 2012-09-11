@@ -110,13 +110,11 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 
 		String accessToken = oauthMD5Issuer.accessToken();
 		PojoAuthorization authorization = null;
+		Preconditions.basicAuthorizationValidate(signature,
+				pojoApplication.getAppKey(), pojoApplication.getAppSecret());
 		// do checking for different grant types
 		if (oauthRequest.getParam(OAuth.OAUTH_GRANT_TYPE).equals(
 				GrantType.AUTHORIZATION_CODE.toString())) {
-			Preconditions
-					.basicAuthorizationValidate(signature,
-							pojoApplication.getAppKey(),
-							pojoApplication.getAppSecret());
 			PojoCode pojoCode = Preconditions.getCode(mongoOps, oauthRequest.getCode());
 			if (pojoCode == null) {
 				throw new NoSuchAuthorizationCodeException();
