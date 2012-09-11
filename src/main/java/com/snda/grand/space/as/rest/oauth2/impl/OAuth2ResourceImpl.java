@@ -14,7 +14,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
@@ -45,6 +44,7 @@ import com.google.common.collect.Maps;
 import com.snda.grand.space.as.exception.AccessTokenExpiredException;
 import com.snda.grand.space.as.exception.CodeExpiredException;
 import com.snda.grand.space.as.exception.InvalidAccessTokenException;
+import com.snda.grand.space.as.exception.InvalidAccessorException;
 import com.snda.grand.space.as.exception.InvalidRefreshTokenException;
 import com.snda.grand.space.as.exception.NoSuchAccountException;
 import com.snda.grand.space.as.exception.NoSuchApplicationException;
@@ -70,6 +70,7 @@ import com.snda.grand.space.as.rest.util.Constants;
 import com.snda.grand.space.as.rest.util.HttpClientUtils;
 import com.snda.grand.space.as.rest.util.ObjectMappers;
 import com.snda.grand.space.as.rest.util.Preconditions;
+import com.snda.grand.space.as.servlet.AccessorAuthenticateFilter;
 
 
 @Service
@@ -313,8 +314,10 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 	@Override
 	@POST
 	@Path("validate")
-	public Validation validate(@QueryParam("access_token") String accessToken) {
-
+	public Validation validate(@Context HttpServletRequest request) {
+		String accessToken = request.getParameter("access_token");
+		checkValidateBasicAuth(request.getParameter("authorization"));
+		
 		PojoToken token = Preconditions.getTokenByAccessToken(mongoOps, accessToken);
 		if (token == null) {
 			throw new InvalidAccessTokenException();
@@ -370,6 +373,20 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 		} catch (IOException e) {
 			LOGGER.error("Response content consume error", e);
 			throw new IllegalStateException(e);
+		}
+	}
+	
+	private void checkValidateBasicAuth(String authorization) {
+		String credential = AccessorAuthenticateFilter
+				.getCredential(authorization);
+		String[] pair = credential.split(":");
+		if (pair.length != 2) {
+			throw new InvalidAccessorException();
+		}
+		String accessKey = pair[0];
+		String secretKey = pair[1];
+		if (Preconditions.getAccessor(mongoOps, accessKey, secretKey) == null) {
+			throw new InvalidAccessorException();
 		}
 	}
 

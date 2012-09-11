@@ -18,7 +18,7 @@ public class AccessorAuthenticateFilter implements ContainerRequestFilter {
 	
 	private static MongoOperations mongoOps;
 	private static final String IGNORE_OAUTH_REQUEST_PATH = "api/oauth2";
-	private static final String CONTAIN_OAUTH_VALIDATE_PATH = "api/oauth2/validate";
+//	private static final String CONTAIN_OAUTH_VALIDATE_PATH = "api/oauth2/validate";
 	
 	public AccessorAuthenticateFilter(MongoOperations mongoOperations) {
 		AccessorAuthenticateFilter.mongoOps = mongoOperations;
@@ -27,7 +27,7 @@ public class AccessorAuthenticateFilter implements ContainerRequestFilter {
 	@Override
 	public ContainerRequest filter(ContainerRequest request) {
 		if (request.getRequestUri().toString().contains(IGNORE_OAUTH_REQUEST_PATH)
-				&& !request.getRequestUri().toString().contains(CONTAIN_OAUTH_VALIDATE_PATH)) {
+				/*&& !request.getRequestUri().toString().contains(CONTAIN_OAUTH_VALIDATE_PATH)*/) {
 			return request;
 		}
 		String credential = getCredential(request);
@@ -45,6 +45,10 @@ public class AccessorAuthenticateFilter implements ContainerRequestFilter {
 	
 	private String getCredential(ContainerRequest request) {
 		String authorization = request.getHeaderValue(HttpHeaders.AUTHORIZATION);
+		return getCredential(authorization);
+	}
+	
+	public static String getCredential(String authorization) {
 		if (authorization == null || !authorization.startsWith("Basic ")) {
 			throw new UnauthorizedInternalAccessException();
 		}
