@@ -1,6 +1,6 @@
 package com.snda.grand.space.as.mongo.model;
 
-public class Collections {
+public class MongoCollections {
 	
 	public static final String ACCOUNT_COLLECTION_NAME = "accounts";
 	
@@ -37,6 +37,7 @@ public class Collections {
 		public static final String APP_STAUTS = "app_status";
 		public static final String APP_KEY = "app_key";
 		public static final String APP_SECRET = "app_secret";
+		public static final String PUBLISHER_NAME = "publisher_name";
 		public static final String SCOPE = "scope";
 		public static final String WEBSITE = "website";
 		public static final String CREATION_TIME = "creation_time";

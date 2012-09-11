@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -52,7 +53,7 @@ import com.snda.grand.space.as.exception.NoSuchAuthorizationCodeException;
 import com.snda.grand.space.as.exception.NoSuchRefreshTokenException;
 import com.snda.grand.space.as.exception.RedirectUriMisatchException;
 import com.snda.grand.space.as.exception.SdoValidateSignatureFailedException;
-import com.snda.grand.space.as.mongo.model.Collections;
+import com.snda.grand.space.as.mongo.model.MongoCollections;
 import com.snda.grand.space.as.mongo.model.PojoAccount;
 import com.snda.grand.space.as.mongo.model.PojoApplication;
 import com.snda.grand.space.as.mongo.model.PojoAuthorization;
@@ -71,6 +72,7 @@ import com.snda.grand.space.as.rest.util.HttpClientUtils;
 import com.snda.grand.space.as.rest.util.ObjectMappers;
 import com.snda.grand.space.as.rest.util.Preconditions;
 import com.snda.grand.space.as.servlet.AccessorAuthenticateFilter;
+import com.snda.grand.space.as.util.Merchant;
 
 
 @Service
@@ -80,6 +82,7 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2ResourceImpl.class);
 	
+	private static Merchant merchant;
 	private static MongoOperations mongoOps;
 	private final ObjectMapper mapper = new ObjectMapper();
 	private final OAuthIssuer oauthUUIDIssuer;
@@ -87,11 +90,12 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 	private final HttpClient httpClient = HttpClientUtils.getHttpClient();
 
 	public OAuth2ResourceImpl(UUIDValueGenerator uuidGenerator,
-			MD5Generator md5Generator, MongoOperations mongoOperations) {
+			MD5Generator md5Generator, MongoOperations mongoOperations, Merchant merchant) {
 		LOGGER.info("OAuth2ResourceImpl initialized.");
 		this.oauthUUIDIssuer = new OAuthIssuerImpl(uuidGenerator);
 		this.oauthMD5Issuer = new OAuthIssuerImpl(md5Generator);
 		OAuth2ResourceImpl.mongoOps = mongoOperations;
+		OAuth2ResourceImpl.merchant = merchant;
 	}
 
 	@Override
@@ -120,7 +124,7 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 			if (pojoCode == null) {
 				throw new NoSuchAuthorizationCodeException();
 			}
-			else if (System.currentTimeMillis() > pojoCode.getCreationTime() + Collections.CODE_EXPIRE_TIME) {
+			else if (System.currentTimeMillis() > pojoCode.getCreationTime() + MongoCollections.CODE_EXPIRE_TIME) {
 				Preconditions.deleteCode(mongoOps, pojoCode.getCode());
 				throw new CodeExpiredException();
 			} else if (pojoCode.getRedirectUri() != null 
@@ -153,7 +157,7 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 							.setRefreshToken(authorization.getRefreshToken())
 							.setAccessToken(accessToken)
 							.setUid(authorization.getUid())
-							.setExpireIn(Collections.ACCESS_TOKEN_EXPIRE_TIME / 1000);
+							.setExpireIn(MongoCollections.ACCESS_TOKEN_EXPIRE_TIME / 1000);
 		return token;
 	}
 
@@ -221,11 +225,11 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 		
 		HttpResponse httpResponse = null;
 		OAuthAuthzRequest oauthRequest = new OAuthAuthzRequest(request);
-		String sdoValidateURL = oauthRequest.getParam(Constants.SDO_VALIDATE_URL_HEADER);
-		LOGGER.info("Validate url:{}", sdoValidateURL);
+		String sdoUnsignedValidateParams = oauthRequest.getParam(Constants.SDO_VALIDATE_URL_PARAM);
+		LOGGER.info("Unsigned validate url:{}", sdoUnsignedValidateParams);
 		
 		try {
-			HttpGet get = new HttpGet(sdoValidateURL);
+			HttpGet get = new HttpGet(createSdoValidateSignatureUrl(sdoUnsignedValidateParams));
 			httpResponse = httpClient.execute(get);
 			int status = httpResponse.getStatusLine().getStatusCode();
 			if (status >= 200 && status < 300) {
@@ -289,7 +293,7 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 							pojoAuthorization.getRefreshToken(), accessToken,
 							System.currentTimeMillis());
 					builder.setAccessToken(accessToken);
-					builder.setExpiresIn(Collections.ACCESS_TOKEN_EXPIRE_TIME / 1000);
+					builder.setExpiresIn(MongoCollections.ACCESS_TOKEN_EXPIRE_TIME / 1000);
 				}
 				
 				final OAuthResponse response = builder
@@ -388,6 +392,12 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 		if (Preconditions.getAccessor(mongoOps, accessKey, secretKey) == null) {
 			throw new InvalidAccessorException();
 		}
+	}
+	
+	private String createSdoValidateSignatureUrl(String params) {
+		List<String> list = Preconditions.getQueriesFromQueryString(params);
+		List<String> canonicalList = Preconditions.getSdoValidateCanonicalQueryList(merchant, list);
+		return Preconditions.makeSignedSdoValidateUrl(merchant, canonicalList);
 	}
 
 }

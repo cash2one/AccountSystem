@@ -8,7 +8,7 @@ import com.snda.grand.space.as.rest.model.Authorization;
 public interface ApplicationResource {
 
 	Application create(String appId, String uid, String appDescription,
-			String appStatus, String scope, String website);
+			String appStatus, String publisherName, String scope, String website);
 	
 	List<Authorization> listAuthorized(String appId, String owner);
 	

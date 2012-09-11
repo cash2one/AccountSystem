@@ -9,24 +9,24 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import com.snda.grand.space.as.rest.model.Token;
 
 
-@Document(collection = Collections.TOKEN_COLLECTION_NAME)
+@Document(collection = MongoCollections.TOKEN_COLLECTION_NAME)
 public class PojoToken {
 
 	@Id
 	private String id;
 	
 	@Indexed
-	@Field(Collections.Token.REFRESH_TOKEN)
+	@Field(MongoCollections.Token.REFRESH_TOKEN)
 	private String refreshToken;
 	
 	@Indexed(unique = true)
-	@Field(Collections.Token.ACCESS_TOKEN)
+	@Field(MongoCollections.Token.ACCESS_TOKEN)
 	private String accessToken;
 	
-	@Field(Collections.Token.CREATION_TIME)
+	@Field(MongoCollections.Token.CREATION_TIME)
 	private long creationTime;
 	
-	@Field(Collections.Token.EXPIRE)
+	@Field(MongoCollections.Token.EXPIRE)
 	private long expire;
 	
 	@PersistenceConstructor

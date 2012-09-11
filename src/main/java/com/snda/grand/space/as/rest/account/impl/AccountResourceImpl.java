@@ -15,12 +15,14 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.Lists;
 import com.snda.grand.space.as.exception.AccountAlreadyExistException;
 import com.snda.grand.space.as.exception.InvalidAvailableParamException;
 import com.snda.grand.space.as.exception.InvalidDisplayNameException;
@@ -28,7 +30,7 @@ import com.snda.grand.space.as.exception.InvalidEmailException;
 import com.snda.grand.space.as.exception.InvalidSndaIdException;
 import com.snda.grand.space.as.exception.NoSuchAccountException;
 import com.snda.grand.space.as.exception.NotModifiedException;
-import com.snda.grand.space.as.mongo.model.Collections;
+import com.snda.grand.space.as.mongo.model.MongoCollections;
 import com.snda.grand.space.as.mongo.model.PojoAccount;
 import com.snda.grand.space.as.mongo.model.PojoApplication;
 import com.snda.grand.space.as.mongo.model.PojoAuthorization;
@@ -74,7 +76,7 @@ public class AccountResourceImpl implements AccountResource {
 		long creationTime = System.currentTimeMillis();
 		PojoAccount account = new PojoAccount(sndaId, uid, email, displayName,
 				email, locale, creationTime, creationTime, true);
-		mongoOps.insert(account, Collections.ACCOUNT_COLLECTION_NAME);
+		mongoOps.insert(account, MongoCollections.ACCOUNT_COLLECTION_NAME);
 		return account.getAccount();
 	}
 
@@ -87,8 +89,8 @@ public class AccountResourceImpl implements AccountResource {
 			@QueryParam("email") String email,
 			@QueryParam("locale") String locale) {
 		checkSndaId(sndaId);
-		PojoAccount account = mongoOps.findOne(query(where(Collections.Account.SNDA_ID).is(sndaId)),
-				PojoAccount.class, Collections.ACCOUNT_COLLECTION_NAME);
+		PojoAccount account = mongoOps.findOne(query(where(MongoCollections.Account.SNDA_ID).is(sndaId)),
+				PojoAccount.class, MongoCollections.ACCOUNT_COLLECTION_NAME);
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Account : {}", account);
 		}
@@ -107,16 +109,16 @@ public class AccountResourceImpl implements AccountResource {
 		String modifiedDisplayName = isBlank(displayName) ? account.getDisplayName() : displayName;
 		String modifiedEmail = isBlank(email) ? account.getEmail() : email;
 		String modifiedLocale = isBlank(locale) ? account.getLocale() : locale;
-		update.set(Collections.Account.DISPLAY_NAME, modifiedDisplayName)
-			  .set(Collections.Account.EMAIL, modifiedEmail)
-			  .set(Collections.Account.LOCALE, modifiedLocale)
-			  .set(Collections.Account.MODIFIED_TIME, modifiedTime);
+		update.set(MongoCollections.Account.DISPLAY_NAME, modifiedDisplayName)
+			  .set(MongoCollections.Account.EMAIL, modifiedEmail)
+			  .set(MongoCollections.Account.LOCALE, modifiedLocale)
+			  .set(MongoCollections.Account.MODIFIED_TIME, modifiedTime);
 		account.setDisplayName(modifiedDisplayName)
 			   .setEmail(modifiedEmail)
 			   .setLocale(modifiedLocale)
 			   .setCreationTime(modifiedTime);
-		mongoOps.updateFirst(query(where(Collections.Account.SNDA_ID)
-				.is(sndaId)), update, Collections.ACCOUNT_COLLECTION_NAME);
+		mongoOps.updateFirst(query(where(MongoCollections.Account.SNDA_ID)
+				.is(sndaId)), update, MongoCollections.ACCOUNT_COLLECTION_NAME);
 		return account.getAccount();
 	}
 
@@ -133,13 +135,13 @@ public class AccountResourceImpl implements AccountResource {
 		}
 		long modifiedTime = System.currentTimeMillis();
 		Update update = new Update();
-		update.set(Collections.Account.AVAILABLE, enable)
-			  .set(Collections.Account.MODIFIED_TIME, modifiedTime);
-		mongoOps.updateFirst(query(where(Collections.Account.SNDA_ID)
-				.is(sndaId)), update, Collections.ACCOUNT_COLLECTION_NAME);
+		update.set(MongoCollections.Account.AVAILABLE, enable)
+			  .set(MongoCollections.Account.MODIFIED_TIME, modifiedTime);
+		mongoOps.updateFirst(query(where(MongoCollections.Account.SNDA_ID)
+				.is(sndaId)), update, MongoCollections.ACCOUNT_COLLECTION_NAME);
 		PojoAccount account = mongoOps.findOne(
-				query(where(Collections.Account.SNDA_ID).is(sndaId)),
-				PojoAccount.class, Collections.ACCOUNT_COLLECTION_NAME);
+				query(where(MongoCollections.Account.SNDA_ID).is(sndaId)),
+				PojoAccount.class, MongoCollections.ACCOUNT_COLLECTION_NAME);
 		return account.getAccount();
 	}
 
@@ -167,8 +169,8 @@ public class AccountResourceImpl implements AccountResource {
 			throw new NoSuchAccountException();
 		}
 		List<PojoApplication> apps = mongoOps.find(
-				query(where(Collections.Application.OWNER).is(account.getUid())),
-				PojoApplication.class, Collections.APPLICATION_COLLECTION_NAME);
+				query(where(MongoCollections.Application.OWNER).is(account.getUid())),
+				PojoApplication.class, MongoCollections.APPLICATION_COLLECTION_NAME);
 		return PojoApplication.getApplications(apps);
 	}
 	
@@ -182,8 +184,17 @@ public class AccountResourceImpl implements AccountResource {
 		if (account == null) {
 			throw new NoSuchAccountException();
 		}
-		List<PojoAuthorization> authorizations = Preconditions.getAuthorizationsByUid(mongoOps, account.getUid());
-		return PojoAuthorization.getAuthorizations(authorizations);
+		List<PojoAuthorization> pojoAuthorizations = Preconditions
+				.getAuthorizationsByUid(mongoOps, account.getUid());
+		List<Authorization> authorizations = Lists.newArrayList();
+		for (PojoAuthorization pojoAuthorization : pojoAuthorizations) {
+			PojoApplication pojoApplication = Preconditions
+					.getApplicationByAppId(mongoOps,
+							pojoAuthorization.getAppId());
+			authorizations.add(getAuthorization(pojoApplication,
+					pojoAuthorization));
+		}
+		return authorizations;
 	}
 	
 	private void checkSndaId(String sndaId) {
@@ -205,6 +216,21 @@ public class AccountResourceImpl implements AccountResource {
 			throw new InvalidAvailableParamException();
 		}
 		return Boolean.valueOf(available);
+	}
+	
+	private Authorization getAuthorization(PojoApplication pojoApplication,
+			PojoAuthorization pojoAuthorization) {
+		Authorization authorization = null;
+		if (pojoApplication.getAppid() == pojoAuthorization.getAppId()) {
+			authorization = new Authorization();
+			authorization.setAppId(pojoApplication.getAppid());
+			authorization.setAuthorizedTime(new DateTime(pojoAuthorization.getAuthorizedTime()));
+			authorization.setPublisherName(pojoApplication.getPublisherName());
+			authorization.setRefreshToken(pojoAuthorization.getRefreshToken());
+			authorization.setScope(pojoApplication.getScope());
+			authorization.setUid(pojoAuthorization.getUid());
+		}
+		return authorization;
 	}
 	
 }

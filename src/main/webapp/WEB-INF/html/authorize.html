@@ -85,12 +85,7 @@ input {
         {
             if (PARAM_ARRAY[i].key == "ticket")
             {
-                var timestamp = Math.ceil((new Date()).getTime() / 1000);
-                var stringToSign = canonicalString("1", "917", "1", String(timestamp), String(PARAM_ARRAY[i].value));
-                var hash = CryptoJS.MD5(stringToSign);
-                validateUrl = makeSignedUrl("1", "917", "1",
-                                  String(timestamp), String(PARAM_ARRAY[i].value),
-                                  String(hash));
+            	unsignedValidateUrl = PARAM_ARRAY[i].key + "=" + String(PARAM_ARRAY[i].value);
              }
         }
 
@@ -107,7 +102,7 @@ input {
         if (SCOPE != null) {
         	getAuthCodeUrl = getAuthCodeUrl + "scope=" + SCOPE + "&";
         }
-        getAuthCodeUrl = getAuthCodeUrl + "sdo_validate_url=" + encodeURIComponent(validateUrl);
+        getAuthCodeUrl = getAuthCodeUrl + "sdo_validate_url=" + encodeURIComponent(unsignedValidateUrl);
         window.location.href=getAuthCodeUrl;
     }
 

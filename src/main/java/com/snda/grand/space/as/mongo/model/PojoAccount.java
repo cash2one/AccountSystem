@@ -10,40 +10,40 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import com.snda.grand.space.as.rest.model.Account;
 
 
-@Document(collection=Collections.ACCOUNT_COLLECTION_NAME)
+@Document(collection=MongoCollections.ACCOUNT_COLLECTION_NAME)
 public class PojoAccount {
 
 	@Id
 	private String id;
 	
 	@Indexed(unique = true)
-	@Field(Collections.Account.SNDA_ID)
+	@Field(MongoCollections.Account.SNDA_ID)
 	private String sndaId;
 	
 	@Indexed(unique = true)
-	@Field(Collections.Account.UID)
+	@Field(MongoCollections.Account.UID)
 	private String uid;
 	
-	@Field(Collections.Account.USERNAME_NORM)
+	@Field(MongoCollections.Account.USERNAME_NORM)
 	private String usernameNorm;
 	
-	@Field(Collections.Account.DISPLAY_NAME)
+	@Field(MongoCollections.Account.DISPLAY_NAME)
 	private String displayName;
 	
-	@Field(Collections.Account.EMAIL)
+	@Field(MongoCollections.Account.EMAIL)
 	private String email;
 	
-	@Field(Collections.Account.LOCALE)
+	@Field(MongoCollections.Account.LOCALE)
 	private String locale;
 	
-	@Field(Collections.Account.CREATION_TIME)
+	@Field(MongoCollections.Account.CREATION_TIME)
 	private long creationTime;
 	
-	@Field(Collections.Account.MODIFIED_TIME)
+	@Field(MongoCollections.Account.MODIFIED_TIME)
 	private long modifiedTime;
 	
 	@Indexed
-	@Field(Collections.Account.AVAILABLE)
+	@Field(MongoCollections.Account.AVAILABLE)
 	private boolean available;
 	
 	@PersistenceConstructor

@@ -11,6 +11,8 @@ public class Authorization {
 	private String appId;
 	private String refreshToken;
 	private DateTime authorizedTime;
+	private String publisherName;
+	private String scope;
 	
 	public String getUid() {
 		return uid;
@@ -42,6 +44,22 @@ public class Authorization {
 
 	public void setAuthorizedTime(DateTime authorizedTime) {
 		this.authorizedTime = authorizedTime;
+	}
+
+	public String getPublisherName() {
+		return publisherName;
+	}
+
+	public void setPublisherName(String publisherName) {
+		this.publisherName = publisherName;
+	}
+
+	public String getScope() {
+		return scope;
+	}
+
+	public void setScope(String scope) {
+		this.scope = scope;
 	}
 
 }

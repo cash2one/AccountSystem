@@ -5,28 +5,28 @@ import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import com.snda.grand.space.as.mongo.model.Collections;
+import com.snda.grand.space.as.mongo.model.MongoCollections;
 
 
-@Document(collection=Collections.ACCESSOR_COLLECTION_NAME)
+@Document(collection=MongoCollections.ACCESSOR_COLLECTION_NAME)
 public class Accessor {
 	
 	@Id
 	private String id;
 
-	@Field(Collections.Accessor.USERNAME)
+	@Field(MongoCollections.Accessor.USERNAME)
 	private String username;
 	
-	@Field(Collections.Accessor.ACCESS_KEY)
+	@Field(MongoCollections.Accessor.ACCESS_KEY)
 	private String accessKey;
 	
-	@Field(Collections.Accessor.SECRET_KEY)
+	@Field(MongoCollections.Accessor.SECRET_KEY)
 	private String secretKey;
 	
-	@Field(Collections.Accessor.DESCRIPTION)
+	@Field(MongoCollections.Accessor.DESCRIPTION)
 	private String description;
 	
-	@Field(Collections.Accessor.CREATION_TIME)
+	@Field(MongoCollections.Accessor.CREATION_TIME)
 	private long creationTime;
 	
 	@PersistenceConstructor

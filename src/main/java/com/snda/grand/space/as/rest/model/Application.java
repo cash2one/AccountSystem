@@ -12,6 +12,7 @@ public class Application {
 	private String appStatus;
 	private String appKey;
 	private String appSecret;
+	private String publisherName;
 	private String scope;
 	private String website;
 	private DateTime creationTime;
@@ -96,6 +97,14 @@ public class Application {
 
 	public void setOwner(String owner) {
 		this.owner = owner;
+	}
+
+	public String getPublisherName() {
+		return publisherName;
+	}
+
+	public void setPublisherName(String publisherName) {
+		this.publisherName = publisherName;
 	}
 
 }

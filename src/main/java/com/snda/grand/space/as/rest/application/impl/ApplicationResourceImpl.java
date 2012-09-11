@@ -33,8 +33,9 @@ import com.snda.grand.space.as.exception.InvalidUidException;
 import com.snda.grand.space.as.exception.InvalidWebSiteException;
 import com.snda.grand.space.as.exception.NoSuchAccountException;
 import com.snda.grand.space.as.exception.NoSuchApplicationException;
+import com.snda.grand.space.as.exception.NoSuchAuthorizationException;
 import com.snda.grand.space.as.exception.NotModifiedException;
-import com.snda.grand.space.as.mongo.model.Collections;
+import com.snda.grand.space.as.mongo.model.MongoCollections;
 import com.snda.grand.space.as.mongo.model.PojoApplication;
 import com.snda.grand.space.as.mongo.model.PojoAuthorization;
 import com.snda.grand.space.as.rest.application.ApplicationResource;
@@ -66,6 +67,7 @@ public class ApplicationResourceImpl implements ApplicationResource {
 			@QueryParam("uid") String uid, 
 			@QueryParam("app_description") String appDescription,
 			@QueryParam("app_status") String appStatus, 
+			@QueryParam("publisher_name") String publisherName,
 			@QueryParam("scope") String scope, 
 			@QueryParam("website") String website) {
 		checkUid(uid);
@@ -78,6 +80,9 @@ public class ApplicationResourceImpl implements ApplicationResource {
 		if (scope == null) {
 			scope = "app";
 		}
+		if (publisherName == null) {
+			publisherName = appId;
+		}
 		if (Preconditions.getAccountByUid(mongoOps, uid) == null) {
 			throw new NoSuchAccountException();
 		}
@@ -87,9 +92,9 @@ public class ApplicationResourceImpl implements ApplicationResource {
 		long creationTime = System.currentTimeMillis();
 		PojoApplication application = new PojoApplication(appId, appDescription, appStatus,
 				ApplicationKeys.generateAccessKeyId(),
-				ApplicationKeys.generateSecretAccessKey(), scope, website,
+				ApplicationKeys.generateSecretAccessKey(), publisherName, scope, website,
 				creationTime, creationTime, uid);
-		mongoOps.insert(application, Collections.APPLICATION_COLLECTION_NAME);
+		mongoOps.insert(application, MongoCollections.APPLICATION_COLLECTION_NAME);
 		return application.getApplication();
 	}
 
@@ -111,9 +116,10 @@ public class ApplicationResourceImpl implements ApplicationResource {
 			throw new AccessDeniedException();
 		}
 		List<PojoAuthorization> authorizations = mongoOps.find(
-				query(where(Collections.Application.APPID).is(appId)),
-				PojoAuthorization.class, Collections.AUTHORIZATION_COLLECTION_NAME);
-		return PojoAuthorization.getAuthorizations(authorizations);
+				query(where(MongoCollections.Application.APPID).is(appId)),
+				PojoAuthorization.class, MongoCollections.AUTHORIZATION_COLLECTION_NAME);
+		return PojoAuthorization.getAuthorizations(authorizations,
+				application.getPublisherName(), application.getScope());
 	}
 
 	@Override
@@ -163,15 +169,15 @@ public class ApplicationResourceImpl implements ApplicationResource {
 		}
 		long modifiedTime = System.currentTimeMillis();
 		Query query = new Query();
-		query.addCriteria(where(Collections.Application.APPID).is(appId))
-			 .addCriteria(where(Collections.Application.OWNER).is(owner));
+		query.addCriteria(where(MongoCollections.Application.APPID).is(appId))
+			 .addCriteria(where(MongoCollections.Application.OWNER).is(owner));
 		Update update = new Update();
 		String modifiedAppDescription = isBlank(appDescription) ? application.getAppDescription() : appDescription;
 		String modifiedWebsite = isBlank(website) ? application.getWebsite() : website;
-		update.set(Collections.Application.APP_DESCRIPTION, modifiedAppDescription)
-			  .set(Collections.Application.WEBSITE, modifiedWebsite)
-			  .set(Collections.Application.MODIFIED_TIME, modifiedTime);
-		mongoOps.updateFirst(query, update, Collections.APPLICATION_COLLECTION_NAME);
+		update.set(MongoCollections.Application.APP_DESCRIPTION, modifiedAppDescription)
+			  .set(MongoCollections.Application.WEBSITE, modifiedWebsite)
+			  .set(MongoCollections.Application.MODIFIED_TIME, modifiedTime);
+		mongoOps.updateFirst(query, update, MongoCollections.APPLICATION_COLLECTION_NAME);
 		application.setAppDescription(modifiedAppDescription)
 				   .setWebsite(modifiedWebsite)
 				   .setModifiedTime(modifiedTime);
@@ -202,13 +208,13 @@ public class ApplicationResourceImpl implements ApplicationResource {
 		}
 		long modifiedTime = System.currentTimeMillis();
 		Query query = new Query();
-		query.addCriteria(where(Collections.Application.APPID).is(appId))
-			 .addCriteria(where(Collections.Application.OWNER).is(owner));
+		query.addCriteria(where(MongoCollections.Application.APPID).is(appId))
+			 .addCriteria(where(MongoCollections.Application.OWNER).is(owner));
 		Update update = new Update();
-		update.set(Collections.Application.APP_STAUTS, appStatus)
-			  .set(Collections.Application.MODIFIED_TIME, modifiedTime);
+		update.set(MongoCollections.Application.APP_STAUTS, appStatus)
+			  .set(MongoCollections.Application.MODIFIED_TIME, modifiedTime);
 		mongoOps.updateFirst(query, update,
-				Collections.APPLICATION_COLLECTION_NAME);
+				MongoCollections.APPLICATION_COLLECTION_NAME);
 		application.setAppStatus(appStatus)
 				   .setModifiedTime(modifiedTime);
 		return application.getApplication();
@@ -222,6 +228,9 @@ public class ApplicationResourceImpl implements ApplicationResource {
 			@QueryParam("appid") String appId) {
 		checkUid(uid);
 		checkAppid(appId);
+		if (Preconditions.getAuthorizationByUidAndAppId(mongoOps, uid, appId) == null) {
+			throw new NoSuchAuthorizationException();
+		}
 		if (Preconditions.getAccountByUid(mongoOps, uid) == null) {
 			throw new NoSuchAccountException();
 		}
@@ -229,9 +238,9 @@ public class ApplicationResourceImpl implements ApplicationResource {
 			throw new NoSuchApplicationException();
 		}
 		Query query = new Query();
-		query.addCriteria(where(Collections.Authorization.UID).is(uid))
-			 .addCriteria(where(Collections.Authorization.APPID).is(appId));
-		mongoOps.remove(query, Collections.AUTHORIZATION_COLLECTION_NAME);
+		query.addCriteria(where(MongoCollections.Authorization.UID).is(uid))
+			 .addCriteria(where(MongoCollections.Authorization.APPID).is(appId));
+		mongoOps.remove(query, MongoCollections.AUTHORIZATION_COLLECTION_NAME);
 	}
 
 	@Override
@@ -253,15 +262,15 @@ public class ApplicationResourceImpl implements ApplicationResource {
 		}
 		cancelAllAuthorization(appId);
 		Query query = new Query();
-		query.addCriteria(where(Collections.Application.APPID).is(appId))
-			 .addCriteria(where(Collections.Application.OWNER).is(owner));
-		mongoOps.remove(query, Collections.APPLICATION_COLLECTION_NAME);
+		query.addCriteria(where(MongoCollections.Application.APPID).is(appId))
+			 .addCriteria(where(MongoCollections.Application.OWNER).is(owner));
+		mongoOps.remove(query, MongoCollections.APPLICATION_COLLECTION_NAME);
 	}
 	
 	
 	private void cancelAllAuthorization(String appId) {
-		mongoOps.remove(query(where(Collections.Authorization.APPID).is(appId)),
-				Collections.AUTHORIZATION_COLLECTION_NAME);
+		mongoOps.remove(query(where(MongoCollections.Authorization.APPID).is(appId)),
+				MongoCollections.AUTHORIZATION_COLLECTION_NAME);
 	}
 	
 	private void checkOwner(String owner) {

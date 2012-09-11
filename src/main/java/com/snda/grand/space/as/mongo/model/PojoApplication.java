@@ -1,6 +1,6 @@
 package com.snda.grand.space.as.mongo.model;
 
-import static com.snda.grand.space.as.mongo.model.Collections.APPLICATION_COLLECTION_NAME;
+import static com.snda.grand.space.as.mongo.model.MongoCollections.APPLICATION_COLLECTION_NAME;
 
 import java.util.List;
 
@@ -22,46 +22,50 @@ public class PojoApplication {
 	private String id;
 	
 	@Indexed(unique = true)
-	@Field(Collections.Application.APPID)
+	@Field(MongoCollections.Application.APPID)
 	private String appid;
 	
-	@Field(Collections.Application.APP_DESCRIPTION)
+	@Field(MongoCollections.Application.APP_DESCRIPTION)
 	private String appDescription;
 	
-	@Field(Collections.Application.APP_STAUTS)
+	@Field(MongoCollections.Application.APP_STAUTS)
 	private String appStatus;
 	
-	@Field(Collections.Application.APP_KEY)
+	@Field(MongoCollections.Application.APP_KEY)
 	private String appKey;
 	
-	@Field(Collections.Application.APP_SECRET)
+	@Field(MongoCollections.Application.APP_SECRET)
 	private String appSecret;
 	
-	@Field(Collections.Application.SCOPE)
+	@Field(MongoCollections.Application.PUBLISHER_NAME)
+	private String publisherName;
+	
+	@Field(MongoCollections.Application.SCOPE)
 	private String scope;
 	
-	@Field(Collections.Application.WEBSITE)
+	@Field(MongoCollections.Application.WEBSITE)
 	private String website;
 	
-	@Field(Collections.Application.CREATION_TIME)
+	@Field(MongoCollections.Application.CREATION_TIME)
 	private long creationTime;
 	
-	@Field(Collections.Application.MODIFIED_TIME)
+	@Field(MongoCollections.Application.MODIFIED_TIME)
 	private long modifiedTime;
 	
 	@Indexed
-	@Field(Collections.Application.OWNER)
+	@Field(MongoCollections.Application.OWNER)
 	private String owner;
 
 	@PersistenceConstructor
 	public PojoApplication(String appid, String appDescription, String appStatus,
-			String appKey, String appSecret, String scope, String website,
+			String appKey, String appSecret, String publisherName, String scope, String website,
 			long creationTime, long modifiedTime, String owner) {
 		this.appid = appid;
 		this.appDescription = appDescription;
 		this.appStatus = appStatus;
 		this.appKey = appKey;
 		this.appSecret = appSecret;
+		this.publisherName = publisherName;
 		this.scope = scope;
 		this.website = website;
 		this.creationTime = creationTime;
@@ -117,6 +121,14 @@ public class PojoApplication {
 		this.appSecret = appSecret;
 		return this;
 	}
+	
+	public String getPublisherName() {
+		return publisherName;
+	}
+
+	public void setPublisherName(String publisherName) {
+		this.publisherName = publisherName;
+	}
 
 	public String getScope() {
 		return scope;
@@ -169,6 +181,7 @@ public class PojoApplication {
 		application.setAppStatus(appStatus);
 		application.setAppKey(appKey);
 		application.setAppSecret(appSecret);
+		application.setPublisherName(publisherName);
 		application.setScope(scope);
 		application.setWebsite(website);
 		application.setCreationTime(new DateTime(creationTime));

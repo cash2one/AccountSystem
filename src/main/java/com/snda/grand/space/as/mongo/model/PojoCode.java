@@ -7,28 +7,28 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 
-@Document(collection = Collections.CODE_COLLECTION_NAME)
+@Document(collection = MongoCollections.CODE_COLLECTION_NAME)
 public class PojoCode {
 
 	@Id
 	private String id;
 	
 	@Indexed(unique = true)
-	@Field(Collections.Code.CODE)
+	@Field(MongoCollections.Code.CODE)
 	private String code;
 	
-	@Field(Collections.Code.REDIRECT_URI)
+	@Field(MongoCollections.Code.REDIRECT_URI)
 	private String redirectUri;
 	
 	@Indexed
-	@Field(Collections.Code.UID)
+	@Field(MongoCollections.Code.UID)
 	private String uid;
 	
 	@Indexed
-	@Field(Collections.Code.APPID)
+	@Field(MongoCollections.Code.APPID)
 	private String appId;
 	
-	@Field(Collections.Code.CREATION_TIME)
+	@Field(MongoCollections.Code.CREATION_TIME)
 	private long creationTime;
 	
 	@PersistenceConstructor
