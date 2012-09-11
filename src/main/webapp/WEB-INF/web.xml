@@ -18,20 +18,18 @@
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
     
-    <filter>
-    	<filter-name>accessorAuthFilter</filter-name>
-    	<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
-    </filter>
-    
     <servlet>
 		<servlet-name>SpringServlet</servlet-name>
 		<servlet-class>com.snda.grand.space.as.servlet.AccountRestServlet</servlet-class>
+		<init-param>
+			<param-name>com.sun.jersey.spi.container.ContainerRequestFilters</param-name>
+			<param-value>com.snda.grand.space.as.servlet.AccessorAuthenticateFilter</param-value>
+    	</init-param>
+    	<init-param>
+			<param-name>com.sun.jersey.config.feature.FilterForwardOn404</param-name>
+			<param-value>true</param-value>
+    	</init-param>
 	</servlet>
-	
-	<filter-mapping>
-		<filter-name>accessorAuthFilter</filter-name>
-		<url-pattern>/api/*</url-pattern>
-	</filter-mapping>
 
 	<servlet-mapping>
 		<servlet-name>SpringServlet</servlet-name>

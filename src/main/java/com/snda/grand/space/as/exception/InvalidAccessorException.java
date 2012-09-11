@@ -3,27 +3,26 @@ package com.snda.grand.space.as.exception;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
-public class UnauthorizedInternalAccessException extends
-		ApplicationWebException {
+public class InvalidAccessorException extends ApplicationWebException {
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 4459972476490335275L;
-	
+	private static final long serialVersionUID = 3390390318647532015L;
+
 	@Override
 	public Status getStatus() {
-		return Status.UNAUTHORIZED;
+		return Status.FORBIDDEN;
 	}
 
 	@Override
 	public String getCode() {
-		return "UnauthorizedInternalAccess";
+		return "InvalidAccessor";
 	}
 
 	@Override
 	public String getMessage() {
-		return "Internal access is unauthorized.";
+		return "Invalid Accessor.";
 	}
 
 	@Override

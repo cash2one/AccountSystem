@@ -176,7 +176,7 @@ public class AccountResourceImpl implements AccountResource {
 	@GET
 	@Path("authorizations/{snda_id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public List<Authorization> listAuthorizations(String sndaId) {
+	public List<Authorization> listAuthorizations(@PathParam("snda_id") String sndaId) {
 		checkSndaId(sndaId);
 		PojoAccount account = Preconditions.getAccountBySndaId(mongoOps, sndaId);
 		if (account == null) {

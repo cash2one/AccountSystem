@@ -1,36 +1,60 @@
 package com.snda.grand.space.as.servlet;
 
-import java.io.IOException;
+import javax.ws.rs.core.HttpHeaders;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import org.apache.commons.codec.binary.Base64;
+import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.stereotype.Component;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.google.common.base.Charsets;
+import com.snda.grand.space.as.exception.InvalidAccessorException;
+import com.snda.grand.space.as.exception.UnauthorizedInternalAccessException;
+import com.snda.grand.space.as.rest.util.Preconditions;
+import com.sun.jersey.spi.container.ContainerRequest;
+import com.sun.jersey.spi.container.ContainerRequestFilter;
 
-public class AccessorAuthenticateFilter implements Filter {
+@Component
+public class AccessorAuthenticateFilter implements ContainerRequestFilter {
 	
-	private static final Logger LOGGER = LoggerFactory.getLogger(AccessorAuthenticateFilter.class);
-
-	@Override
-	public void init(FilterConfig filterConfig) throws ServletException {
-
+	private static MongoOperations mongoOps;
+	private static final String IGNORE_OAUTH_REQUEST_PATH = "api/oauth2";
+	private static final String CONTAIN_OAUTH_VALIDATE_PATH = "api/oauth2/validate";
+	
+	public AccessorAuthenticateFilter(MongoOperations mongoOperations) {
+		AccessorAuthenticateFilter.mongoOps = mongoOperations;
 	}
-
+	
 	@Override
-	public void doFilter(ServletRequest request, ServletResponse response,
-			FilterChain chain) throws IOException, ServletException {
-		LOGGER.info("==========Filter==========");
-		chain.doFilter(request, response);
+	public ContainerRequest filter(ContainerRequest request) {
+		if (request.getRequestUri().toString().contains(IGNORE_OAUTH_REQUEST_PATH)
+				&& !request.getRequestUri().toString().contains(CONTAIN_OAUTH_VALIDATE_PATH)) {
+			return request;
+		}
+		String credential = getCredential(request);
+		String[] pair = credential.split(":");
+		if (pair.length != 2) {
+			throw new InvalidAccessorException();
+		}
+		String accessKey = pair[0];
+		String secretKey = pair[1];
+		if (Preconditions.getAccessor(mongoOps, accessKey, secretKey) == null) {
+			throw new InvalidAccessorException();
+		}
+		return request;
 	}
-
-	@Override
-	public void destroy() {
-
+	
+	private String getCredential(ContainerRequest request) {
+		String authorization = request.getHeaderValue(HttpHeaders.AUTHORIZATION);
+		if (authorization == null || !authorization.startsWith("Basic ")) {
+			throw new UnauthorizedInternalAccessException();
+		}
+		try {
+			byte[] encodedCredential = authorization.substring(6).getBytes(Charsets.UTF_8);
+			byte[] decodedCredential = Base64.decodeBase64(encodedCredential);
+			return new String(decodedCredential, Charsets.UTF_8);
+		} catch (Exception e) {
+			throw new UnauthorizedInternalAccessException();
+		}
 	}
 
 }
