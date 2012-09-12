@@ -221,7 +221,7 @@ public class AccountResourceImpl implements AccountResource {
 	private Authorization getAuthorization(PojoApplication pojoApplication,
 			PojoAuthorization pojoAuthorization) {
 		Authorization authorization = null;
-		if (pojoApplication.getAppid() == pojoAuthorization.getAppId()) {
+		if (pojoApplication.getAppid().equals(pojoAuthorization.getAppId())) {
 			authorization = new Authorization();
 			authorization.setAppId(pojoApplication.getAppid());
 			authorization.setAuthorizedTime(new DateTime(pojoAuthorization.getAuthorizedTime()));
