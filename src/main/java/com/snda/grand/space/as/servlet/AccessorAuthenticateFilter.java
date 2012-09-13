@@ -3,6 +3,8 @@ package com.snda.grand.space.as.servlet;
 import javax.ws.rs.core.HttpHeaders;
 
 import org.apache.commons.codec.binary.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +20,8 @@ public class AccessorAuthenticateFilter implements ContainerRequestFilter {
 	
 	private static MongoOperations mongoOps;
 	private static final String IGNORE_OAUTH_REQUEST_PATH = "api/oauth2";
-//	private static final String CONTAIN_OAUTH_VALIDATE_PATH = "api/oauth2/validate";
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(AccessorAuthenticateFilter.class);
 	
 	public AccessorAuthenticateFilter(MongoOperations mongoOperations) {
 		AccessorAuthenticateFilter.mongoOps = mongoOperations;
@@ -26,8 +29,8 @@ public class AccessorAuthenticateFilter implements ContainerRequestFilter {
 	
 	@Override
 	public ContainerRequest filter(ContainerRequest request) {
-		if (request.getRequestUri().toString().contains(IGNORE_OAUTH_REQUEST_PATH)
-				/*&& !request.getRequestUri().toString().contains(CONTAIN_OAUTH_VALIDATE_PATH)*/) {
+		LOGGER.info("RequestUri : {}", request.getRequestUri().toString());
+		if (request.getRequestUri().toString().contains(IGNORE_OAUTH_REQUEST_PATH)) {
 			return request;
 		}
 		String credential = getCredential(request);

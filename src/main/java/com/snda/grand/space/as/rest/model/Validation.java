@@ -10,6 +10,9 @@ public class Validation {
 	@JsonProperty("username")
 	private String username;
 	
+	@JsonProperty("locale")
+	private String locale;
+	
 	@JsonProperty("appid")
 	private String appId;
 	
@@ -22,9 +25,10 @@ public class Validation {
 	@JsonProperty("expire")
 	private long expire;
 	
-	public Validation(String username, String appId, String scope,
+	public Validation(String username, String locale, String appId, String scope,
 			String accessToken, long expire) {
 		this.username = username;
+		this.locale = locale;
 		this.appId = appId;
 		this.scope = scope;
 		this.accessToken = accessToken;
@@ -69,6 +73,14 @@ public class Validation {
 
 	public void setExpire(long expire) {
 		this.expire = expire;
+	}
+
+	public String getLocale() {
+		return locale;
+	}
+
+	public void setLocale(String locale) {
+		this.locale = locale;
 	}
 	
 }

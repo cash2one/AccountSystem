@@ -52,6 +52,7 @@ public class PojoAccount {
 			long modifiedTime, boolean available) {
 		this.sndaId = sndaId;
 		this.uid = uid;
+		this.usernameNorm = usernameNorm;
 		this.displayName = displayName;
 		this.email = email;
 		this.locale = locale;
@@ -161,6 +162,7 @@ public class PojoAccount {
 	
 	public Account getAccount() {
 		Account account = new Account();
+		account.setSndaId(sndaId);
 		account.setUid(uid);
 		account.setUsernameNorm(usernameNorm);
 		account.setDisplayName(displayName);

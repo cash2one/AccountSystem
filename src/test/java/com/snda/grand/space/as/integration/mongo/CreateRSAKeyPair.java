@@ -2,22 +2,25 @@ package com.snda.grand.space.as.integration.mongo;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
 
-import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.UUID;
 
+import org.apache.amber.oauth2.as.issuer.MD5Generator;
+import org.apache.amber.oauth2.common.exception.OAuthSystemException;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.Test;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.FileSystemXmlApplicationContext;
+import org.springframework.data.mongodb.MongoDbFactory;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
 
-import com.google.common.collect.Lists;
 import com.mongodb.Mongo;
 import com.snda.grand.space.as.exception.InvalidAppStatusException;
+import com.snda.grand.space.as.mongo.internal.model.Accessor;
 import com.snda.grand.space.as.mongo.model.MongoCollections;
 import com.snda.grand.space.as.mongo.model.PojoAuthorization;
 import com.snda.grand.space.as.rest.util.ApplicationKeys;
@@ -28,19 +31,19 @@ import com.snda.grand.space.as.util.MD5;
 
 public class CreateRSAKeyPair {
 	
-//	@Test
-//	public void testGenAccessor() throws UnknownHostException, OAuthSystemException {
-//		MongoDbFactory mongoDbFactory = new SimpleMongoDbFactory(new Mongo(
-//				"account.grandmobile.cn", 27017), "account-system");
-//		MongoOperations mongoOps = new MongoTemplate(mongoDbFactory);
-//		
-//		MD5Generator md5gen = new MD5Generator();
-//		Accessor testAccessor = new Accessor("test",
-//				md5gen.generateValue(),
-//				md5gen.generateValue(),
-//				"For test");
-//		mongoOps.insert(testAccessor, Collections.ACCESSOR_COLLECTION_NAME);
-//	}
+	@Test
+	public void testGenAccessor() throws UnknownHostException, OAuthSystemException {
+		MongoDbFactory mongoDbFactory = new SimpleMongoDbFactory(new Mongo(
+				"account.grandmobile.cn", 27017), "account-test");
+		MongoOperations mongoOps = new MongoTemplate(mongoDbFactory);
+		
+		MD5Generator md5gen = new MD5Generator();
+		Accessor testAccessor = new Accessor("test",
+				md5gen.generateValue(),
+				md5gen.generateValue(),
+				"For test");
+		mongoOps.insert(testAccessor, MongoCollections.ACCESSOR_COLLECTION_NAME);
+	}
 
 	@Test
 	public void testCreateRSAKeyPair() {
@@ -58,16 +61,15 @@ public class CreateRSAKeyPair {
 		System.out.println(Boolean.parseBoolean("1123"));
 	}
 	
-//	@Test
-//	public void springTest() {
-//		ApplicationContext ctx = new FileSystemXmlApplicationContext(
-//				new String[] { "src/main/resources/account.system.mongo.xml",
-//						"src/main/resources/account.system.account.rest.xml" });
-//		MongoOperations mongoOps = (MongoOperations) ctx.getBean("mongoTemplate");
-//		Account account = mongoOps.findOne(query(where(Collections.Account.SNDA_ID).is("sndaid001")),
-//				Account.class, Collections.ACCOUNT_COLLECTION_NAME);
-//		System.out.println(account);
-//	}
+	@Test
+	public void springTest() {
+		ApplicationContext ctx = new FileSystemXmlApplicationContext(
+				new String[] { "src/main/resources/account.system.mongo.xml",
+						"src/main/resources/account.system.memcached.xml",
+						"src/main/resources/account.system.account.rest.xml",
+						"src/main/resources/account.system.processor.xml",
+						"src/main/resources/account.system.oauth2.rest.xml"});
+	}
 	
 	@Test
 	public void testCheckEmail() {

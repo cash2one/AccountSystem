@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context 
+		http://www.springframework.org/schema/context/spring-context-3.0.xsd
+		http://www.springframework.org/schema/tx 
+		http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+		
+	<bean id="memcached" class="com.snda.grand.space.as.memcached.MemcachedImpl">
+		<constructor-arg ref="memcachedClient"/>
+		<constructor-arg>
+			<bean class="com.snda.grand.space.as.memcached.JacksonCacheConverter" />		
+		</constructor-arg>
+	</bean>
+		
+	<bean id="mongoAccountService"
+		class="com.snda.grand.space.as.account.impl.MongoAccountService">
+		<constructor-arg ref="mongoTemplate"/>
+	</bean>
+	
+	<bean id="mongoApplicationService"
+		class="com.snda.grand.space.as.account.impl.MongoApplicationService">
+		<constructor-arg ref="mongoTemplate"/>
+	</bean>
+	
+	<bean id="mongoAuthorizationService"
+		class="com.snda.grand.space.as.account.impl.MongoAuthorizationService">
+		<constructor-arg ref="mongoTemplate"/>
+	</bean>
+	
+	<bean id="mongoCodeService"
+		class="com.snda.grand.space.as.account.impl.MongoCodeService">
+		<constructor-arg ref="mongoTemplate"/>
+	</bean>
+	
+	<bean id="mongoTokenService"
+		class="com.snda.grand.space.as.account.impl.MongoTokenService">
+		<constructor-arg ref="mongoTemplate"/>
+	</bean>
+	
+	<bean id="mongoAccessorService"
+		class="com.snda.grand.space.as.account.impl.MongoAccessorService">
+		<constructor-arg ref="mongoTemplate"/>
+	</bean>
+
+	<bean id="memcachedAccountService"
+		class="com.snda.grand.space.as.account.impl.MemcachedAccountService">
+		<constructor-arg ref="mongoAccountService"/>
+		<constructor-arg ref="memcached"/>
+		<property name="expiration" value="300"/>
+	</bean>
+	
+	<bean id="memcachedApplicationService"
+		class="com.snda.grand.space.as.account.impl.MemcachedApplicationService">
+		<constructor-arg ref="mongoApplicationService" />
+		<constructor-arg ref="memcached"/>
+		<property name="expiration" value="300"/>
+	</bean>
+
+	<bean id="memcachedTokenService"
+		class="com.snda.grand.space.as.account.impl.MemcachedTokenService">
+		<constructor-arg ref="mongoTokenService" />
+		<constructor-arg ref="memcached"/>
+		<property name="expiration" value="300"/>
+	</bean>
+	
+	<bean id="memcachedAccessorService"
+		class="com.snda.grand.space.as.account.impl.MemcachedAccessorService">
+		<constructor-arg ref="mongoAccessorService" />
+		<constructor-arg ref="memcached"/>
+		<property name="expiration" value="300"/>
+	</bean>
+	
+	<bean
+		class="com.snda.grand.space.as.processor.impl.AccountResourceProcessorImpl">
+		<constructor-arg ref="memcachedAccountService" />
+		<constructor-arg ref="memcachedApplicationService" />
+		<constructor-arg ref="mongoAuthorizationService" />
+	</bean>
+	
+	<bean
+		class="com.snda.grand.space.as.processor.impl.ApplicationResourceProcessorImpl">
+		<constructor-arg ref="memcachedAccountService" />
+		<constructor-arg ref="memcachedApplicationService" />
+		<constructor-arg ref="mongoAuthorizationService" />
+		<constructor-arg ref="memcachedTokenService" />
+	</bean>
+	
+	<bean
+		class="com.snda.grand.space.as.processor.impl.OAuth2ResourceProcessorImpl">
+		<constructor-arg ref="memcachedAccountService" />
+		<constructor-arg ref="memcachedApplicationService" />
+		<constructor-arg ref="mongoAuthorizationService" />
+		<constructor-arg ref="memcachedTokenService" />
+		<constructor-arg ref="mongoCodeService" />
+		<constructor-arg ref="memcachedAccessorService" />
+		<constructor-arg ref="uuidValueGenerator" />
+		<constructor-arg ref="md5Generator" />
+		<constructor-arg ref="merchant" />
+	</bean>
+
+</beans>

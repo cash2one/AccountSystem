@@ -13,7 +13,7 @@
           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
 	
-	<context:property-placeholder location="classpath:mongo.properties, classpath:merchant.properties" />
+	<context:property-placeholder location="classpath:mongo.properties, classpath:merchant.properties, classpath:memcached.properties" />
 	
 	<mongo:mongo id="mongo" host="${mongo.host}" port="${mongo.port}">
 		<mongo:options 
@@ -35,7 +35,7 @@
     	<constructor-arg value="account-system" />
 	</bean>
 	
-	<bean class="com.snda.grand.space.as.util.Merchant">
+	<bean id="merchant" class="com.snda.grand.space.as.util.Merchant">
 		<property name="areaId" value="${areaId}" />
 		<property name="appId" value="${appId}"/>
 		<property name="customSecurityLevel" value="${customSecurityLevel}"/>

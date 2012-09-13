@@ -9,6 +9,8 @@
 		<param-name>contextConfigLocation</param-name>
 		<param-value>
 			classpath:account.system.mongo.xml,
+			classpath:account.system.memcached.xml,
+			classpath:account.system.processor.xml,
 			classpath:account.system.account.rest.xml,
 			classpath:account.system.oauth2.rest.xml,
 		</param-value>

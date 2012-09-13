@@ -8,7 +8,7 @@ import org.apache.amber.oauth2.common.exception.OAuthSystemException;
 
 public interface AuthorizationResource {
 
-	public Response authorize(HttpServletRequest request)
+	Response authorize(HttpServletRequest request)
 			throws OAuthProblemException, OAuthSystemException;
 
 }

@@ -7,10 +7,9 @@ import com.snda.grand.space.as.rest.model.Application;
 import com.snda.grand.space.as.rest.model.Authorization;
 
 
-
 public interface AccountResource {
 
-	Account create(String sndaId, String displayName, String email, String locale);
+	Account create(String sndaId, String usernameNorm, String displayName, String email, String locale);
 	
 	Account modify(String sndaId, String displayName, String email, String locale);
 	

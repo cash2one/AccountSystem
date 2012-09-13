@@ -25,6 +25,17 @@
     	</rollingPolicy>
     </appender>
     
+    <appender name="warning" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    	<encoder>
+    		<Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %request %msg%n</Pattern>
+    	</encoder>
+    	<file>${log.path}/warning/warning.log</file>
+    	<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+	    	<fileNamePattern>${log.path}/warning/warning.log-%d{yyyyMMdd}.gz</fileNamePattern>
+	    	<maxHistory>30</maxHistory>
+    	</rollingPolicy>
+    </appender>
+    
     <logger name="com.snda.grand.space" level="DEBUG"/>
     
     <root level="DEBUG">
@@ -33,6 +44,10 @@
     
     <logger name="com.snda.grand.space.as.util.AccessLogger" level="INFO">
     	<appender-ref ref="access"/>
+    </logger>
+    
+    <logger name="com.snda.grand.space.as.util.WarningLogger" level="INFO" additivity="false">
+    	<appender-ref ref="warning"/>
     </logger>
     
 </configuration>

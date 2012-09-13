@@ -1,5 +1,6 @@
 package com.snda.grand.space.as.rest.model;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.joda.time.DateTime;
 
@@ -7,6 +8,9 @@ import org.joda.time.DateTime;
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class Account {
 
+	@JsonIgnore
+	private String sndaId;
+	
 	private String uid;
 	private String usernameNorm;
 	private String displayName;
@@ -78,6 +82,14 @@ public class Account {
 	
 	public void setAvailable(boolean available) {
 		this.available = available;
+	}
+
+	public String getSndaId() {
+		return sndaId;
+	}
+
+	public void setSndaId(String sndaId) {
+		this.sndaId = sndaId;
 	}
 
 }
