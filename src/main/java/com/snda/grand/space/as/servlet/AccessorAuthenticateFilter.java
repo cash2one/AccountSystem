@@ -5,26 +5,25 @@ import javax.ws.rs.core.HttpHeaders;
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Charsets;
+import com.snda.grand.space.as.account.impl.MemcachedAccessorService;
 import com.snda.grand.space.as.exception.InvalidAccessorException;
 import com.snda.grand.space.as.exception.UnauthorizedInternalAccessException;
-import com.snda.grand.space.as.rest.util.Preconditions;
 import com.sun.jersey.spi.container.ContainerRequest;
 import com.sun.jersey.spi.container.ContainerRequestFilter;
 
 @Component
 public class AccessorAuthenticateFilter implements ContainerRequestFilter {
 	
-	private static MongoOperations mongoOps;
-	private static final String IGNORE_OAUTH_REQUEST_PATH = "api/oauth2";
-	
 	private static final Logger LOGGER = LoggerFactory.getLogger(AccessorAuthenticateFilter.class);
+	private static final String IGNORE_OAUTH_REQUEST_PATH = "api/oauth2";
+
+	private static MemcachedAccessorService accessorService;
 	
-	public AccessorAuthenticateFilter(MongoOperations mongoOperations) {
-		AccessorAuthenticateFilter.mongoOps = mongoOperations;
+	public AccessorAuthenticateFilter(MemcachedAccessorService accessorService) {
+		AccessorAuthenticateFilter.accessorService = accessorService;
 	}
 	
 	@Override
@@ -40,7 +39,7 @@ public class AccessorAuthenticateFilter implements ContainerRequestFilter {
 		}
 		String accessKey = pair[0];
 		String secretKey = pair[1];
-		if (Preconditions.getAccessor(mongoOps, accessKey, secretKey) == null) {
+		if (accessorService.getAccessor(accessKey, secretKey) == null) {
 			throw new InvalidAccessorException();
 		}
 		return request;
