@@ -4,6 +4,7 @@ import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 
 import net.spy.memcached.MemcachedClientIF;
 import net.spy.memcached.compat.log.Log4JLogger;
@@ -13,7 +14,7 @@ import net.spy.memcached.compat.log.Log4JLogger;
  * @author wangzijian
  * 
  */
-public class MemcachedImpl implements Memcached {
+public class MemcachedImpl implements Memcached, DisposableBean {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(MemcachedImpl.class);
 
@@ -67,6 +68,11 @@ public class MemcachedImpl implements Memcached {
 		// This is not strictly necessary, but it'll save some work on
 		// the server. It is okay to cancel it if running.
 		future.cancel(true);
+	}
+
+	@Override
+	public void destroy() throws Exception {
+		memcachedClient.shutdown();
 	}
 	
 }
