@@ -2,6 +2,9 @@ package com.snda.grand.space.as.memcached;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.spy.memcached.MemcachedClientIF;
 import net.spy.memcached.compat.log.Log4JLogger;
 
@@ -11,6 +14,8 @@ import net.spy.memcached.compat.log.Log4JLogger;
  * 
  */
 public class MemcachedImpl implements Memcached {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(MemcachedImpl.class);
 
 	static {
 		System.setProperty("net.spy.log.LoggerImpl", Log4JLogger.class.getName());
@@ -38,6 +43,7 @@ public class MemcachedImpl implements Memcached {
 	@Override
 	public <T> T get(Class<T> type, String memcachedId) {
 		String cached = (String) done("Get", memcachedClient.asyncGet(memcachedId));
+		LOGGER.info("Cache : {}", cached);
 		if (cached == null) {
 			return null;
 		}

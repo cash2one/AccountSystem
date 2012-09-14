@@ -22,6 +22,7 @@ import com.snda.grand.space.as.exception.InvalidAppStatusException;
 import com.snda.grand.space.as.exception.InvalidAvailableParamException;
 import com.snda.grand.space.as.exception.InvalidDisplayNameException;
 import com.snda.grand.space.as.exception.InvalidEmailException;
+import com.snda.grand.space.as.exception.InvalidLocaleException;
 import com.snda.grand.space.as.exception.InvalidRequestParamsException;
 import com.snda.grand.space.as.exception.InvalidScopeException;
 import com.snda.grand.space.as.exception.InvalidSndaIdException;
@@ -69,6 +70,17 @@ public final class Preconditions {
 		if (!Rule.checkEmail(email)) {
 			throw new InvalidEmailException();
 		}
+	}
+	
+	public static String checkLocale(String locale) {
+		if (isBlank(locale)) {
+			locale = Constants.DEFAULT_LOCALE;
+		} else {
+			if (!Locales.containsLocale(locale)) {
+				throw new InvalidLocaleException();
+			}
+		}
+		return locale;
 	}
 	
 	public static void checkOwner(String owner) {

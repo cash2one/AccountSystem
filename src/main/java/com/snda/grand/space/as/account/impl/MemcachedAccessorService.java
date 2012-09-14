@@ -62,9 +62,9 @@ public class MemcachedAccessorService implements AccessorService {
 		}
 	}
 	
-	private String memcachedId(String sndaId) {
+	private String memcachedId(String accessKey) {
 		try {
-			return "Accessor#" + URLEncoder.encode(sndaId, Charsets.UTF_8.name());
+			return "Accessor#" + URLEncoder.encode(accessKey, Charsets.UTF_8.name());
 		} catch (UnsupportedEncodingException e) {
 			throw new IllegalStateException(e);
 		}

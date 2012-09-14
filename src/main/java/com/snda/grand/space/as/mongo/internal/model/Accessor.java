@@ -1,5 +1,8 @@
 package com.snda.grand.space.as.mongo.internal.model;
 
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import org.codehaus.jackson.annotate.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -8,6 +11,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import com.snda.grand.space.as.mongo.model.MongoCollections;
 
 
+@JsonIgnoreProperties(ignoreUnknown=true)
 @Document(collection=MongoCollections.ACCESSOR_COLLECTION_NAME)
 public class Accessor {
 	
@@ -36,6 +40,21 @@ public class Accessor {
 		this.secretKey = secretKey;
 		this.description = description;
 		this.creationTime = System.currentTimeMillis();
+	}
+	
+	@JsonCreator
+	public Accessor(@JsonProperty("id") String id, 
+					@JsonProperty("username") String username, 
+					@JsonProperty("accessKey") String accessKey, 
+					@JsonProperty("secretKey") String secretKey, 
+					@JsonProperty("description") String description, 
+					@JsonProperty("creationTime") long creationTime) {
+		this.id = id;
+		this.username = username;
+		this.accessKey = accessKey;
+		this.secretKey = secretKey;
+		this.description = description;
+		this.creationTime = creationTime;
 	}
 
 	public String getId() {

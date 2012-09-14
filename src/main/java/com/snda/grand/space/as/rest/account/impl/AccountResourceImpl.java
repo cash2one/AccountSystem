@@ -4,9 +4,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.snda.grand.space.as.rest.util.Preconditions.checkAvailableParam;
 import static com.snda.grand.space.as.rest.util.Preconditions.checkDisplayName;
 import static com.snda.grand.space.as.rest.util.Preconditions.checkEmail;
+import static com.snda.grand.space.as.rest.util.Preconditions.checkLocale;
 import static com.snda.grand.space.as.rest.util.Preconditions.checkSndaId;
 import static com.snda.grand.space.as.rest.util.Preconditions.checkUsernameNorm;
-import static org.apache.commons.lang.StringUtils.isBlank;
 
 import java.util.List;
 
@@ -53,9 +53,7 @@ public class AccountResourceImpl implements AccountResource {
 		checkDisplayName(displayName);
 		checkUsernameNorm(usernameNorm);
 		checkEmail(email);
-		if (isBlank(locale)) {
-			locale = "zh_CN";
-		}
+		locale = checkLocale(locale);
 		return accountResourceProcessor.create(sndaId, usernameNorm, displayName, email,
 				locale, true);
 	}

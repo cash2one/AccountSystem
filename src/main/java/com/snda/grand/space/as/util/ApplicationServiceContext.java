@@ -47,16 +47,11 @@ public class ApplicationServiceContext {
 				path(), 
 				method(), 
 				status(),
-				error(),
 				duration());
 	}
 	
 	private String duration() {
 		return String.valueOf(System.currentTimeMillis() - creation.getMillis());
-	}
-
-	private String error() {
-		return String.valueOf(response.getStatus());
 	}
 
 	private String status() {

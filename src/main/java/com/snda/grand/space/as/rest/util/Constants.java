@@ -8,4 +8,6 @@ public class Constants {
 	
 	public static final String SDO_VALIDATE_URL_PARAM = "sdo_validate_url";
 	
+	public static final String DEFAULT_LOCALE = "zh_CN";
+	
 }
