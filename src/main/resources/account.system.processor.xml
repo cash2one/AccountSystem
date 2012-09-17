@@ -54,7 +54,13 @@
 		<constructor-arg ref="memcached"/>
 		<property name="expiration" value="300"/>
 	</bean>
-	
+
+	<bean id="wwwAccountService"
+		class="com.snda.grand.space.as.account.impl.WWWAccountService">
+		<constructor-arg ref="memcachedAccountService" />
+		<constructor-arg ref="mongoAuthorizationService" />
+	</bean>
+
 	<bean id="memcachedApplicationService"
 		class="com.snda.grand.space.as.account.impl.MemcachedApplicationService">
 		<constructor-arg ref="mongoApplicationService" />
@@ -78,7 +84,7 @@
 	
 	<bean
 		class="com.snda.grand.space.as.processor.impl.AccountResourceProcessorImpl">
-		<constructor-arg ref="memcachedAccountService" />
+		<constructor-arg ref="wwwAccountService" />
 		<constructor-arg ref="memcachedApplicationService" />
 		<constructor-arg ref="mongoAuthorizationService" />
 	</bean>
@@ -102,6 +108,13 @@
 		<constructor-arg ref="uuidValueGenerator" />
 		<constructor-arg ref="md5Generator" />
 		<constructor-arg ref="merchant" />
+	</bean>
+	
+	<bean
+		class="com.snda.grand.space.as.processor.impl.AuthorizationResourceProcessorImpl">
+		<constructor-arg ref="wwwAccountService" />
+		<constructor-arg ref="memcachedApplicationService" />
+		<constructor-arg ref="mongoAuthorizationService" />
 	</bean>
 
 </beans>

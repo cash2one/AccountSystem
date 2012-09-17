@@ -83,8 +83,7 @@ public class ApplicationResourceProcessorImpl implements
 			for (PojoAuthorization pojoAuthorization : pojoAuthorizations) {
 				authorizations
 						.add(pojoAuthorization.getAuthorization(
-								application.getPublisherName(),
-								application.getScope()));
+								application.getPublisherName()));
 			}
 		}
 		return authorizations;
@@ -161,7 +160,7 @@ public class ApplicationResourceProcessorImpl implements
 		if (pojoAuthorization == null) {
 			throw new NoSuchAuthorizationException();
 		}
-		Account account = accountService.getAccountByUid(appId);
+		Account account = accountService.getAccountByUid(uid);
 		if (account == null) {
 			throw new NoSuchAccountException();
 		}

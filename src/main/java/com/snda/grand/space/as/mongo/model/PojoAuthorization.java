@@ -44,12 +44,16 @@ public class PojoAuthorization {
 	@Field(MongoCollections.Authorization.AUTHORIZED_TIME)
 	private long authorizedTime;
 	
+	@Field(MongoCollections.Authorization.AUTHORIZED_SCOPE)
+	private String authorizedScope;
+	
 	@PersistenceConstructor
-	public PojoAuthorization(String uid, String appId, String refreshToken, long authorizedTime) {
+	public PojoAuthorization(String uid, String appId, String refreshToken, long authorizedTime, String authorizedScope) {
 		this.uid = uid;
 		this.appId = appId;
 		this.refreshToken = refreshToken;
 		this.authorizedTime = authorizedTime;
+		this.authorizedScope = authorizedScope;
 	}
 	
 	public String getId() {
@@ -91,6 +95,14 @@ public class PojoAuthorization {
 		this.authorizedTime = authorizedTime;
 		return this;
 	}
+	
+	public String getAuthorizedScope() {
+		return authorizedScope;
+	}
+
+	public void setAuthorizedScope(String authorizedScope) {
+		this.authorizedScope = authorizedScope;
+	}
 
 	@Override
 	public String toString() {
@@ -102,14 +114,14 @@ public class PojoAuthorization {
 				"]";
 	}
 
-	public Authorization getAuthorization(String publisherName, String scope) {
+	public Authorization getAuthorization(String publisherName) {
 		Authorization authorization = new Authorization();
 		authorization.setUid(uid);
 		authorization.setAppId(appId);
 		authorization.setRefreshToken(this.refreshToken);
 		authorization.setAuthorizedTime(new DateTime(authorizedTime));
 		authorization.setPublisherName(publisherName);
-		authorization.setScope(scope);
+		authorization.setScope(authorizedScope);
 		return authorization;
 	}
 	
@@ -120,7 +132,7 @@ public class PojoAuthorization {
 		if (pojoAuthorizations != null) {
 			authorizations = Lists.newArrayList();
 			for (PojoAuthorization pojoAuthorization : pojoAuthorizations) {
-				authorizations.add(pojoAuthorization.getAuthorization(publisherName, scope));
+				authorizations.add(pojoAuthorization.getAuthorization(publisherName));
 			}
 		}
 		return authorizations;

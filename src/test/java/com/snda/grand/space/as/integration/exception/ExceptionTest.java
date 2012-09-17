@@ -31,18 +31,25 @@ public class ExceptionTest {
 	}
 	
 	@Test
-	public void testCreateAccountInvalidSndaIdException() throws Exception {
-		
-	}
-	
-	@Test
 	public void testCreateAccountInvalidDisplayNameException() throws Exception {
-		
+		WebResource r = client.resource(DEFAULT_URI + "api/account/create/1234567890");
+		ClientResponse response = r.queryParam("username_norm", "TestUser")
+								   .queryParam("email", "123@abc.com")
+								   .header("Authorization", "Basic " + AUTH)
+								   .post(ClientResponse.class);
+		assertThat(response.getStatus(), is(400));
+		assertError(response.getEntity(String.class), "InvalidDisplayName");
 	}
 	
 	@Test
 	public void testCreateAccountInvalidUsernameNormExcpetion() throws Exception {
-		
+		WebResource r = client.resource(DEFAULT_URI + "api/account/create/1234567890");
+		ClientResponse response = r.queryParam("display_name", "Test User")
+								   .queryParam("email", "123@abc.com")
+								   .header("Authorization", "Basic " + AUTH)
+								   .post(ClientResponse.class);
+		assertThat(response.getStatus(), is(400));
+		assertError(response.getEntity(String.class), "InvalidUsernameNorm");
 	}
 	
 	@Test
@@ -71,16 +78,106 @@ public class ExceptionTest {
 	
 	@Test
 	public void testCreateAccountAlreadyExistException() throws Exception {
-		
+		WebResource r = client.resource(DEFAULT_URI + "api/account/create/1533698109");
+		ClientResponse response = r.queryParam("username_norm", "TestUser")
+								   .queryParam("display_name", "Test User")
+								   .queryParam("email", "123@abc.com")
+								   .header("Authorization", "Basic " + AUTH)
+								   .post(ClientResponse.class);
+		assertThat(response.getStatus(), is(409));
+		assertError(response.getEntity(String.class), "AccountAlreadyExist");
 	}
 	
 	@Test
 	public void testChangeAccountInvalidAvailableParamException() throws Exception {
+		WebResource r = client.resource(DEFAULT_URI + "api/account/available/1533698109");
+		ClientResponse response = r.queryParam("available", "123")
+								   .header("Authorization", "Basic " + AUTH)
+								   .post(ClientResponse.class);
+		assertThat(response.getStatus(), is(400));
+		assertError(response.getEntity(String.class), "InvalidAvailableParam");
+	}
+	
+	@Test
+	public void testCreateApplicaitonInvalidUidException() throws Exception {
+		WebResource r = client.resource(DEFAULT_URI + "api/application/create/app123");
+		ClientResponse response = r.header("Authorization", "Basic " + AUTH)
+								   .post(ClientResponse.class);
+		assertThat(response.getStatus(), is(400));
+		assertError(response.getEntity(String.class), "InvalidUid");
+	}
+	
+	@Test
+	public void testCreateApplicationInvalidAppDescriptionException() throws Exception {
+		WebResource r = client.resource(DEFAULT_URI + "api/application/create/app123");
+		ClientResponse response = r.queryParam("uid", "uid123")
+								   .header("Authorization", "Basic " + AUTH)
+				   				   .post(ClientResponse.class);
+		assertThat(response.getStatus(), is(400));
+		assertError(response.getEntity(String.class), "InvalidAppDescription");
+	}
+	
+	@Test
+	public void testCreateApplicationInvalidAppStatusException() throws Exception {
+		WebResource r = client.resource(DEFAULT_URI + "api/application/create/app123");
+		ClientResponse response = r.queryParam("uid", "uid123")
+								   .queryParam("app_description", "appdesc123")
+								   .queryParam("app_status", "appstatus123")
+								   .header("Authorization", "Basic " + AUTH)
+				   				   .post(ClientResponse.class);
+		assertThat(response.getStatus(), is(400));
+		assertError(response.getEntity(String.class), "InvalidAppStatus");
+	}
+	
+	@Test
+	public void testCreateApplicationInvalidScopeException() throws Exception {
+		WebResource r = client.resource(DEFAULT_URI + "api/application/create/app123");
+		ClientResponse response = r.queryParam("uid", "uid123")
+								   .queryParam("app_description", "appdesc123")
+								   .queryParam("app_status", "development")
+								   .queryParam("scope", "scope123")
+								   .header("Authorization", "Basic " + AUTH)
+				   				   .post(ClientResponse.class);
+		assertThat(response.getStatus(), is(400));
+		assertError(response.getEntity(String.class), "InvalidScope");
+	}
+	
+	@Test
+	public void testCreateApplicationInvalidWebSiteException() throws Exception {
+		WebResource r = client.resource(DEFAULT_URI + "api/application/create/app123");
+		ClientResponse response = r.queryParam("uid", "uid123")
+								   .queryParam("app_description", "appdesc123")
+								   .queryParam("app_status", "development")
+								   .queryParam("scope", "full")
+								   .queryParam("website", "123123")
+								   .header("Authorization", "Basic " + AUTH)
+				   				   .post(ClientResponse.class);
+		assertThat(response.getStatus(), is(400));
+		assertError(response.getEntity(String.class), "InvalidWebSite");
+	}
+	
+	@Test
+	public void testCreateApplicationNoSuchAccountException() throws Exception {
+		WebResource r = client.resource(DEFAULT_URI + "api/application/create/app123");
+		ClientResponse response = r.queryParam("uid", "uid123")
+								   .queryParam("app_description", "appdesc123")
+								   .queryParam("app_status", "development")
+								   .queryParam("scope", "full")
+								   .queryParam("website", "123.com")
+								   .header("Authorization", "Basic " + AUTH)
+				   				   .post(ClientResponse.class);
+		assertThat(response.getStatus(), is(404));
+		assertError(response.getEntity(String.class), "NoSuchAccount");
+	}
+	
+	@Test
+	public void testCreateApplicationApplicationAlreadyExistException() throws Exception {
 		
 	}
 	
 	private void assertError(String json, String code)
 			throws Exception {
+		System.out.println(json);
 		ApplicationError error = mapper.readValue(json, ApplicationError.class);
 		assertThat(error.getErrorCode(), is(code));
 	}

@@ -117,7 +117,10 @@ public class AccountResourceProcessorImpl implements AccountResourceProcessor {
 		List<Authorization> authorizations = Lists.newArrayList();
 		for (PojoAuthorization pojoAuthorization : pojoAuthorizations) {
 			Application application = applicationService.getApplicationByAppId(pojoAuthorization.getAppId());
-			authorizations.add(getAuthorization(application, pojoAuthorization));
+			if (application != null) {
+				application.setScope(pojoAuthorization.getAuthorizedScope());
+				authorizations.add(getAuthorization(application, pojoAuthorization));
+			}
 		}
 		return authorizations;
 	}

@@ -22,7 +22,8 @@ import com.mongodb.Mongo;
 import com.snda.grand.space.as.exception.InvalidAppStatusException;
 import com.snda.grand.space.as.mongo.internal.model.Accessor;
 import com.snda.grand.space.as.mongo.model.MongoCollections;
-import com.snda.grand.space.as.mongo.model.PojoAuthorization;
+import com.snda.grand.space.as.mongo.model.PojoAccount;
+import com.snda.grand.space.as.mongo.model.PojoApplication;
 import com.snda.grand.space.as.rest.util.ApplicationKeys;
 import com.snda.grand.space.as.rest.util.Constants;
 import com.snda.grand.space.as.rest.util.Preconditions;
@@ -30,6 +31,44 @@ import com.snda.grand.space.as.rest.util.Rule;
 import com.snda.grand.space.as.util.MD5;
 
 public class CreateRSAKeyPair {
+
+	@Test
+	public void createAccount() throws Exception {
+		long creationTime = System.currentTimeMillis();
+		MongoDbFactory mongoDbFactory = new SimpleMongoDbFactory(new Mongo(
+				"account.grandmobile.cn", 27017), "account-system");
+		MongoOperations mongoOps = new MongoTemplate(mongoDbFactory);
+		PojoAccount pojoAccount = new PojoAccount("superadmin", "0",
+				"superadmin", "superadmin", null, null, creationTime,
+				creationTime, true);
+		mongoOps.insert(pojoAccount, MongoCollections.ACCOUNT_COLLECTION_NAME);
+	}
+	
+	@Test
+	public void createWWWApplication() throws Exception {
+		MongoDbFactory mongoDbFactory = new SimpleMongoDbFactory(new Mongo(
+				"account.grandmobile.cn", 27017), "account-system");
+		MongoOperations mongoOps = new MongoTemplate(mongoDbFactory);
+		MD5Generator md5gen = new MD5Generator();
+		long creationTime = System.currentTimeMillis();
+		PojoApplication pojoApplicaiton = new PojoApplication("www", "www", "release",
+				md5gen.generateValue(), md5gen.generateValue(), "SNDA", "global", null,
+				creationTime, creationTime, "0");
+		mongoOps.insert(pojoApplicaiton, MongoCollections.APPLICATION_COLLECTION_NAME);
+	}
+	
+	@Test
+	public void createApplication() throws Exception {
+		MongoDbFactory mongoDbFactory = new SimpleMongoDbFactory(new Mongo(
+				"account.grandmobile.cn", 27017), "account-system");
+		MongoOperations mongoOps = new MongoTemplate(mongoDbFactory);
+		MD5Generator md5gen = new MD5Generator();
+		long creationTime = System.currentTimeMillis();
+		PojoApplication pojoApplicaiton = new PojoApplication("fullapp", "1231234123", "release",
+				md5gen.generateValue(), md5gen.generateValue(), "test", "full", null,
+				creationTime, creationTime, "4NHL6TJGU5V9HJYC7QVA63E9F");
+		mongoOps.insert(pojoApplicaiton, MongoCollections.APPLICATION_COLLECTION_NAME);
+	}
 	
 	@Test
 	public void testGenAccessor() throws UnknownHostException, OAuthSystemException {
@@ -44,7 +83,7 @@ public class CreateRSAKeyPair {
 				"For test");
 		mongoOps.insert(testAccessor, MongoCollections.ACCESSOR_COLLECTION_NAME);
 	}
-
+	
 	@Test
 	public void testCreateRSAKeyPair() {
 		String redirectUri = null;
@@ -96,15 +135,15 @@ public class CreateRSAKeyPair {
 		}
 	}
 	
-	@Test
-	public void testCreateAuthorization() throws UnknownHostException {
-		MongoOperations mongoOps = new MongoTemplate(new Mongo("account.grandmobile.cn", 27017), "account-system");
-		String uid = "3MR0WHSZKGSI6B908O2D191N5";
-		String appId = "poker";
-		String refreshToken = "689c196fc988439e326c8fe33befaf0";
-		PojoAuthorization auth = new PojoAuthorization(uid, appId, refreshToken, System.currentTimeMillis());
-		mongoOps.insert(auth, MongoCollections.AUTHORIZATION_COLLECTION_NAME);
-	}
+//	@Test
+//	public void testCreateAuthorization() throws UnknownHostException {
+//		MongoOperations mongoOps = new MongoTemplate(new Mongo("account.grandmobile.cn", 27017), "account-system");
+//		String uid = "3MR0WHSZKGSI6B908O2D191N5";
+//		String appId = "poker";
+//		String refreshToken = "689c196fc988439e326c8fe33befaf0";
+//		PojoAuthorization auth = new PojoAuthorization(uid, appId, refreshToken, System.currentTimeMillis());
+//		mongoOps.insert(auth, MongoCollections.AUTHORIZATION_COLLECTION_NAME);
+//	}
 	
 	@Test
 	public void testCheckSignature() {

@@ -16,6 +16,8 @@ public interface AuthorizationService {
 	
 	void putAuthorization(PojoAuthorization pojoAuthorization);
 	
+	void updateAuthorizationScope(String refreshToken, String scope);
+	
 	void removeAuthorizationsByAppId(String appId);
 	
 	void removeAuthorizationByUidAndAppId(String uid, String appId);

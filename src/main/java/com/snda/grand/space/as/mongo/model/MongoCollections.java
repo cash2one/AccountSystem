@@ -50,6 +50,7 @@ public class MongoCollections {
 		public static final String APPID = "appid";
 		public static final String REFRESH_TOKEN = "refresh_token";
 		public static final String AUTHORIZED_TIME = "authorized_time";
+		public static final String AUTHORIZED_SCOPE = "authorized_scope";
 	}
 	
 	public abstract class Token {

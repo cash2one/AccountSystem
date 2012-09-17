@@ -14,6 +14,9 @@ import com.snda.grand.space.as.rest.model.Validation;
 
 public interface OAuth2ResourceProcessor extends ResourceProcessor {
 
+	Response authorize(HttpServletRequest request)
+			throws OAuthProblemException, OAuthSystemException;
+	
 	Response sdoAuthorize(HttpServletRequest request)
 			throws URISyntaxException, OAuthProblemException,
 			OAuthSystemException, IOException;

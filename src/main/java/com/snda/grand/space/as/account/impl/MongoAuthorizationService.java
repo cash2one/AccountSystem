@@ -2,6 +2,7 @@ package com.snda.grand.space.as.account.impl;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
+import static org.springframework.data.mongodb.core.query.Update.update;
 
 import java.util.List;
 
@@ -73,9 +74,18 @@ public class MongoAuthorizationService implements AuthorizationService {
 	@Override
 	public void removeAuthorizationByUidAndAppId(String uid, String appId) {
 		Query query = new Query();
-		query.addCriteria(where(MongoCollections.Application.APPID).is(appId))
-			 .addCriteria(where(MongoCollections.Application.OWNER).is(uid));
-		mongoOps.remove(query, MongoCollections.APPLICATION_COLLECTION_NAME);
+		query.addCriteria(where(MongoCollections.Authorization.APPID).is(appId))
+			 .addCriteria(where(MongoCollections.Authorization.UID).is(uid));
+		mongoOps.remove(query, MongoCollections.AUTHORIZATION_COLLECTION_NAME);
+	}
+
+	@Override
+	public void updateAuthorizationScope(String refreshToken, String scope) {
+		mongoOps.updateFirst(
+				query(where(MongoCollections.Authorization.REFRESH_TOKEN).is(
+						refreshToken)),
+				update(MongoCollections.Authorization.AUTHORIZED_SCOPE, scope),
+				MongoCollections.AUTHORIZATION_COLLECTION_NAME);
 	}
 
 }

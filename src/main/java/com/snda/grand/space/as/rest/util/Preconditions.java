@@ -6,6 +6,8 @@ import static org.springframework.data.mongodb.core.query.Criteria.where;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 
 import org.apache.commons.codec.binary.Base64;
@@ -215,6 +217,21 @@ public final class Preconditions {
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}
+	}
+	
+	public static String buildUrlWithQuery(String baseUri, Map<String, String> queries) {
+		StringBuilder uriBuilder = new StringBuilder(baseUri + "?");
+		for (Entry<String, String> entry : queries.entrySet()) {
+			if (entry.getValue() != null) {
+				uriBuilder.append(entry.getKey())
+						  .append("=")
+						  .append(entry.getValue())
+						  .append("&");
+			} else {
+				uriBuilder.append(entry.getKey()).append("&");
+			}
+		}
+		return uriBuilder.toString().substring(0, uriBuilder.toString().length() - 1);
 	}
 	
 }

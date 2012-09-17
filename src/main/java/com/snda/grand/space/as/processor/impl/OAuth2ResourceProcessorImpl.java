@@ -1,5 +1,6 @@
 package com.snda.grand.space.as.processor.impl;
 
+import static com.snda.grand.space.as.rest.util.Preconditions.buildUrlWithQuery;
 import static com.snda.grand.space.as.rest.util.Preconditions.createSdoValidateSignatureUrl;
 import static com.snda.grand.space.as.rest.util.Preconditions.responseContentConsume;
 
@@ -8,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -33,6 +35,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Maps;
 import com.snda.grand.space.as.account.AccessorService;
 import com.snda.grand.space.as.account.AccountService;
 import com.snda.grand.space.as.account.ApplicationService;
@@ -103,6 +106,58 @@ public class OAuth2ResourceProcessorImpl implements OAuth2ResourceProcessor {
 		this.oauthMD5Issuer = new OAuthIssuerImpl(md5Generator);
 		this.merchant = merchant;
 	}
+	
+	@Override
+	public Response authorize(HttpServletRequest request)
+			throws OAuthProblemException, OAuthSystemException {
+		OAuthAuthzRequest oauthRequest = new OAuthAuthzRequest(request);
+
+		// build response according to response_type
+		String responseType = oauthRequest.getParam(OAuth.OAUTH_RESPONSE_TYPE);
+		LOGGER.info("Response type:<{}>", responseType);
+
+		OAuthASResponse.OAuthAuthorizationResponseBuilder builder = OAuthASResponse
+				.authorizationResponse(request,
+						HttpServletResponse.SC_FOUND);
+
+		String redirectURI = oauthRequest
+				.getParam(OAuth.OAUTH_REDIRECT_URI);
+		LOGGER.info("Redirect URI:<{}>", redirectURI);
+		
+		HashMap<String, String> queries = Maps.newHashMap();
+		if (oauthRequest.getClientId() != null
+				&& !oauthRequest.getClientId().equalsIgnoreCase("")) {
+			queries.put(OAuth.OAUTH_CLIENT_ID, oauthRequest.getClientId());
+		}
+		if (responseType != null && !responseType.equalsIgnoreCase("")) {
+			queries.put(OAuth.OAUTH_RESPONSE_TYPE, responseType);
+		}
+		if (oauthRequest.getRedirectURI() != null
+				&& !oauthRequest.getRedirectURI().equalsIgnoreCase("")) {
+			queries.put(OAuth.OAUTH_REDIRECT_URI,
+					oauthRequest.getRedirectURI());
+		}
+		if (oauthRequest.getScopes() != null
+				&& oauthRequest.getScopes().size() > 0) {
+			queries.put(OAuth.OAUTH_SCOPE, oauthRequest.getScopes().toArray()[0].toString());
+		}
+		String urlWithQuery = buildUrlWithQuery(Constants.POST_AUTHORIZE_REDIRECT_URI, queries);
+		LOGGER.info("urlWithQuery:<{}>", urlWithQuery);
+
+		final OAuthResponse response = builder.location(urlWithQuery)
+				.buildQueryMessage();
+		URI url = null;
+		try {
+			url = new URI(urlWithQuery);
+		} catch (URISyntaxException e) {
+			throw new RuntimeException(e);
+		}
+
+		return Response
+				.status(response.getResponseStatus())
+				.location(url)
+				.build();
+	}
 
 	@Override
 	public Response sdoAuthorize(HttpServletRequest request)
@@ -142,6 +197,10 @@ public class OAuth2ResourceProcessorImpl implements OAuth2ResourceProcessor {
 //					Preconditions.checkSubDomain(pojoApplication.getWebsite(),
 //							redirectUri);
 				}
+				String scope = request.getParameter("scope");
+				if (scope == null) {
+					scope = "app";
+				}
 				PojoAuthorization pojoAuthorization = authorizationService
 						.getAuthorizationByUidAndAppId(account.getUid(),
 								application.getAppid());
@@ -150,8 +209,11 @@ public class OAuth2ResourceProcessorImpl implements OAuth2ResourceProcessor {
 					String refreshToken = oauthMD5Issuer.refreshToken();
 					pojoAuthorization = new PojoAuthorization(
 							account.getUid(), application.getAppid(),
-							refreshToken, System.currentTimeMillis());
+							refreshToken, System.currentTimeMillis(), scope);
 					authorizationService.putAuthorization(pojoAuthorization);
+				} else if (!pojoAuthorization.getAuthorizedScope().equalsIgnoreCase(scope)) {
+					authorizationService.updateAuthorizationScope(
+							pojoAuthorization.getRefreshToken(), scope);
 				}
 				
 				String responseType = oauthRequest.getParam(OAuth.OAUTH_RESPONSE_TYPE);
@@ -178,7 +240,6 @@ public class OAuth2ResourceProcessorImpl implements OAuth2ResourceProcessor {
 					builder.setAccessToken(accessToken);
 					builder.setExpiresIn(MongoCollections.ACCESS_TOKEN_EXPIRE_TIME / 1000);
 				}
-				
 				final OAuthResponse response = builder
 						.location(
 								(redirectUri == null ? Constants.DEFAULT_AUTHORIZE_SUCCESS_REDIRECT_URI
@@ -279,7 +340,7 @@ public class OAuth2ResourceProcessorImpl implements OAuth2ResourceProcessor {
 		}
 		Validation validation = new Validation(account.getSndaId(),
 				account.getLocale(), application.getAppid(),
-				application.getScope(), pojoToken.getAccessToken(),
+				pojoAuthorization.getAuthorizedScope(), pojoToken.getAccessToken(),
 				pojoToken.getExpire());
 		return validation;
 	}
