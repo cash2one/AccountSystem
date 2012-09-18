@@ -1,0 +1,27 @@
+package com.snda.grand.space.as.exception;
+
+import org.apache.amber.oauth2.common.exception.OAuthProblemException;
+
+public class AccountOAuthProblemException extends Exception {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5613165562927836073L;
+	private final OAuthProblemException oauthProblem;
+	private final String api;
+	
+	public AccountOAuthProblemException(OAuthProblemException oauthProblem, String api) {
+		this.oauthProblem = oauthProblem;
+		this.api = api;
+	}
+
+	public OAuthProblemException getOauthProblem() {
+		return oauthProblem;
+	}
+
+	public String getApi() {
+		return api;
+	}
+	
+}

@@ -12,12 +12,12 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
-import org.apache.amber.oauth2.common.exception.OAuthProblemException;
 import org.apache.amber.oauth2.common.exception.OAuthSystemException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.snda.grand.space.as.exception.AccountOAuthProblemException;
 import com.snda.grand.space.as.processor.OAuth2ResourceProcessor;
 import com.snda.grand.space.as.rest.model.Token;
 import com.snda.grand.space.as.rest.model.Validation;
@@ -45,7 +45,7 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 	@POST
 	@Path("token")
 	public Token exchangeToken(@Context HttpServletRequest request)
-			throws OAuthProblemException, OAuthSystemException {
+			throws AccountOAuthProblemException, OAuthSystemException {
 		return oauth2ResourceProcessor.exchangeToken(request);
 	}
 
@@ -53,7 +53,7 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 	@GET
 	@Path("authorize")
 	public Response authorize(@Context HttpServletRequest request)
-			throws OAuthProblemException, OAuthSystemException {
+			throws AccountOAuthProblemException, OAuthSystemException {
 		String scope = request.getParameter("scope");
 		if (scope != null) {
 			checkScope(scope);
@@ -65,7 +65,7 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 	@GET
 	@Path("sdo_auth")
 	public Response sdoAuthorize(@Context HttpServletRequest request)
-			throws URISyntaxException, OAuthProblemException,
+			throws URISyntaxException, AccountOAuthProblemException,
 			OAuthSystemException, IOException {
 		return oauth2ResourceProcessor.sdoAuthorize(request);
 	}

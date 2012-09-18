@@ -43,6 +43,7 @@ import com.snda.grand.space.as.account.AuthorizationService;
 import com.snda.grand.space.as.account.CodeService;
 import com.snda.grand.space.as.account.TokenService;
 import com.snda.grand.space.as.exception.AccessTokenExpiredException;
+import com.snda.grand.space.as.exception.AccountOAuthProblemException;
 import com.snda.grand.space.as.exception.CodeExpiredException;
 import com.snda.grand.space.as.exception.InvalidAccessTokenException;
 import com.snda.grand.space.as.exception.InvalidAccessorException;
@@ -109,8 +110,13 @@ public class OAuth2ResourceProcessorImpl implements OAuth2ResourceProcessor {
 	
 	@Override
 	public Response authorize(HttpServletRequest request)
-			throws OAuthProblemException, OAuthSystemException {
-		OAuthAuthzRequest oauthRequest = new OAuthAuthzRequest(request);
+			throws AccountOAuthProblemException, OAuthSystemException {
+		OAuthAuthzRequest oauthRequest;
+		try {
+			oauthRequest = new OAuthAuthzRequest(request);
+		} catch (OAuthProblemException e) {
+			throw new AccountOAuthProblemException(e, "authorize");
+		}
 
 		// build response according to response_type
 		String responseType = oauthRequest.getParam(OAuth.OAUTH_RESPONSE_TYPE);
@@ -161,10 +167,15 @@ public class OAuth2ResourceProcessorImpl implements OAuth2ResourceProcessor {
 
 	@Override
 	public Response sdoAuthorize(HttpServletRequest request)
-			throws URISyntaxException, OAuthProblemException,
+			throws URISyntaxException, AccountOAuthProblemException,
 			OAuthSystemException, IOException {
 		HttpResponse httpResponse = null;
-		OAuthAuthzRequest oauthRequest = new OAuthAuthzRequest(request);
+		OAuthAuthzRequest oauthRequest;
+		try {
+			oauthRequest = new OAuthAuthzRequest(request);
+		} catch (OAuthProblemException e) {
+			throw new AccountOAuthProblemException(e, "authorize");
+		}
 		String sdoUnsignedValidateParams = oauthRequest.getParam(Constants.SDO_VALIDATE_URL_PARAM);
 		LOGGER.info("Unsigned validate url:{}", sdoUnsignedValidateParams);
 		
@@ -197,10 +208,7 @@ public class OAuth2ResourceProcessorImpl implements OAuth2ResourceProcessor {
 //					Preconditions.checkSubDomain(pojoApplication.getWebsite(),
 //							redirectUri);
 				}
-				String scope = request.getParameter("scope");
-				if (scope == null) {
-					scope = "app";
-				}
+				String scope = application.getScope();
 				PojoAuthorization pojoAuthorization = authorizationService
 						.getAuthorizationByUidAndAppId(account.getUid(),
 								application.getAppid());
@@ -261,8 +269,13 @@ public class OAuth2ResourceProcessorImpl implements OAuth2ResourceProcessor {
 
 	@Override
 	public Token exchangeToken(HttpServletRequest request)
-			throws OAuthProblemException, OAuthSystemException {
-		GrandSpaceOAuthTokenRequest oauthRequest = new GrandSpaceOAuthTokenRequest(request);
+			throws AccountOAuthProblemException, OAuthSystemException {
+		GrandSpaceOAuthTokenRequest oauthRequest;
+		try {
+			oauthRequest = new GrandSpaceOAuthTokenRequest(request);
+		} catch (OAuthProblemException e) {
+			throw new AccountOAuthProblemException(e, "token");
+		}
 		String appId = oauthRequest.getParam(OAuth.OAUTH_CLIENT_ID);
 		String signature = request.getHeader(HttpHeaders.AUTHORIZATION);
 

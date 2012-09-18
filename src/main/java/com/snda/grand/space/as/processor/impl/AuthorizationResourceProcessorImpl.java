@@ -6,8 +6,8 @@ import org.slf4j.LoggerFactory;
 import com.snda.grand.space.as.account.AccountService;
 import com.snda.grand.space.as.account.ApplicationService;
 import com.snda.grand.space.as.account.AuthorizationService;
-import com.snda.grand.space.as.exception.ApplicationAlreadyExistException;
 import com.snda.grand.space.as.exception.NoSuchAccountException;
+import com.snda.grand.space.as.exception.NoSuchApplicationException;
 import com.snda.grand.space.as.mongo.model.PojoAuthorization;
 import com.snda.grand.space.as.processor.AuthorizationResourceProcessor;
 import com.snda.grand.space.as.rest.model.Account;
@@ -38,8 +38,8 @@ public class AuthorizationResourceProcessorImpl implements
 			throw new NoSuchAccountException();
 		}
 		Application application = applicationService.getApplicationByAppId(appId);
-		if (application != null) {
-			throw new ApplicationAlreadyExistException();
+		if (application == null) {
+			throw new NoSuchApplicationException();
 		}
 		PojoAuthorization pojoAuthorization = authorizationService.getAuthorizationByUidAndAppId(uid, appId);
 		if (pojoAuthorization != null) {
