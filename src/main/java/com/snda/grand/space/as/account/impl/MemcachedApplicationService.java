@@ -43,13 +43,15 @@ public class MemcachedApplicationService implements ApplicationService {
 	}
 	
 	@Override
-	public Application updateApplication(String appId, String uid,
-			String appKey, String appSecret, String appDescription,
+	public Application updateApplication(String appId, String modifiedAppId, 
+			String uid, String appKey, String appSecret, String appDescription,
 			String appStatus, String publisherName, String scope,
 			String website, long creationTime, long modifiedTime) {
+		deleteCache(appId);
 		Application application = applicationService.updateApplication(appId,
-				uid, appKey, appSecret, appDescription, appStatus,
-				publisherName, scope, website, creationTime, modifiedTime);
+				modifiedAppId, uid, appKey, appSecret, appDescription,
+				appStatus, publisherName, scope, website, creationTime,
+				modifiedTime);
 		setCache(application);
 		return application;
 	}

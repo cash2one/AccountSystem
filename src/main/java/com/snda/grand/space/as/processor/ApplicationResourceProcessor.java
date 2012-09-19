@@ -14,8 +14,8 @@ public interface ApplicationResourceProcessor extends ResourceProcessor {
 
 	Application status(String appId, String owner);
 
-	Application modify(String appId, String owner, String appDescription,
-			String website);
+	Application modify(String appId, String modifiedAppId, String owner, String appDescription,
+			String website, String publisherName);
 
 	Application changeStatus(String appId, String owner, String appStatus);
 

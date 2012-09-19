@@ -35,11 +35,12 @@ public class MongoApplicationService implements ApplicationService {
 	}
 	
 	@Override
-	public Application updateApplication(String appId, String uid,
-			String appKey, String appSecret, String appDescription,
+	public Application updateApplication(String appId, String modifiedAppId, 
+			String uid, String appKey, String appSecret, String appDescription,
 			String appStatus, String publisherName, String scope,
 			String website, long creationTime, long modifiedTime) {
 		Update update = new Update()
+							.set(MongoCollections.Application.APPID, modifiedAppId)
 							.set(MongoCollections.Application.OWNER, uid)
 							.set(MongoCollections.Application.APP_KEY, appKey)
 							.set(MongoCollections.Application.APP_SECRET, appSecret)

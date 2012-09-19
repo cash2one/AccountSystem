@@ -11,7 +11,7 @@ public interface ApplicationService {
 			String appStatus, String publisherName, String scope,
 			String website, long creationTime, long modifiedTime);
 	
-	Application updateApplication(String appId, String uid, String appKey,
+	Application updateApplication(String appId, String modifiedAppId, String uid, String appKey,
 			String appSecret, String appDescription, String appStatus,
 			String publisherName, String scope, String website,
 			long creationTime, long modifiedTime);

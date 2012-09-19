@@ -93,14 +93,16 @@ public class ApplicationResourceImpl implements ApplicationResource {
 	@POST
 	@Path("modify/{appid}")
 	public Application modify(@PathParam("appid") String appId, 
+			@QueryParam("appid") String modifiedAppId,
 			@QueryParam("owner") String owner, 
 			@QueryParam("app_description") String appDescription,
-			@QueryParam("website") String website) {
+			@QueryParam("website") String website,
+			@QueryParam("publisher_name") String publisherName) {
 		checkOwner(owner);
 		if (website != null &&  !Rule.checkDomain(website)) {
 			throw new InvalidWebSiteException();
 		}
-		return applicationResourceProcessor.modify(appId, owner, appDescription, website);
+		return applicationResourceProcessor.modify(appId, modifiedAppId, owner, appDescription, website, publisherName);
 	}
 
 	@Override

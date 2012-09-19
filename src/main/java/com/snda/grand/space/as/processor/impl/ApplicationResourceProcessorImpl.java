@@ -106,8 +106,8 @@ public class ApplicationResourceProcessorImpl implements
 	}
 
 	@Override
-	public Application modify(String appId, String owner,
-			String appDescription, String website) {
+	public Application modify(String appId, String modifiedAppId, 
+			String owner, String appDescription, String website, String publisherName) {
 		Account account = accountService.getAccountByUid(owner);
 		if (account == null) {
 			throw new NoSuchAccountException();
@@ -119,13 +119,20 @@ public class ApplicationResourceProcessorImpl implements
 		if (!owner.equals(application.getOwner())) {
 			throw new AccessDeniedException();
 		}
-		if (isBlank(appDescription) && isBlank(website)) {
+		if (modifiedAppId != null && !appId.equalsIgnoreCase(modifiedAppId)
+				&& applicationService.getApplicationByAppId(modifiedAppId) != null) {
+			throw new ApplicationAlreadyExistException();
+		}
+		if (isBlank(appDescription) 
+				&& isBlank(website)
+				&& isBlank(modifiedAppId)
+				&& isBlank(publisherName)) {
 			throw new NotModifiedException();
 		}
 		long modifiedTime = System.currentTimeMillis();
 		String modifiedAppDescription = isBlank(appDescription) ? application.getAppDescription() : appDescription;
 		String modifiedWebsite = isBlank(website) ? application.getWebsite() : website;
-		return applicationService.updateApplication(appId, owner, 
+		return applicationService.updateApplication(appId, modifiedAppId, owner, 
 				application.getAppKey(), application.getAppSecret(),
 				modifiedAppDescription, application.getAppStatus(),
 				application.getPublisherName(), application.getScope(),
@@ -146,7 +153,7 @@ public class ApplicationResourceProcessorImpl implements
 		if (!owner.equals(application.getOwner())) {
 			throw new AccessDeniedException();
 		}
-		return applicationService.updateApplication(appId, owner, 
+		return applicationService.updateApplication(appId, appId, owner, 
 				application.getAppKey(), application.getAppSecret(),
 				application.getAppDescription(), appStatus,
 				application.getPublisherName(), application.getScope(),
