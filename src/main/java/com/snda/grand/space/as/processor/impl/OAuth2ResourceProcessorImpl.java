@@ -59,6 +59,7 @@ import com.snda.grand.space.as.mongo.model.PojoAuthorization;
 import com.snda.grand.space.as.mongo.model.PojoCode;
 import com.snda.grand.space.as.mongo.model.PojoToken;
 import com.snda.grand.space.as.processor.OAuth2ResourceProcessor;
+import com.snda.grand.space.as.rest.GrandSpaceOAuthAuthzRequest;
 import com.snda.grand.space.as.rest.GrandSpaceOAuthTokenRequest;
 import com.snda.grand.space.as.rest.model.Account;
 import com.snda.grand.space.as.rest.model.Application;
@@ -111,9 +112,9 @@ public class OAuth2ResourceProcessorImpl implements OAuth2ResourceProcessor {
 	@Override
 	public Response authorize(HttpServletRequest request)
 			throws AccountOAuthProblemException, OAuthSystemException {
-		OAuthAuthzRequest oauthRequest;
+		GrandSpaceOAuthAuthzRequest oauthRequest;
 		try {
-			oauthRequest = new OAuthAuthzRequest(request);
+			oauthRequest = new GrandSpaceOAuthAuthzRequest(request);
 		} catch (OAuthProblemException e) {
 			throw new AccountOAuthProblemException(e, "authorize");
 		}
@@ -170,9 +171,9 @@ public class OAuth2ResourceProcessorImpl implements OAuth2ResourceProcessor {
 			throws URISyntaxException, AccountOAuthProblemException,
 			OAuthSystemException, IOException {
 		HttpResponse httpResponse = null;
-		OAuthAuthzRequest oauthRequest;
+		GrandSpaceOAuthAuthzRequest oauthRequest;
 		try {
-			oauthRequest = new OAuthAuthzRequest(request);
+			oauthRequest = new GrandSpaceOAuthAuthzRequest(request);
 		} catch (OAuthProblemException e) {
 			throw new AccountOAuthProblemException(e, "authorize");
 		}

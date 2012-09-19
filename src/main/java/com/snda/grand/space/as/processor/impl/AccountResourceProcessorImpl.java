@@ -125,6 +125,15 @@ public class AccountResourceProcessorImpl implements AccountResourceProcessor {
 		return authorizations;
 	}
 	
+	@Override
+	public void delete(String sndaId) {
+		Account account = accountService.getAccountBySndaId(sndaId);
+		if (account == null) {
+			throw new NoSuchAccountException();
+		}
+		accountService.deleteAccountBySndaId(sndaId);
+	}
+	
 	private Authorization getAuthorization(Application application,
 			PojoAuthorization pojoAuthorization) {
 		Authorization authorization = null;

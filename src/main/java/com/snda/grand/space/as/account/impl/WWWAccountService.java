@@ -58,4 +58,9 @@ public class WWWAccountService implements AccountService {
 		return accountService.getAccountByUid(uid);
 	}
 
+	@Override
+	public void deleteAccountBySndaId(String sndaId) {
+		accountService.deleteAccountBySndaId(sndaId);
+	}
+
 }

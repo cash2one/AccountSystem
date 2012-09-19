@@ -21,5 +21,7 @@ public interface AccountResourceProcessor extends ResourceProcessor {
 	List<Application> applications(String sndaId);
 
 	List<Authorization> listAuthorizations(String sndaId);
+	
+	void delete(String sndaId);
 
 }

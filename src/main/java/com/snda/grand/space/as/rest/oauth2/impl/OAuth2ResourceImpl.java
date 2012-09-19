@@ -1,7 +1,5 @@
 package com.snda.grand.space.as.rest.oauth2.impl;
 
-import static com.snda.grand.space.as.rest.util.Preconditions.checkScope;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 
@@ -54,10 +52,6 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 	@Path("authorize")
 	public Response authorize(@Context HttpServletRequest request)
 			throws AccountOAuthProblemException, OAuthSystemException {
-		String scope = request.getParameter("scope");
-		if (scope != null) {
-			checkScope(scope);
-		}
 		return oauth2ResourceProcessor.authorize(request);
 	}
 	

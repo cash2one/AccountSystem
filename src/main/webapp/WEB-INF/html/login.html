@@ -7,6 +7,7 @@
 <script type="text/javascript" src="/js/util.js"></script>
 
 <script type="text/javascript">
+    PARAM_ARRAY = null;
 	PARAM_ARRAY = getHttpRequestParameters(window.location.href);
 	TICKET = null;
 	var i = 0;
@@ -24,16 +25,20 @@
 	function checkstat(stat){
 	    if (stat.CAS_LOGIN_STATE=="") {
 	    	var queries = "";
-	    	for (var i = 0; i < PARAM_ARRAY.length; i++) {
-	    		queries = queries + PARAM_ARRAY[i].key + "=" + PARAM_ARRAY[i].value + "&";
+	    	if (PARAM_ARRAY != null) {
+		    	for (var i = 0; i < PARAM_ARRAY.length; i++) {
+		    		queries = queries + PARAM_ARRAY[i].key + "=" + PARAM_ARRAY[i].value + "&";
+		    	}
 	    	}
 	    	var returnURL = "http://account.grandmobile.cn/web/redirect?";
 	    	returnURL += queries;
-	        window.location.href="http://login.sdo.com/sdo/Login/LoginFrameFC.php?"
+	        //window.location.href="http://login.sdo.com/sdo/Login/LoginFrameFC.php?" 
+	        window.location.href="https://cas.sdo.com/cas/login?"
 	        		+ "appId=917&"
 	        		+ "areaId=1&"
 	        		+ "customSecurityLevel=1&"
-	        		+ "returnURL="
+	        		//+ "returnURL="
+	        		+ "service="
 	        		+ encodeURIComponent(returnURL);
 	    } else {
 	    	if (TICKET == null) {

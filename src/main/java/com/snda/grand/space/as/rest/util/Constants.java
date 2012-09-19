@@ -10,4 +10,9 @@ public class Constants {
 	
 	public static final String DEFAULT_LOCALE = "zh_CN";
 	
+	public static final String[] SCOPES = new String[] {
+		"app",
+		"full"
+	};
+	
 }

@@ -66,6 +66,12 @@ public class MongoAccountService implements AccountService {
 				PojoAccount.class, MongoCollections.ACCOUNT_COLLECTION_NAME);
 		return newAccount(account);
 	}
+	
+	@Override
+	public void deleteAccountBySndaId(String sndaId) {
+		mongoOps.remove(query(where(MongoCollections.Account.SNDA_ID)
+				.is(sndaId)), MongoCollections.ACCOUNT_COLLECTION_NAME);
+	}
 
 	private Account newAccount(PojoAccount pojoAccount) {
 		Account account = null;

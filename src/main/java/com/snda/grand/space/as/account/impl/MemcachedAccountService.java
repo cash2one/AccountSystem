@@ -71,6 +71,12 @@ public class MemcachedAccountService implements AccountService {
 		return accountService.getAccountByUid(uid);
 	}
 	
+	@Override
+	public void deleteAccountBySndaId(String sndaId) {
+		deleteCache(sndaId);
+		accountService.deleteAccountBySndaId(sndaId);
+	}
+	
 	private Account getCache(String sndaId) {
 		String memcachedId = memcachedId(sndaId);
 		try {
@@ -87,6 +93,15 @@ public class MemcachedAccountService implements AccountService {
 			memcached.set(memcachedId, account, expiration);
 		} catch (Exception e) {
 			warn("Set", memcachedId, e);
+		}
+	}
+	
+	private void deleteCache(String sndaId) {
+		String memcachedId = memcachedId(sndaId);
+		try {
+			memcached.delete(memcachedId);
+		} catch (Exception e) {
+			warn("Delete", memcachedId, e);
 		}
 	}
 

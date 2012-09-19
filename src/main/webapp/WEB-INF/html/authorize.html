@@ -44,6 +44,7 @@ input {
 <script type="text/javascript" src="/js/util.js"></script>
 
 <script type="text/javascript">
+	PARAM_ARRAY = null;
     PARAM_ARRAY = getHttpRequestParameters(window.location.href);
     CLIENT_ID = null;
     RESPONSE_TYPE = null;
@@ -81,12 +82,14 @@ input {
     {
         // if there is ticket in url, do validate.sigature to get sndaId
         var validateUrl = "";
-        for (i = 0; i < PARAM_ARRAY.length; i++)
-        {
-            if (PARAM_ARRAY[i].key == "ticket")
+        if (PARAM_ARRAY != null) {
+        	for (i = 0; i < PARAM_ARRAY.length; i++)
             {
-            	unsignedValidateUrl = PARAM_ARRAY[i].key + "=" + String(PARAM_ARRAY[i].value);
-             }
+                if (PARAM_ARRAY[i].key == "ticket")
+                {
+                	unsignedValidateUrl = PARAM_ARRAY[i].key + "=" + String(PARAM_ARRAY[i].value);
+                }
+            }
         }
 
         var getAuthCodeUrl = "http://account.grandmobile.cn/api/oauth2/sdo_auth?";

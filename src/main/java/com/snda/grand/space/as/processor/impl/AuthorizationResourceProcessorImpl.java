@@ -8,6 +8,7 @@ import com.snda.grand.space.as.account.ApplicationService;
 import com.snda.grand.space.as.account.AuthorizationService;
 import com.snda.grand.space.as.exception.NoSuchAccountException;
 import com.snda.grand.space.as.exception.NoSuchApplicationException;
+import com.snda.grand.space.as.exception.NoSuchAuthorizationException;
 import com.snda.grand.space.as.mongo.model.PojoAuthorization;
 import com.snda.grand.space.as.processor.AuthorizationResourceProcessor;
 import com.snda.grand.space.as.rest.model.Account;
@@ -42,11 +43,11 @@ public class AuthorizationResourceProcessorImpl implements
 			throw new NoSuchApplicationException();
 		}
 		PojoAuthorization pojoAuthorization = authorizationService.getAuthorizationByUidAndAppId(uid, appId);
-		if (pojoAuthorization != null) {
-			return pojoAuthorization.getAuthorization(application
-					.getPublisherName());
+		if (pojoAuthorization == null) {
+			throw new NoSuchAuthorizationException();
 		}
-		return null;
+		return pojoAuthorization.getAuthorization(application
+				.getPublisherName());
 	}
 
 }

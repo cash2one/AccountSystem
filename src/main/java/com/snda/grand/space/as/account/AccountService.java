@@ -16,4 +16,6 @@ public interface AccountService {
 	
 	Account getAccountByUid(String uid);
 	
+	void deleteAccountBySndaId(String sndaId);
+	
 }

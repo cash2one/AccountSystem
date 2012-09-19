@@ -52,7 +52,7 @@ public class CreateRSAKeyPair {
 		MD5Generator md5gen = new MD5Generator();
 		long creationTime = System.currentTimeMillis();
 		PojoApplication pojoApplicaiton = new PojoApplication("www", "www", "release",
-				md5gen.generateValue(), md5gen.generateValue(), "SNDA", "global", null,
+				md5gen.generateValue(), md5gen.generateValue(), "SNDA", "full", null,
 				creationTime, creationTime, "0");
 		mongoOps.insert(pojoApplicaiton, MongoCollections.APPLICATION_COLLECTION_NAME);
 	}
