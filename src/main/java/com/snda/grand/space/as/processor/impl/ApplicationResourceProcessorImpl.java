@@ -130,12 +130,14 @@ public class ApplicationResourceProcessorImpl implements
 			throw new NotModifiedException();
 		}
 		long modifiedTime = System.currentTimeMillis();
+		String modifiedApplicationId = isBlank(modifiedAppId) ? appId : modifiedAppId;
 		String modifiedAppDescription = isBlank(appDescription) ? application.getAppDescription() : appDescription;
 		String modifiedWebsite = isBlank(website) ? application.getWebsite() : website;
-		return applicationService.updateApplication(appId, modifiedAppId, owner, 
+		String modifiedPublisherName = isBlank(publisherName) ? application.getPublisherName() : publisherName;
+		return applicationService.updateApplication(appId, modifiedApplicationId, owner, 
 				application.getAppKey(), application.getAppSecret(),
 				modifiedAppDescription, application.getAppStatus(),
-				application.getPublisherName(), application.getScope(),
+				modifiedPublisherName, application.getScope(),
 				modifiedWebsite, application.getCreationTime().getMillis(),
 				modifiedTime);
 	}

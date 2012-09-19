@@ -54,7 +54,8 @@ public class MongoApplicationService implements ApplicationService {
 		mongoOps.updateFirst(query(where(MongoCollections.Application.APPID)
 				.is(appId)), update,
 				MongoCollections.APPLICATION_COLLECTION_NAME);
-		return newApplication(appId, uid, appKey, appSecret, appDescription,
+		String newAppId = appId.equalsIgnoreCase(modifiedAppId) ? appId : modifiedAppId;
+		return newApplication(newAppId, uid, appKey, appSecret, appDescription,
 				appStatus, publisherName, scope, website, creationTime,
 				modifiedTime);
 	}
