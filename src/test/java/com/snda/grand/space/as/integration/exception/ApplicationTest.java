@@ -47,7 +47,9 @@ public class ApplicationTest {
 	@Test
 	public void test() {
 		createTestApplication();
-		//TODO other operations
+		modifyTestApplication();
+		getTestApplicationStatus();
+		changeTestApplicationStatus();
 		deleteTestApplication();
 	}
 
@@ -71,6 +73,60 @@ public class ApplicationTest {
 		assertThat(application.getPublisherName(), is(TEST_APP_PUBLISHER_NAME));
 		assertThat(application.getScope(), is(TEST_APP_SCOPE));
 		assertThat(application.getWebsite(), is(TEST_APP_WEBSITE));
+	}
+	
+	private void modifyTestApplication() {
+		WebResource r = client.resource(DEFAULT_URI + "api/application/modify/" + TEST_APP_APPID);
+		ClientResponse response = r.queryParam("owner", TEST_APP_OWNER)
+								   .queryParam("app_description", "changed_test_app_app_decription")
+								   .queryParam("website", "www.changed.com")
+								   .header(HttpHeaders.AUTHORIZATION, "Basic " + AUTH)
+								   .post(ClientResponse.class);
+		assertThat(response.getStatus(), is(200));
+		
+		Application application = getApplication(response.getEntity(String.class));
+		assertThat(application.getAppid(), is(TEST_APP_APPID));
+		assertThat(application.getOwner(), is(TEST_APP_OWNER));
+		assertThat(application.getAppDescription(), is("changed_test_app_app_decription"));
+		assertThat(application.getAppStatus(), is(TEST_APP_APP_STATUS));
+		assertThat(application.getPublisherName(), is(TEST_APP_PUBLISHER_NAME));
+		assertThat(application.getScope(), is(TEST_APP_SCOPE));
+		assertThat(application.getWebsite(), is("www.changed.com"));
+	}
+	
+	private void getTestApplicationStatus() {
+		WebResource r = client.resource(DEFAULT_URI + "api/application/status/" + TEST_APP_APPID);
+		ClientResponse response = r.queryParam("owner", TEST_APP_OWNER)
+								   .header(HttpHeaders.AUTHORIZATION, "Basic " + AUTH)
+								   .get(ClientResponse.class);
+		assertThat(response.getStatus(), is(200));
+		
+		Application application = getApplication(response.getEntity(String.class));
+		assertThat(application.getAppid(), is(TEST_APP_APPID));
+		assertThat(application.getOwner(), is(TEST_APP_OWNER));
+		assertThat(application.getAppDescription(), is("changed_test_app_app_decription"));
+		assertThat(application.getAppStatus(), is(TEST_APP_APP_STATUS));
+		assertThat(application.getPublisherName(), is(TEST_APP_PUBLISHER_NAME));
+		assertThat(application.getScope(), is(TEST_APP_SCOPE));
+		assertThat(application.getWebsite(), is("www.changed.com"));
+	}
+	
+	private void changeTestApplicationStatus() {
+		WebResource r = client.resource(DEFAULT_URI + "api/application/status/" + TEST_APP_APPID);
+		ClientResponse response = r.queryParam("owner", TEST_APP_OWNER)
+								   .queryParam("app_status", "release")
+								   .header(HttpHeaders.AUTHORIZATION, "Basic " + AUTH)
+								   .post(ClientResponse.class);
+		assertThat(response.getStatus(), is(200));
+		
+		Application application = getApplication(response.getEntity(String.class));
+		assertThat(application.getAppid(), is(TEST_APP_APPID));
+		assertThat(application.getOwner(), is(TEST_APP_OWNER));
+		assertThat(application.getAppDescription(), is("changed_test_app_app_decription"));
+		assertThat(application.getAppStatus(), is("release"));
+		assertThat(application.getPublisherName(), is(TEST_APP_PUBLISHER_NAME));
+		assertThat(application.getScope(), is(TEST_APP_SCOPE));
+		assertThat(application.getWebsite(), is("www.changed.com"));
 	}
 	
 	private void deleteTestApplication() {
