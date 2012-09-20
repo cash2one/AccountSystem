@@ -19,22 +19,42 @@
 	<listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
-    
-    <servlet>
-		<servlet-name>SpringServlet</servlet-name>
-		<servlet-class>com.snda.grand.space.as.servlet.AccountRestServlet</servlet-class>
-		<init-param>
+	
+	<filter>
+    	<filter-name>SNDAResourceFilter</filter-name>
+    	<filter-class>com.sun.jersey.spi.spring.container.servlet.SpringServlet</filter-class>
+    	<init-param>
 			<param-name>com.sun.jersey.spi.container.ContainerRequestFilters</param-name>
-			<param-value>com.snda.grand.space.as.servlet.AccessorAuthenticateFilter</param-value>
+			<param-value>com.snda.grand.space.as.servlet.RemoteIpFilter, com.snda.grand.space.as.servlet.AccessorAuthenticateFilter</param-value>
     	</init-param>
     	<init-param>
 			<param-name>com.sun.jersey.config.feature.FilterForwardOn404</param-name>
 			<param-value>true</param-value>
     	</init-param>
+    </filter>
+    
+    <servlet>
+		<servlet-name>ASResourceServlet</servlet-name>
+		<servlet-class>com.snda.grand.space.as.servlet.AccountRestServlet</servlet-class>
 	</servlet>
+	
+	<filter-mapping>
+		<filter-name>SNDAResourceFilter</filter-name>
+		<url-pattern>/api/account/*</url-pattern>
+	</filter-mapping>
+	
+	<filter-mapping>
+		<filter-name>SNDAResourceFilter</filter-name>
+		<url-pattern>/api/application/*</url-pattern>
+	</filter-mapping>
+	
+	<filter-mapping>
+		<filter-name>SNDAResourceFilter</filter-name>
+		<url-pattern>/api/authorization/*</url-pattern>
+	</filter-mapping>
 
 	<servlet-mapping>
-		<servlet-name>SpringServlet</servlet-name>
+		<servlet-name>ASResourceServlet</servlet-name>
 		<url-pattern>/api/*</url-pattern>
 	</servlet-mapping>
 	

@@ -28,6 +28,7 @@ import com.snda.grand.space.as.rest.util.ApplicationKeys;
 import com.snda.grand.space.as.rest.util.Constants;
 import com.snda.grand.space.as.rest.util.Preconditions;
 import com.snda.grand.space.as.rest.util.Rule;
+import com.snda.grand.space.as.util.InternalIpAllow;
 import com.snda.grand.space.as.util.MD5;
 
 public class CreateRSAKeyPair {
@@ -107,7 +108,8 @@ public class CreateRSAKeyPair {
 						"src/main/resources/account.system.memcached.xml",
 						"src/main/resources/account.system.account.rest.xml",
 						"src/main/resources/account.system.processor.xml",
-						"src/main/resources/account.system.oauth2.rest.xml"});
+						"src/main/resources/account.system.oauth2.rest.xml",
+						"src/main/resources/account.system.security.xml"});
 	}
 	
 	@Test
@@ -123,6 +125,12 @@ public class CreateRSAKeyPair {
 	@Test
 	public void testCheckSubDomain() {
 		Preconditions.checkSubDomain("account.grandmobile.cn", "account.grandmobile.cn/abc/acb");
+	}
+	
+	@Test
+	public void testCheckIP() {
+		InternalIpAllow allows = new InternalIpAllow("127.0.0.1, 114.80.133.7");
+		System.out.println(allows.contains("127.0.0.1"));
 	}
 	
 	@Test

@@ -10,6 +10,7 @@ import org.joda.time.DateTime;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.google.common.net.HttpHeaders;
 
 /**
  * 
@@ -67,10 +68,16 @@ public class ApplicationServiceContext {
 	}
 
 	private String client() {
+		if (request.getHeader(HttpHeaders.X_FORWARDED_FOR) != null) {
+			return request.getHeader(HttpHeaders.X_FORWARDED_FOR);
+		}
 		return request.getRemoteAddr();
 	}
 
 	private String server() {
+		if (request.getHeader("X-SERVER-IP") != null) {
+			return request.getHeader("X-SERVER-IP");
+		}
 		return request.getLocalAddr();
 	}
 

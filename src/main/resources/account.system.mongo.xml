@@ -13,7 +13,7 @@
           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
 	
-	<context:property-placeholder location="classpath:mongo.properties, classpath:merchant.properties, classpath:memcached.properties" />
+	<context:property-placeholder location="classpath:mongo.properties, classpath:merchant.properties, classpath:memcached.properties, classpath:internal.ip.allow.properties" />
 	
 	<mongo:mongo id="mongo" host="${mongo.host}" port="${mongo.port}">
 		<mongo:options 
@@ -42,6 +42,11 @@
 		<property name="merchantName" value="${merchant_name}"/>
 		<property name="signatureMethod" value="${signature_method}"/>
 		<property name="md5SecretKey" value="${md5_secret_key}"/>
+	</bean>
+	
+	<bean id="internalIpAllow"
+		class="com.snda.grand.space.as.util.InternalIpAllow">
+		<constructor-arg value="${internal.allow}" />
 	</bean>
 
 </beans>

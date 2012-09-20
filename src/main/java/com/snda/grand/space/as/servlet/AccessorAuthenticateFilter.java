@@ -29,7 +29,7 @@ public class AccessorAuthenticateFilter implements ContainerRequestFilter {
 	@Override
 	public ContainerRequest filter(ContainerRequest request) {
 		LOGGER.info("RequestUri : {}", request.getRequestUri().toString());
-		if (request.getRequestUri().toString().contains(IGNORE_OAUTH_REQUEST_PATH)) {
+		if (request.getRequestUri().toString().startsWith(request.getBaseUri() + IGNORE_OAUTH_REQUEST_PATH)) {
 			return request;
 		}
 		String credential = getCredential(request);
