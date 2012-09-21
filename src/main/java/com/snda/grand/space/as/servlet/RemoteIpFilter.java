@@ -38,6 +38,7 @@ public class RemoteIpFilter implements ContainerRequestFilter {
 					.getHeader(HttpHeaders.X_FORWARDED_FOR) == null ? httpServletRequest
 					.getRemoteHost() : httpServletRequest
 					.getHeader(HttpHeaders.X_FORWARDED_FOR);
+			LOGGER.info("Remote Host : {}", remoteHost);
 			if (internalIpAllow.contains(remoteHost)) {
 				return request;
 			}
