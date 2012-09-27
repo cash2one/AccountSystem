@@ -8,11 +8,11 @@ import javax.ws.rs.core.Response;
 
 import org.apache.amber.oauth2.common.exception.OAuthSystemException;
 
-import com.snda.grand.space.as.exception.AccountOAuthProblemException;
+import com.snda.grand.space.as.exception.ASOAuthProblemException;
 
 public interface SdoAuthResource {
 
 	Response sdoAuthorize(HttpServletRequest request)
-			throws URISyntaxException, AccountOAuthProblemException, OAuthSystemException, IOException;
+			throws URISyntaxException, ASOAuthProblemException, OAuthSystemException, IOException;
 	
 }

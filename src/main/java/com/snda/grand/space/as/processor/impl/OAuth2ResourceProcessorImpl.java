@@ -20,7 +20,6 @@ import org.apache.amber.oauth2.as.issuer.MD5Generator;
 import org.apache.amber.oauth2.as.issuer.OAuthIssuer;
 import org.apache.amber.oauth2.as.issuer.OAuthIssuerImpl;
 import org.apache.amber.oauth2.as.issuer.UUIDValueGenerator;
-import org.apache.amber.oauth2.as.request.OAuthAuthzRequest;
 import org.apache.amber.oauth2.as.response.OAuthASResponse;
 import org.apache.amber.oauth2.common.OAuth;
 import org.apache.amber.oauth2.common.exception.OAuthProblemException;
@@ -42,16 +41,14 @@ import com.snda.grand.space.as.account.ApplicationService;
 import com.snda.grand.space.as.account.AuthorizationService;
 import com.snda.grand.space.as.account.CodeService;
 import com.snda.grand.space.as.account.TokenService;
+import com.snda.grand.space.as.exception.ASOAuthProblemException;
+import com.snda.grand.space.as.exception.ASOAuthUnauthorizedClientException;
 import com.snda.grand.space.as.exception.AccessTokenExpiredException;
-import com.snda.grand.space.as.exception.AccountOAuthProblemException;
 import com.snda.grand.space.as.exception.CodeExpiredException;
-import com.snda.grand.space.as.exception.InvalidAccessTokenException;
 import com.snda.grand.space.as.exception.InvalidAccessorException;
-import com.snda.grand.space.as.exception.InvalidRefreshTokenException;
+import com.snda.grand.space.as.exception.InvalidClientException;
+import com.snda.grand.space.as.exception.InvalidGrantException;
 import com.snda.grand.space.as.exception.NoSuchAccountException;
-import com.snda.grand.space.as.exception.NoSuchApplicationException;
-import com.snda.grand.space.as.exception.NoSuchAuthorizationCodeException;
-import com.snda.grand.space.as.exception.NoSuchRefreshTokenException;
 import com.snda.grand.space.as.exception.RedirectUriMisatchException;
 import com.snda.grand.space.as.exception.SdoValidateSignatureFailedException;
 import com.snda.grand.space.as.mongo.model.MongoCollections;
@@ -111,12 +108,12 @@ public class OAuth2ResourceProcessorImpl implements OAuth2ResourceProcessor {
 	
 	@Override
 	public Response authorize(HttpServletRequest request)
-			throws AccountOAuthProblemException, OAuthSystemException {
+			throws ASOAuthProblemException, OAuthSystemException {
 		GrandSpaceOAuthAuthzRequest oauthRequest;
 		try {
 			oauthRequest = new GrandSpaceOAuthAuthzRequest(request);
 		} catch (OAuthProblemException e) {
-			throw new AccountOAuthProblemException(e, "authorize");
+			throw new ASOAuthProblemException(e, "authorize");
 		}
 
 		// build response according to response_type
@@ -168,14 +165,14 @@ public class OAuth2ResourceProcessorImpl implements OAuth2ResourceProcessor {
 
 	@Override
 	public Response sdoAuthorize(HttpServletRequest request)
-			throws URISyntaxException, AccountOAuthProblemException,
+			throws URISyntaxException, ASOAuthProblemException,
 			OAuthSystemException, IOException {
 		HttpResponse httpResponse = null;
 		GrandSpaceOAuthAuthzRequest oauthRequest;
 		try {
 			oauthRequest = new GrandSpaceOAuthAuthzRequest(request);
 		} catch (OAuthProblemException e) {
-			throw new AccountOAuthProblemException(e, "authorize");
+			throw new ASOAuthProblemException(e, "authorize");
 		}
 		String sdoUnsignedValidateParams = oauthRequest.getParam(Constants.SDO_VALIDATE_URL_PARAM);
 		LOGGER.info("Unsigned validate url:{}", sdoUnsignedValidateParams);
@@ -201,7 +198,8 @@ public class OAuth2ResourceProcessorImpl implements OAuth2ResourceProcessor {
 				}
 				Application application = applicationService.getApplicationByAppId(oauthRequest.getClientId());
 				if (application == null) {
-					throw new NoSuchApplicationException();
+//					throw new NoSuchApplicationException();
+					throw ASOAuthUnauthorizedClientException.build("authorize");
 				}
 				
 				String redirectUri = oauthRequest.getRedirectURI();
@@ -270,19 +268,19 @@ public class OAuth2ResourceProcessorImpl implements OAuth2ResourceProcessor {
 
 	@Override
 	public Token exchangeToken(HttpServletRequest request)
-			throws AccountOAuthProblemException, OAuthSystemException {
+			throws ASOAuthProblemException, OAuthSystemException {
 		GrandSpaceOAuthTokenRequest oauthRequest;
 		try {
 			oauthRequest = new GrandSpaceOAuthTokenRequest(request);
 		} catch (OAuthProblemException e) {
-			throw new AccountOAuthProblemException(e, "token");
+			throw new ASOAuthProblemException(e, "token");
 		}
 		String appId = oauthRequest.getParam(OAuth.OAUTH_CLIENT_ID);
 		String signature = request.getHeader(HttpHeaders.AUTHORIZATION);
 
 		Application application = applicationService.getApplicationByAppId(appId);
 		if (application == null) {
-			throw new NoSuchApplicationException();
+			throw new InvalidClientException();
 		}
 
 		String accessToken = oauthMD5Issuer.accessToken();
@@ -294,7 +292,7 @@ public class OAuth2ResourceProcessorImpl implements OAuth2ResourceProcessor {
 				GrantType.AUTHORIZATION_CODE.toString())) {
 			PojoCode pojoCode = codeService.getCode(oauthRequest.getCode());
 			if (pojoCode == null) {
-				throw new NoSuchAuthorizationCodeException();
+				throw new InvalidGrantException();
 			}
 			else if (System.currentTimeMillis() > pojoCode.getCreationTime() + MongoCollections.CODE_EXPIRE_TIME) {
 				codeService.deleteCode(oauthRequest.getCode());
@@ -305,7 +303,7 @@ public class OAuth2ResourceProcessorImpl implements OAuth2ResourceProcessor {
 			}
 			authorization = authorizationService.getAuthorizationByUidAndAppId(pojoCode.getUid(), pojoCode.getAppId());
 			if (authorization == null) {
-				throw new NoSuchAuthorizationCodeException();
+				throw new InvalidGrantException();
 			}
 			long creationTime = System.currentTimeMillis();
 			tokenService.putToken(authorization.getRefreshToken(), accessToken,
@@ -317,7 +315,7 @@ public class OAuth2ResourceProcessorImpl implements OAuth2ResourceProcessor {
 				GrantType.REFRESH_TOKEN.toString())) {
 			authorization = authorizationService.getAuthorizationByRefreshToken(oauthRequest.getRefreshToken());
 			if (authorization == null) {
-				throw new NoSuchRefreshTokenException();
+				throw new InvalidGrantException();
 			}
 			long creationTime = System.currentTimeMillis();
 			tokenService.putToken(authorization.getRefreshToken(), accessToken,
@@ -336,17 +334,17 @@ public class OAuth2ResourceProcessorImpl implements OAuth2ResourceProcessor {
 		checkValidateBasicAuth(authorization);
 		PojoToken pojoToken = tokenService.getTokenByAccessToken(accessToken);
 		if (pojoToken == null) {
-			throw new InvalidAccessTokenException();
+			throw new InvalidGrantException();
 		} else if (pojoToken.getExpire() < System.currentTimeMillis()) {
 			throw new AccessTokenExpiredException();
 		}
 		PojoAuthorization pojoAuthorization = authorizationService.getAuthorizationByRefreshToken(pojoToken.getRefreshToken());
 		if (pojoAuthorization == null) {
-			throw new InvalidRefreshTokenException();
+			throw new InvalidGrantException();
 		}
 		Application application = applicationService.getApplicationByAppId(pojoAuthorization.getAppId());
 		if (application == null) {
-			throw new NoSuchApplicationException();
+			throw new InvalidClientException();
 		}
 		Account account = accountService.getAccountByUid(pojoAuthorization.getUid());
 		if (account == null) {

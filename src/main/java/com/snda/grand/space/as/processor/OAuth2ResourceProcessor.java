@@ -8,21 +8,21 @@ import javax.ws.rs.core.Response;
 
 import org.apache.amber.oauth2.common.exception.OAuthSystemException;
 
-import com.snda.grand.space.as.exception.AccountOAuthProblemException;
+import com.snda.grand.space.as.exception.ASOAuthProblemException;
 import com.snda.grand.space.as.rest.model.Token;
 import com.snda.grand.space.as.rest.model.Validation;
 
 public interface OAuth2ResourceProcessor extends ResourceProcessor {
 
 	Response authorize(HttpServletRequest request)
-			throws AccountOAuthProblemException, OAuthSystemException;
+			throws ASOAuthProblemException, OAuthSystemException;
 	
 	Response sdoAuthorize(HttpServletRequest request)
-			throws URISyntaxException, AccountOAuthProblemException,
+			throws URISyntaxException, ASOAuthProblemException,
 			OAuthSystemException, IOException;
 
 	Token exchangeToken(HttpServletRequest request)
-			throws AccountOAuthProblemException, OAuthSystemException;
+			throws ASOAuthProblemException, OAuthSystemException;
 
 	Validation validate(String accessToken, String authorization);
 

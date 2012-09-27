@@ -1,5 +1,7 @@
 package com.snda.grand.space.as.rest.oauth2.impl;
 
+import static com.snda.grand.space.as.rest.util.Preconditions.checkOAuth2Scope;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 
@@ -15,7 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import com.snda.grand.space.as.exception.AccountOAuthProblemException;
+import com.snda.grand.space.as.exception.ASOAuthProblemException;
 import com.snda.grand.space.as.processor.OAuth2ResourceProcessor;
 import com.snda.grand.space.as.rest.model.Token;
 import com.snda.grand.space.as.rest.model.Validation;
@@ -43,7 +45,7 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 	@POST
 	@Path("token")
 	public Token exchangeToken(@Context HttpServletRequest request)
-			throws AccountOAuthProblemException, OAuthSystemException {
+			throws ASOAuthProblemException, OAuthSystemException {
 		return oauth2ResourceProcessor.exchangeToken(request);
 	}
 
@@ -51,7 +53,7 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 	@GET
 	@Path("authorize")
 	public Response authorize(@Context HttpServletRequest request)
-			throws AccountOAuthProblemException, OAuthSystemException {
+			throws ASOAuthProblemException, OAuthSystemException {
 		return oauth2ResourceProcessor.authorize(request);
 	}
 	
@@ -59,8 +61,9 @@ public class OAuth2ResourceImpl implements AuthorizationResource,
 	@GET
 	@Path("sdo_auth")
 	public Response sdoAuthorize(@Context HttpServletRequest request)
-			throws URISyntaxException, AccountOAuthProblemException,
+			throws URISyntaxException, ASOAuthProblemException,
 			OAuthSystemException, IOException {
+		checkOAuth2Scope(request.getParameter("scope"), "authorize");
 		return oauth2ResourceProcessor.sdoAuthorize(request);
 	}
 	

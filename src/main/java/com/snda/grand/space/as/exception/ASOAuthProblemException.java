@@ -2,7 +2,7 @@ package com.snda.grand.space.as.exception;
 
 import org.apache.amber.oauth2.common.exception.OAuthProblemException;
 
-public class AccountOAuthProblemException extends Exception {
+public class ASOAuthProblemException extends Exception {
 
 	/**
 	 * 
@@ -11,7 +11,7 @@ public class AccountOAuthProblemException extends Exception {
 	private final OAuthProblemException oauthProblem;
 	private final String api;
 	
-	public AccountOAuthProblemException(OAuthProblemException oauthProblem, String api) {
+	public ASOAuthProblemException(OAuthProblemException oauthProblem, String api) {
 		this.oauthProblem = oauthProblem;
 		this.api = api;
 	}

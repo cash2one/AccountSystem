@@ -13,7 +13,7 @@ public class AccessTokenExpiredException extends ApplicationWebException {
 
 	@Override
 	public String getMessage() {
-		return "Access token has expired.";
+		return "Expired token";
 	}
 
 	@Override
@@ -23,7 +23,7 @@ public class AccessTokenExpiredException extends ApplicationWebException {
 
 	@Override
 	public String getCode() {
-		return "AccessTokenExpired";
+		return "expired_token";
 	}
 
 	@Override

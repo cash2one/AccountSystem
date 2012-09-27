@@ -3,17 +3,12 @@ package com.snda.grand.space.as.exception;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
-public class RedirectUriMisatchException extends ApplicationWebException {
+public class InvalidGrantException extends ApplicationWebException {
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -6853148743098603007L;
-
-	@Override
-	public String getMessage() {
-		return "Redirect URI mismatch";
-	}
+	private static final long serialVersionUID = -8606999574922817572L;
 
 	@Override
 	public Status getStatus() {
@@ -22,7 +17,12 @@ public class RedirectUriMisatchException extends ApplicationWebException {
 
 	@Override
 	public String getCode() {
-		return "redirect_uri_mismatch";
+		return "invalid_grant";
+	}
+
+	@Override
+	public String getMessage() {
+		return "Invalid grant";
 	}
 
 	@Override

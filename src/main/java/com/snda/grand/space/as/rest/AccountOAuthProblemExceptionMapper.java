@@ -16,19 +16,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.snda.grand.space.as.exception.AccountOAuthProblemException;
+import com.snda.grand.space.as.exception.ASOAuthProblemException;
 import com.snda.grand.space.as.rest.util.Constants;
 
 
 @Provider
 @Component
 public class AccountOAuthProblemExceptionMapper implements
-		ExceptionMapper<AccountOAuthProblemException> {
+		ExceptionMapper<ASOAuthProblemException> {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(AccountOAuthProblemExceptionMapper.class);
 
 	@Override
-	public Response toResponse(AccountOAuthProblemException exception) {
+	public Response toResponse(ASOAuthProblemException exception) {
 		try {
 			if (exception.getApi().equalsIgnoreCase("authorize")) {
 				String redirectUri = exception.getOauthProblem().getRedirectUri();

@@ -7,15 +7,13 @@ import org.apache.amber.oauth2.common.error.OAuthError;
 import org.apache.amber.oauth2.common.exception.OAuthProblemException;
 import org.apache.amber.oauth2.common.validators.AbstractValidator;
 
-import com.snda.grand.space.as.rest.util.Constants;
-
 public class GrandSpaceCodeValidator extends
 		AbstractValidator<HttpServletRequest> {
 
 	public GrandSpaceCodeValidator() {
         requiredParams.add(OAuth.OAUTH_RESPONSE_TYPE);
         requiredParams.add(OAuth.OAUTH_CLIENT_ID);
-        optionalParams.put(OAuth.OAUTH_SCOPE, Constants.SCOPES);
+//        optionalParams.put(OAuth.OAUTH_SCOPE, Constants.SCOPES);
     }
 
     @Override

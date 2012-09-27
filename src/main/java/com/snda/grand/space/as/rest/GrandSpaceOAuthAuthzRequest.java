@@ -28,7 +28,7 @@ public class GrandSpaceOAuthAuthzRequest extends OAuthRequest {
             validator.validateMethod(request);
             validator.validateContentType(request);
             validator.validateRequiredParameters(request);
-            validator.validateOptionalParameters(request);
+//            validator.validateOptionalParameters(request);
         } catch (OAuthProblemException e) {
             try {
                 String redirectUri = request.getParameter(OAuth.OAUTH_REDIRECT_URI);

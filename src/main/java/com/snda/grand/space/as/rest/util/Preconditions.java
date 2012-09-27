@@ -18,6 +18,8 @@ import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Query;
 
 import com.google.common.collect.Lists;
+import com.snda.grand.space.as.exception.ASOAuthInvalidScopeException;
+import com.snda.grand.space.as.exception.ASOAuthProblemException;
 import com.snda.grand.space.as.exception.DomainMismatchException;
 import com.snda.grand.space.as.exception.InvalidAppDescriptionException;
 import com.snda.grand.space.as.exception.InvalidAppStatusException;
@@ -122,6 +124,14 @@ public final class Preconditions {
 				&& (!"full".equalsIgnoreCase(scope)
 						&& !"app".equalsIgnoreCase(scope))) {
 			throw new InvalidScopeException();
+		}
+	}
+	
+	public static void checkOAuth2Scope(String scope, String api) throws ASOAuthProblemException {
+		if (scope != null 
+				&& (!"full".equalsIgnoreCase(scope)
+						&& !"app".equalsIgnoreCase(scope))) {
+			throw ASOAuthInvalidScopeException.build(api);
 		}
 	}
 	
