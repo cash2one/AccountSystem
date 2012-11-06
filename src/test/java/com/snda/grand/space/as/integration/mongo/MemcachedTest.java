@@ -18,7 +18,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 import com.google.common.collect.Maps;
-import com.snda.grand.space.as.mongo.internal.model.Accessor;
+import com.snda.grand.mobile.as.mongo.internal.model.Accessor;
 
 public class MemcachedTest {
 

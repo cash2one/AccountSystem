@@ -28,7 +28,7 @@ input {
 }
 
 #dropbox-connect-overlay {
-	background-image: url(/static/images/dropbox_connect.png);
+	background-image: url(/static/images/grandmobile_connect.png);
 	height: 82px;
 	margin: 0 auto;
 	padding: 14px 0 0 10px;
@@ -54,23 +54,23 @@ input {
     var i = 0;
     for (i = 0; i < PARAM_ARRAY.length; i++) 
     {
-        if (PARAM_ARRAY[i].key == "client_id") 
+        if (PARAM_ARRAY[i].key.toString().toLowerCase() == "client_id") 
         {
             CLIENT_ID = PARAM_ARRAY[i].value;
         } 
-        else if (PARAM_ARRAY[i].key == "response_type") 
+        else if (PARAM_ARRAY[i].key.toString().toLowerCase() == "response_type") 
         {
             RESPONSE_TYPE = PARAM_ARRAY[i].value;
         } 
-        else if (PARAM_ARRAY[i].key == "redirect_uri") 
+        else if (PARAM_ARRAY[i].key.toString().toLowerCase() == "redirect_uri") 
         {
             REDIRECT_URI = PARAM_ARRAY[i].value;
         } 
-        else if (PARAM_ARRAY[i].key == "scope") 
+        else if (PARAM_ARRAY[i].key.toString().toLowerCase() == "scope") 
         {
             SCOPE = PARAM_ARRAY[i].value;
         } 
-        else if (PARAM_ARRAY[i].key == "ticket") 
+        else if (PARAM_ARRAY[i].key.toString().toLowerCase() == "ticket") 
         {
             TICKET = PARAM_ARRAY[i].value;
         }
@@ -85,14 +85,14 @@ input {
         if (PARAM_ARRAY != null) {
         	for (i = 0; i < PARAM_ARRAY.length; i++)
             {
-                if (PARAM_ARRAY[i].key == "ticket")
+                if (PARAM_ARRAY[i].key.toString().toLowerCase() == "ticket")
                 {
-                	unsignedValidateUrl = PARAM_ARRAY[i].key + "=" + String(PARAM_ARRAY[i].value);
+                	unsignedValidateUrl = PARAM_ARRAY[i].key.toString().toLowerCase() + "=" + String(PARAM_ARRAY[i].value);
                 }
             }
         }
 
-        var getAuthCodeUrl = "http://account.grandmobile.cn/api/oauth2/sdo_auth?";
+        var getAuthCodeUrl = "https://account.grandmobile.cn/api/oauth2/sdo_auth?";
         if (CLIENT_ID != null) {
         	getAuthCodeUrl = getAuthCodeUrl + "client_id=" + CLIENT_ID + "&";
         }
@@ -111,7 +111,11 @@ input {
 
     function deny()
     {
-        window.location.href="http://account.grandmobile.cn/web/denied";
+    	var getDenyUrl = "https://account.grandmobile.cn/api/oauth2/deny?";
+    	if (REDIRECT_URI != null) {
+    		getDenyUrl = getDenyUrl + "redirect_uri=" + REDIRECT_URI + "&";
+    	}
+        window.location.href=getDenyUrl;
     }
 </script>
 
@@ -123,10 +127,10 @@ input {
 			<div id="auth">
 				<p class="center"></p>
 				<div id="grandspace-connect-overlay">
-					<img src="/resources/dropbox_connect_q.png" alt>
+					<img src="/resources/connect_q.png" alt>
 				</div>
 				<p></p>
-				<h1>The app whould like to connect with your Grand Space.</h1>
+				<h1>The app whould like to connect with your GrandMobile account.</h1>
 				<p style="text-align: left; margin-botton: 0;">
 				<table>
 					<tr>

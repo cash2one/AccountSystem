@@ -27,10 +27,14 @@
 	    	var queries = "";
 	    	if (PARAM_ARRAY != null) {
 		    	for (var i = 0; i < PARAM_ARRAY.length; i++) {
-		    		queries = queries + PARAM_ARRAY[i].key + "=" + PARAM_ARRAY[i].value + "&";
+		    		if (PARAM_ARRAY[i].key == "redirect_uri") {
+		    			queries = queries + PARAM_ARRAY[i].key + "=" + encodeURIComponent(PARAM_ARRAY[i].value) + "&";
+	                } else {
+	                	queries = queries + PARAM_ARRAY[i].key + "=" + PARAM_ARRAY[i].value + "&";
+	                }
 		    	}
 	    	}
-	    	var returnURL = "http://account.grandmobile.cn/web/redirect?";
+	    	var returnURL = "https://account.grandmobile.cn/web/redirect?";
 	    	returnURL += queries;
 	        //window.location.href="http://login.sdo.com/sdo/Login/LoginFrameFC.php?" 
 	        window.location.href="https://cas.sdo.com/cas/login?"
@@ -46,9 +50,9 @@
                 for (var i = 0; i < PARAM_ARRAY.length; i++) {
                 	queries = queries + PARAM_ARRAY[i].key + "=" + PARAM_ARRAY[i].value + "&";
                 }
-                var service = "http://account.grandmobile.cn/web/redirect?";
+                var service = "https://account.grandmobile.cn/web/redirect?";
                 service += queries;
-                window.location.href="http://cas.sdo.com/cas/login?"
+                window.location.href="https://cas.sdo.com/cas/login?" 
                                 + "gateway=true&"
                                 + "appId=917&"
                                 + "appArea=1&"
@@ -61,7 +65,7 @@
                 {
                     queries = queries + PARAM_ARRAY[i].key + "=" + PARAM_ARRAY[i].value + "&";
                 }
-                var service = "http://account.grandmobile.cn/web/authorize?";
+                var service = "https://account.grandmobile.cn/web/authorize?";
                 service += queries;
                 window.location.href=service;
         	}

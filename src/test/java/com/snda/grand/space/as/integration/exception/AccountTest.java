@@ -1,42 +1,49 @@
 package com.snda.grand.space.as.integration.exception;
 
-import static org.springframework.data.mongodb.core.query.Query.query;
-import static org.springframework.data.mongodb.core.query.Criteria.where;
-
-import static org.junit.Assert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
+import static org.springframework.data.mongodb.core.query.Criteria.where;
+import static org.springframework.data.mongodb.core.query.Query.query;
 
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.util.Random;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.core.HttpHeaders;
 
-import org.apache.commons.codec.binary.Base64;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.data.authentication.UserCredentials;
 import org.springframework.data.mongodb.MongoDbFactory;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
 
 import com.mongodb.Mongo;
-import com.snda.grand.space.as.mongo.model.MongoCollections;
-import com.snda.grand.space.as.mongo.model.PojoAccount;
-import com.snda.grand.space.as.rest.model.Account;
-import com.snda.grand.space.as.rest.util.ObjectMappers;
+import com.snda.grand.mobile.as.mongo.model.MongoCollections;
+import com.snda.grand.mobile.as.mongo.model.PojoAccount;
+import com.snda.grand.mobile.as.rest.model.Account;
+import com.snda.grand.mobile.as.rest.util.ObjectMappers;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.config.ClientConfig;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.client.urlconnection.HTTPSProperties;
 
 public class AccountTest {
 
 	private Client client;
 	private final ObjectMapper mapper = new ObjectMapper();
-	private final String DEFAULT_URI = "http://account.grandmobile.cn/";
-	private final String APP_KEY = "c3ca45418542e7ecbc337e26469ee8a4";
-	private final String APP_SECRET = "eda32dc279e17a2091acc59a1129d";
-	private final String AUTH = Base64.encodeBase64String((APP_KEY + ":" + APP_SECRET).getBytes());
+	private final String DEFAULT_URI = "https://account.grandmobile.cn/";
+	private final String AUTH = "xxx";
 	
 	private static MongoOperations mongoOps;
 	
@@ -52,13 +59,38 @@ public class AccountTest {
 	
 	@Before
 	public void createClient() {
-		client = Client.create();
+		TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager(){
+			@Override
+		    public X509Certificate[] getAcceptedIssuers(){return null;}
+		    @Override
+		    public void checkClientTrusted(X509Certificate[] certs, String authType){}
+		    @Override
+		    public void checkServerTrusted(X509Certificate[] certs, String authType){}
+		}};
+		try {
+		    SSLContext sc = SSLContext.getInstance("TLS");
+		    sc.init(null, trustAllCerts, new SecureRandom());
+		    ClientConfig config = new DefaultClientConfig();
+			config.getProperties().put(
+					HTTPSProperties.PROPERTY_HTTPS_PROPERTIES,
+					new HTTPSProperties(new HostnameVerifier() {
+
+						@Override
+						public boolean verify(String hostname, SSLSession session) {
+							return true;
+						}
+						
+					}, sc));
+		    client = Client.create(config);
+		} catch (Exception e) {
+		    ;
+		}
 	}
 	
 	@Before
 	public void prepare() throws Exception {
 		MongoDbFactory mongoDbFactory = new SimpleMongoDbFactory(new Mongo(
-				"account.grandmobile.cn", 27017), "account-system");
+				"58.215.185.148", 27017), "account-system", new UserCredentials("grandmobileadmin", "lELD3vvFRUwuQCza"));
 		mongoOps = new MongoTemplate(mongoDbFactory);
 	}
 	

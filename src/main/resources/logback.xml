@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true" scanPeriod="5 seconds">
 
-	<property name="log.path" value="/home/llap/apps/AccountSystem/shared/log" />
+	<property name="log.path" value="/home/grandmobile/apps/AccountSystem/shared/log" />
 	
-	<conversionRule conversionWord="request" converterClass="com.snda.grand.space.as.util.RequestIdConverter" />
+	<conversionRule conversionWord="request" converterClass="com.snda.grand.mobile.as.util.RequestIdConverter" />
 
     <appender name="service" class="ch.qos.logback.core.rolling.RollingFileAppender">
     	<encoder>
@@ -36,17 +36,17 @@
     	</rollingPolicy>
     </appender>
     
-    <logger name="com.snda.grand.space" level="DEBUG"/>
+    <logger name="com.snda.grand.mobile" level="INFO"/>
     
-    <root level="DEBUG">
+    <root level="INFO">
         <appender-ref ref="service"/>
     </root>
     
-    <logger name="com.snda.grand.space.as.util.AccessLogger" level="INFO">
+    <logger name="com.snda.grand.mobile.as.util.AccessLogger" level="INFO">
     	<appender-ref ref="access"/>
     </logger>
     
-    <logger name="com.snda.grand.space.as.util.WarningLogger" level="INFO" additivity="false">
+    <logger name="com.snda.grand.mobile.as.util.WarningLogger" level="INFO" additivity="false">
     	<appender-ref ref="warning"/>
     </logger>
     

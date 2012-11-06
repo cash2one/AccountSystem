@@ -13,7 +13,7 @@
           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
 	
-	<context:property-placeholder location="classpath:mongo.properties, classpath:merchant.properties, classpath:memcached.properties, classpath:internal.ip.allow.properties" />
+	<context:property-placeholder location="file:${GRANDMOBLIE_ACCOUNT_HOME}/shared/conf/mongo.properties, file:${GRANDMOBLIE_ACCOUNT_HOME}/shared/conf/merchant.properties, file:${GRANDMOBLIE_ACCOUNT_HOME}/shared/conf/memcached.properties, file:${GRANDMOBLIE_ACCOUNT_HOME}/shared/conf/internal.ip.allow.properties" />
 	
 	<mongo:mongo id="mongo" host="${mongo.host}" port="${mongo.port}">
 		<mongo:options 
@@ -29,13 +29,18 @@
 			write-timeout="0" 
 			write-fsync="true" />
 	</mongo:mongo>
+	
+	<mongo:db-factory id="mongoDbFactory"
+					  dbname="${mongo.dbname}" 
+					  mongo-ref="mongo"
+					  username="${mongo.username}"
+					  password="${mongo.password}"/>
 	 
 	<bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
-		<constructor-arg ref="mongo" />
-    	<constructor-arg value="account-system" />
+    	<constructor-arg name="mongoDbFactory" ref="mongoDbFactory"/>
 	</bean>
 	
-	<bean id="merchant" class="com.snda.grand.space.as.util.Merchant">
+	<bean id="merchant" class="com.snda.grand.mobile.as.util.Merchant">
 		<property name="areaId" value="${areaId}" />
 		<property name="appId" value="${appId}"/>
 		<property name="customSecurityLevel" value="${customSecurityLevel}"/>
@@ -45,7 +50,7 @@
 	</bean>
 	
 	<bean id="internalIpAllow"
-		class="com.snda.grand.space.as.util.InternalIpAllow">
+		class="com.snda.grand.mobile.as.util.InternalIpAllow">
 		<constructor-arg value="${internal.allow}" />
 	</bean>
 

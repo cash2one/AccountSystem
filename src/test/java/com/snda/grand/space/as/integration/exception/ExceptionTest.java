@@ -3,28 +3,63 @@ package com.snda.grand.space.as.integration.exception;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.snda.grand.space.as.rest.model.ApplicationError;
+import com.snda.grand.mobile.as.rest.model.ApplicationError;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.config.ClientConfig;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.client.urlconnection.HTTPSProperties;
 
 public class ExceptionTest {
 	
 	private Client client;
 	private final ObjectMapper mapper = new ObjectMapper();
-	private final String DEFAULT_URI = "http://account.grandmobile.cn/";
-	private final String APP_KEY = "ad2ce21541b07fcca852fff97e7e78f8";
-	private final String APP_SECRET = "bd23ceb0e911729ff85fab246dd3e748";
-	private final String AUTH = "YzNjYTQ1NDE4NTQyZTdlY2JjMzM3ZTI2NDY5ZWU4YTQ6ZWRhMzJkYzI3OWUxN2EyMDkxYWNjNTlhMTEyOWQ=";
+	private final String DEFAULT_URI = "https://account.grandmobile.cn/";
+	private final String AUTH = "xxx";
 	
 	@Before
 	public void createClient() {
-		client = Client.create();
+		TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager(){
+			@Override
+		    public X509Certificate[] getAcceptedIssuers(){return null;}
+		    @Override
+		    public void checkClientTrusted(X509Certificate[] certs, String authType){}
+		    @Override
+		    public void checkServerTrusted(X509Certificate[] certs, String authType){}
+		}};
+		try {
+		    SSLContext sc = SSLContext.getInstance("TLS");
+		    sc.init(null, trustAllCerts, new SecureRandom());
+		    ClientConfig config = new DefaultClientConfig();
+			config.getProperties().put(
+					HTTPSProperties.PROPERTY_HTTPS_PROPERTIES,
+					new HTTPSProperties(new HostnameVerifier() {
+
+						@Override
+						public boolean verify(String hostname, SSLSession session) {
+							return true;
+						}
+						
+					}, sc));
+		    client = Client.create(config);
+		} catch (Exception e) {
+		    ;
+		}
 	}
 	
 	@After
